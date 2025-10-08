@@ -13,9 +13,7 @@
       "Glob",
       "NotebookEdit",
       "TodoWrite",
-      "WebSearch",
-      "Bash(npx husky init:*)",
-      "Bash(if not exist \"src\\lib\" mkdir \"src\\lib\")"
+      "WebSearch"
     ],
     "deny": []
   },
