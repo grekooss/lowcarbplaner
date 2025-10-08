@@ -2,7 +2,7 @@
 
 ## 1. Przegląd produktu
 
-LowCarbPlaner (MVP) to aplikacja mobilna zaprojektowana w celu uproszczenia życia osobom stosującym dietę niskowęglowodanową. Aplikacja eliminuje codzienne trudności związane z planowaniem posiłków i śledzeniem makroskładników poprzez automatyzację kluczowych procesów. Po krótkim procesie onboardingu, w którym użytkownik definiuje swoje cele, aplikacja automatycznie generuje spersonalizowany, 7-dniowy plan posiłków. Kluczową innowacją jest inteligentny algorytm, który skaluje gramaturę składników w istniejących przepisach, aby precyzyjnie dopasować kaloryczność i makro do indywidualnych potrzeb użytkownika. Aplikacja dostarcza również prosty, wizualny feedback na temat dziennych postępów oraz generuje zagregowaną listę zakupów, znacząco redukując wysiłek i zmęczenie decyzyjne związane z utrzymaniem diety.
+LowCarbPlaner (MVP) to aplikacja webowa zaprojektowana w celu uproszczenia życia osobom stosującym dietę niskowęglowodanową. Aplikacja eliminuje codzienne trudności związane z planowaniem posiłków i śledzeniem makroskładników poprzez automatyzację kluczowych procesów. Po krótkim procesie onboardingu, w którym użytkownik definiuje swoje cele, aplikacja automatycznie generuje spersonalizowany, 7-dniowy plan posiłków. Kluczową innowacją jest inteligentny algorytm, który skaluje gramaturę składników w istniejących przepisach, aby precyzyjnie dopasować kaloryczność i makro do indywidualnych potrzeb użytkownika. Aplikacja dostarcza również prosty, wizualny feedback na temat dziennych postępów oraz generuje zagregowaną listę zakupów, znacząco redukując wysiłek i zmęczenie decyzyjne związane z utrzymaniem diety.
 
 ## 2. Problem użytkownika
 
