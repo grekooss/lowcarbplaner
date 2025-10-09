@@ -5,7 +5,12 @@
  * Wszystkie typy bazują na modelach bazy danych z `database.types.ts`.
  */
 
-import type { Tables, Enums } from './database.types'
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+  Enums,
+} from './database.types'
 
 // ============================================================================
 // Common Types
@@ -33,10 +38,10 @@ export type IngredientOverrides = {
 
 /**
  * Command Model: Dane wejściowe z formularza onboardingu
- * Bazuje na Tables<"profiles">["Insert"] z wybranymi polami
+ * Bazuje na TablesInsert<"profiles"> z wybranymi polami
  */
 export type OnboardingCommand = Pick<
-  Tables<'profiles'>['Insert'],
+  TablesInsert<'profiles'>,
   | 'gender'
   | 'age'
   | 'weight_kg'
@@ -51,7 +56,7 @@ export type OnboardingCommand = Pick<
  * Zwracane po zakończeniu onboardingu
  */
 export type OnboardingResultDTO = Pick<
-  Tables<'profiles'>['Row'],
+  Tables<'profiles'>,
   'target_calories' | 'target_protein_g' | 'target_carbs_g' | 'target_fats_g'
 >
 
@@ -61,19 +66,19 @@ export type OnboardingResultDTO = Pick<
 
 /**
  * DTO: Kompletny profil użytkownika
- * Bazuje na Tables<"profiles">["Row"] bez pól systemowych
+ * Bazuje na Tables<"profiles"> bez pól systemowych
  */
 export type ProfileDTO = Omit<
-  Tables<'profiles'>['Row'],
+  Tables<'profiles'>,
   'id' | 'created_at' | 'updated_at'
 >
 
 /**
  * Command Model: Aktualizacja profilu użytkownika
- * Bazuje na Tables<"profiles">["Update"] z wybranymi polami
+ * Bazuje na TablesUpdate<"profiles"> z wybranymi polami
  */
 export type UpdateProfileCommand = Pick<
-  Tables<'profiles'>['Update'],
+  TablesUpdate<'profiles'>,
   | 'gender'
   | 'age'
   | 'weight_kg'
@@ -205,10 +210,7 @@ export type MarkMealEatenCommand = {
 /**
  * DTO: Status posiłku po aktualizacji
  */
-export type MealStatusDTO = Pick<
-  Tables<'planned_meals'>['Row'],
-  'id' | 'is_eaten'
-> & {
+export type MealStatusDTO = Pick<Tables<'planned_meals'>, 'id' | 'is_eaten'> & {
   updated_at?: string
 }
 
