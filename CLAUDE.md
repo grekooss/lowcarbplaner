@@ -392,9 +392,10 @@ Wszystkie szczegóły znajdują się w modułach dokumentacji:
 - **[08-performance.md](.claude/docs/08-performance.md)** - Optymalizacja Next.js, bundle analysis, caching
 - **[09-ci-cd.md](.claude/docs/09-ci-cd.md)** - GitHub Actions, deployment, Cloudflare Pages
 
-### Przykłady Kodu
+### Przykłady Kodu i UI Components
 
 - **[10-examples.md](.claude/docs/10-examples.md)** - Server Components, Client Components, Server Actions, middleware
+- **[11-shadcn-ui.md](.claude/docs/11-shadcn-ui.md)** - Shadcn/UI komponenty, stylowanie, best practices
 
 ---
 

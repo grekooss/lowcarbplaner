@@ -53,6 +53,9 @@ Osoby na diecie niskowęglowodanowej stają przed dwoma powtarzalnymi wyzwaniami
 
 - Dostępny po kliknięciu na posiłek.
 - Zawiera: zdjęcie dania, listę składników z gramaturą/ilością, instrukcję przygotowania krok po kroku.
+- Wyświetla całościowe makro dla przepisu (kalorie, białko, węglowodany, tłuszcze).
+- Przy każdym składniku wyświetlane jest jego makro (wkład w kalorie, białko, węglowodany, tłuszcze dla danej gramatury).
+- Składniki są grupowane według kategorii (Nabiał, Mięso, Warzywa, Tłuszcze i Oleje, Przyprawy).
 - Wyświetla stałą informację o konieczności weryfikacji składników pod kątem osobistych alergii.
 
 ### 3.7. Automatyczna Lista Zakupów
@@ -276,6 +279,9 @@ Poniższe funkcjonalności są świadomie wykluczone z zakresu MVP w celu skupie
 
 1. Kliknięcie na kafelek posiłku przenosi mnie do ekranu przepisu
 2. Ekran przepisu zawiera zdjęcie, listę składników i instrukcję "krok po kroku"
+3. Widzę całościowe makro przepisu (kalorie, białko, węglowodany, tłuszcze) wyświetlone w widocznym miejscu
+4. Przy każdym składniku widzę jego wkład w makro (kalorie, białko, węglowodany, tłuszcze) dla podanej gramatury
+5. Składniki są pogrupowane według kategorii (Nabiał, Mięso, Warzywa, Tłuszcze i Oleje, Przyprawy) dla lepszej czytelności
 
 ---
 
