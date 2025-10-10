@@ -75,7 +75,7 @@ insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, u
 ((select id from content.recipes where name = 'Placki z cukinii z serkiem wiejskim'), (select id from content.ingredients where name = 'Sól'), 2, 'g', false, 2),
 ((select id from content.recipes where name = 'Placki z cukinii z serkiem wiejskim'), (select id from content.ingredients where name = 'Pieprz czarny'), 1, 'g', false, 2),
 ((select id from content.recipes where name = 'Placki z cukinii z serkiem wiejskim'), (select id from content.ingredients where name = 'Oliwa z oliwek extra virgin'), 15, 'ml', false, 3),
-((select id from content.recipes where name = 'Placki z cukinii z serkiem wiejskim'), (select id from content.ingredients where name = 'Serek wiejski (cottage cheese)'), 100, 'g', true, 4),
+((select id from content.recipes where name = 'Placki z cukinii z serkiem wiejskim'), (select id from content.ingredients where name = 'Serek wiejski'), 100, 'g', true, 4),
 ((select id from content.recipes where name = 'Placki z cukinii z serkiem wiejskim'), (select id from content.ingredients where name = 'Szczypiork (świeży)'), 5, 'g', false, 4);
 
 -- Śniadanie 6: Frittata z brokułami i serem cheddar
@@ -97,7 +97,7 @@ insert into content.recipes (name, image_url, instructions, meal_types, tags) va
 
 insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, unit, is_scalable, step_number) values
 ((select id from content.recipes where name = 'Chia pudding kokosowy z borówkami'), (select id from content.ingredients where name = 'Nasiona chia'), 30, 'g', true, 1),
-((select id from content.recipes where name = 'Chia pudding kokosowy z borówkami'), (select id from content.ingredients where name = 'Mleko kokosowe (pełnotłuste, puszka)'), 200, 'ml', true, 1),
+((select id from content.recipes where name = 'Chia pudding kokosowy z borówkami'), (select id from content.ingredients where name = 'Mleko kokosowe'), 200, 'ml', true, 1),
 ((select id from content.recipes where name = 'Chia pudding kokosowy z borówkami'), (select id from content.ingredients where name = 'Erytrytol'), 10, 'g', false, 1),
 ((select id from content.recipes where name = 'Chia pudding kokosowy z borówkami'), (select id from content.ingredients where name = 'Borówki'), 50, 'g', true, 4);
 
@@ -131,7 +131,7 @@ insert into content.recipes (name, image_url, instructions, meal_types, tags) va
 insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, unit, is_scalable, step_number) values
 ((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Awokado'), 80, 'g', true, 1),
 ((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Szpinak (świeży)'), 50, 'g', true, 1),
-((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Mleko migdałowe (niesłodzone)'), 150, 'ml', true, 1),
+((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Mleko migdałowe'), 150, 'ml', true, 1),
 ((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Truskawki'), 40, 'g', true, 1),
 ((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Maliny'), 30, 'g', true, 3),
 ((select id from content.recipes where name = 'Smoothie bowl z awokado i szpinakiem'), (select id from content.ingredients where name = 'Nasiona chia'), 10, 'g', true, 3),
@@ -187,7 +187,7 @@ insert into content.recipes (name, image_url, instructions, meal_types, tags) va
 
 insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, unit, is_scalable, step_number) values
 ((select id from content.recipes where name = 'Kurczak curry z mlekiem kokosowym'), (select id from content.ingredients where name = 'Kurczak - pierś (bez skóry)'), 200, 'g', true, 1),
-((select id from content.recipes where name = 'Kurczak curry z mlekiem kokosowym'), (select id from content.ingredients where name = 'Mleko kokosowe (pełnotłuste, puszka)'), 200, 'ml', true, 4),
+((select id from content.recipes where name = 'Kurczak curry z mlekiem kokosowym'), (select id from content.ingredients where name = 'Mleko kokosowe'), 200, 'ml', true, 4),
 ((select id from content.recipes where name = 'Kurczak curry z mlekiem kokosowym'), (select id from content.ingredients where name = 'Cebula biała'), 80, 'g', true, 2),
 ((select id from content.recipes where name = 'Kurczak curry z mlekiem kokosowym'), (select id from content.ingredients where name = 'Czosnek (ząbek)'), 10, 'g', false, 2),
 ((select id from content.recipes where name = 'Kurczak curry z mlekiem kokosowym'), (select id from content.ingredients where name = 'Imbir (świeży)'), 10, 'g', false, 3),
@@ -241,7 +241,7 @@ insert into content.recipes (name, image_url, instructions, meal_types, tags) va
 ('Udka z kurczaka pieczone z ziołami', null, '[{"step":1,"description":"Przypraw udka solą, pieprzem, rozmarynem, tymiankiem."},{"step":2,"description":"Ułóż w naczyniu żaroodpornym z czosnkiem."},{"step":3,"description":"Piecz 40 minut w 200°C."},{"step":4,"description":"Podawaj ze smażonym szpinakiem."}]'::jsonb, array['lunch']::meal_type_enum[], array['kurczak', 'piekarnik', 'zioła', 'soczysty']);
 
 insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, unit, is_scalable, step_number) values
-((select id from content.recipes where name = 'Udka z kurczaka pieczone z ziołami'), (select id from content.ingredients where name = 'Kurczak - udko (bez skóry)'), 250, 'g', true, 1),
+((select id from content.recipes where name = 'Udka z kurczaka pieczone z ziołami'), (select id from content.ingredients where name = 'Kurczak - udko (ze skórą)'), 250, 'g', true, 1),
 ((select id from content.recipes where name = 'Udka z kurczaka pieczone z ziołami'), (select id from content.ingredients where name = 'Rozmaryn (świeży)'), 5, 'g', false, 1),
 ((select id from content.recipes where name = 'Udka z kurczaka pieczone z ziołami'), (select id from content.ingredients where name = 'Tymianek (świeży)'), 5, 'g', false, 1),
 ((select id from content.recipes where name = 'Udka z kurczaka pieczone z ziołami'), (select id from content.ingredients where name = 'Czosnek (ząbek)'), 15, 'g', false, 2),
@@ -267,7 +267,7 @@ insert into content.recipes (name, image_url, instructions, meal_types, tags) va
 ('Schab wieprzowy z kapustą', null, '[{"step":1,"description":"Przypraw schab solą, pieprzem, majerankiem."},{"step":2,"description":"Usmaż na patelni do zrumienienia."},{"step":3,"description":"Podsmaż pokrojoną kapustę z cebulą."},{"step":4,"description":"Dodaj kminek."},{"step":5,"description":"Podawaj schab z kapustą."}]'::jsonb, array['lunch']::meal_type_enum[], array['wieprzowina', 'schab', 'kapusta', 'polskie']);
 
 insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, unit, is_scalable, step_number) values
-((select id from content.recipes where name = 'Schab wieprzowy z kapustą'), (select id from content.ingredients where name = 'Wieprzowina - schab (bez tłuszczu)'), 200, 'g', true, 1),
+((select id from content.recipes where name = 'Schab wieprzowy z kapustą'), (select id from content.ingredients where name = 'Wieprzowina - schab'), 200, 'g', true, 1),
 ((select id from content.recipes where name = 'Schab wieprzowy z kapustą'), (select id from content.ingredients where name = 'Kapusta biała'), 150, 'g', true, 3),
 ((select id from content.recipes where name = 'Schab wieprzowy z kapustą'), (select id from content.ingredients where name = 'Cebula biała'), 60, 'g', true, 3),
 ((select id from content.recipes where name = 'Schab wieprzowy z kapustą'), (select id from content.ingredients where name = 'Majeranek (suszony)'), 2, 'g', false, 1),
@@ -410,7 +410,7 @@ insert into content.recipes (name, image_url, instructions, meal_types, tags) va
 insert into content.recipe_ingredients (recipe_id, ingredient_id, base_amount, unit, is_scalable, step_number) values
 ((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Kurczak - pierś (bez skóry)'), 180, 'g', true, 1),
 ((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Sałata rzymska'), 150, 'g', true, 3),
-((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Majonez (pełnotłusty)'), 50, 'g', true, 2),
+((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Majonez'), 50, 'g', true, 2),
 ((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Ser parmezan'), 40, 'g', true, 2),
 ((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Czosnek (ząbek)'), 5, 'g', false, 2),
 ((select id from content.recipes where name = 'Sałatka cezar z kurczakiem'), (select id from content.ingredients where name = 'Cytryna (sok)'), 10, 'ml', false, 2),
@@ -428,7 +428,7 @@ select 'Dinners:' as info, count(*)::text as count from content.recipes where 'd
 select 'Recipe ingredients:' as info, count(*)::text as count from content.recipe_ingredients;
 
 -- Verify denormalized nutrition (should be auto-calculated by trigger)
-select name, total_calories, total_protein, total_carbs, total_fats
+select name, total_calories, total_protein_g, total_carbs_g, total_fats_g
 from content.recipes
 where total_calories is not null
 order by name

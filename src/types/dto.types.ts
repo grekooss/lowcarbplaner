@@ -94,7 +94,7 @@ export type UpdateProfileCommand = Pick<
 
 /**
  * DTO: Pojedynczy składnik z ilością w przepisie
- * Bazuje na Tables<"recipe_ingredients"> + join z Tables<"ingredients">
+ * Bazuje na Tables<'recipe_ingredients', { schema: 'public' }> + join z Tables<'ingredients', { schema: 'public' }>
  */
 export type IngredientDTO = {
   id: number
@@ -111,7 +111,7 @@ export type IngredientDTO = {
 
 /**
  * DTO: Pojedynczy przepis z zagnieżdżonymi składnikami
- * Bazuje na Tables<"recipes"> + recipe_ingredients + ingredients
+ * Bazuje na Tables<'recipes', { schema: 'public' }> + recipe_ingredients + ingredients
  */
 export type RecipeDTO = {
   id: number

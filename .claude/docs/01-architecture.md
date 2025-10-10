@@ -1,5 +1,35 @@
 # Architektura Projektu
 
+## Przegląd architektury
+
+**LowCarbPlaner** wykorzystuje **architekturę dwuwarstwową** dla operacji API:
+
+### 1. **Server Actions** (Warstwa biznesowa)
+
+- **Lokalizacja:** `lib/actions/*.ts`
+- **Odpowiedzialność:** Cała logika biznesowa, walidacja, interakcja z bazą danych
+- **Użycie:** Bezpośrednio z Server Components lub przez API Route Handlers
+- **Zwraca:** `ActionResult<T>` (discriminated union: `{ data: T } | { error: string }`)
+
+### 2. **API Route Handlers** (Warstwa HTTP)
+
+- **Lokalizacja:** `app/api/**/route.ts`
+- **Odpowiedzialność:** Cienka warstwa HTTP - wywołuje Server Actions
+- **Użycie:** REST API dla zewnętrznych klientów
+- **Zwraca:** JSON response z odpowiednimi kodami statusu
+
+### Przepływ danych
+
+```
+Server Component → Server Action → Supabase
+                         ↑
+Client Component → API Route → Server Action → Supabase
+```
+
+**Zalecenie:** Preferuj bezpośrednie użycie Server Actions w Server Components dla lepszej wydajności.
+
+---
+
 ## Struktura Katalogów
 
 ### Pełna Struktura
@@ -18,7 +48,10 @@ lowcarbplaner/
 │   │   ├── shopping-list/   # Lista zakupów
 │   │   ├── profile/         # Profil użytkownika
 │   │   └── settings/        # Ustawienia
-│   ├── api/                 # API routes (jeśli potrzebne)
+│   ├── api/                 # API Route Handlers (REST API)
+│   │   ├── recipes/         # GET /api/recipes, GET /api/recipes/{id}
+│   │   ├── planned-meals/   # GET /api/planned-meals, PATCH /api/planned-meals/{id}
+│   │   └── ...              # Inne endpointy
 │   ├── layout.tsx           # Root layout z Geist fonts
 │   ├── globals.css          # Global styles, Tailwind, tokens
 │   ├── page.tsx             # Landing page
@@ -50,7 +83,7 @@ lowcarbplaner/
 ├── lib/
 │   ├── supabase/            # Konfiguracja klienta Supabase
 │   │   ├── client.ts        # Client-side client
-│   │   ├── server.ts        # Server-side client
+│   │   ├── server.ts        # Server-side client (createClient, createAdminClient)
 │   │   └── middleware.ts    # Middleware auth
 │   ├── react-query/         # TanStack Query configuration
 │   │   ├── client.ts        # QueryClient setup
@@ -64,12 +97,16 @@ lowcarbplaner/
 │   │       ├── useUIStore.ts
 │   │       ├── useAuthStore.ts
 │   │       └── useProgressStore.ts
-│   ├── validation/          # Zod schemas
+│   ├── validation/          # Zod schemas (walidacja dla Server Actions)
 │   │   ├── onboarding.ts    # BMR, TDEE validation
+│   │   ├── recipes.ts       # GET /recipes query params, recipe ID
+│   │   ├── planned-meals.ts # GET /planned-meals, PATCH body (discriminated union)
 │   │   ├── mealPlan.ts
 │   │   ├── user.ts
 │   │   └── auth.ts
-│   ├── actions/             # Server Actions
+│   ├── actions/             # Server Actions (GŁÓWNA LOGIKA BIZNESOWA)
+│   │   ├── recipes.ts       # getRecipes(), getRecipeById()
+│   │   ├── planned-meals.ts # getPlannedMeals(), updatePlannedMeal(), getReplacementRecipes()
 │   │   ├── mealPlans.ts     # Generate, swap meals
 │   │   ├── progress.ts      # Mark as eaten
 │   │   ├── users.ts

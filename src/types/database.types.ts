@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -14,6 +14,55 @@ export type Database = {
   }
   content: {
     Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      feedback: {
+        Row: {
+          content: string
+          created_at: string
+          id: number
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: number
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: number
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'feedback_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       ingredient_unit_conversions: {
         Row: {
           grams_equivalent: number
@@ -82,6 +131,111 @@ export type Database = {
           name?: string
           protein_per_100_units?: number
           unit?: string
+        }
+        Relationships: []
+      }
+      planned_meals: {
+        Row: {
+          created_at: string
+          id: number
+          ingredient_overrides: Json | null
+          is_eaten: boolean
+          meal_date: string
+          meal_type: Database['public']['Enums']['meal_type_enum']
+          recipe_id: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          ingredient_overrides?: Json | null
+          is_eaten?: boolean
+          meal_date: string
+          meal_type: Database['public']['Enums']['meal_type_enum']
+          recipe_id?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          ingredient_overrides?: Json | null
+          is_eaten?: boolean
+          meal_date?: string
+          meal_type?: Database['public']['Enums']['meal_type_enum']
+          recipe_id?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'planned_meals_recipe_id_fkey'
+            columns: ['recipe_id']
+            isOneToOne: false
+            referencedRelation: 'recipes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'planned_meals_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          activity_level: Database['public']['Enums']['activity_level_enum']
+          age: number
+          created_at: string
+          disclaimer_accepted_at: string | null
+          email: string
+          gender: Database['public']['Enums']['gender_enum']
+          goal: Database['public']['Enums']['goal_enum']
+          height_cm: number
+          id: string
+          target_calories: number
+          target_carbs_g: number
+          target_fats_g: number
+          target_protein_g: number
+          updated_at: string
+          weight_kg: number
+          weight_loss_rate_kg_week: number | null
+        }
+        Insert: {
+          activity_level: Database['public']['Enums']['activity_level_enum']
+          age: number
+          created_at?: string
+          disclaimer_accepted_at?: string | null
+          email: string
+          gender: Database['public']['Enums']['gender_enum']
+          goal: Database['public']['Enums']['goal_enum']
+          height_cm: number
+          id: string
+          target_calories: number
+          target_carbs_g: number
+          target_fats_g: number
+          target_protein_g: number
+          updated_at?: string
+          weight_kg: number
+          weight_loss_rate_kg_week?: number | null
+        }
+        Update: {
+          activity_level?: Database['public']['Enums']['activity_level_enum']
+          age?: number
+          created_at?: string
+          disclaimer_accepted_at?: string | null
+          email?: string
+          gender?: Database['public']['Enums']['gender_enum']
+          goal?: Database['public']['Enums']['goal_enum']
+          height_cm?: number
+          id?: string
+          target_calories?: number
+          target_carbs_g?: number
+          target_fats_g?: number
+          target_protein_g?: number
+          updated_at?: string
+          weight_kg?: number
+          weight_loss_rate_kg_week?: number | null
         }
         Relationships: []
       }
@@ -181,152 +335,6 @@ export type Database = {
           total_fats_g?: number | null
           total_protein_g?: number | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  public: {
-    Tables: {
-      feedback: {
-        Row: {
-          content: string
-          created_at: string
-          id: number
-          metadata: Json | null
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: number
-          metadata?: Json | null
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: number
-          metadata?: Json | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'feedback_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      planned_meals: {
-        Row: {
-          created_at: string
-          id: number
-          ingredient_overrides: Json | null
-          is_eaten: boolean
-          meal_date: string
-          meal_type: Database['public']['Enums']['meal_type_enum']
-          recipe_id: number | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          ingredient_overrides?: Json | null
-          is_eaten?: boolean
-          meal_date: string
-          meal_type: Database['public']['Enums']['meal_type_enum']
-          recipe_id?: number | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          ingredient_overrides?: Json | null
-          is_eaten?: boolean
-          meal_date?: string
-          meal_type?: Database['public']['Enums']['meal_type_enum']
-          recipe_id?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'planned_meals_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          activity_level: Database['public']['Enums']['activity_level_enum']
-          age: number
-          created_at: string
-          disclaimer_accepted_at: string | null
-          email: string
-          gender: Database['public']['Enums']['gender_enum']
-          goal: Database['public']['Enums']['goal_enum']
-          height_cm: number
-          id: string
-          target_calories: number
-          target_carbs_g: number
-          target_fats_g: number
-          target_protein_g: number
-          updated_at: string
-          weight_kg: number
-          weight_loss_rate_kg_week: number | null
-        }
-        Insert: {
-          activity_level: Database['public']['Enums']['activity_level_enum']
-          age: number
-          created_at?: string
-          disclaimer_accepted_at?: string | null
-          email: string
-          gender: Database['public']['Enums']['gender_enum']
-          goal: Database['public']['Enums']['goal_enum']
-          height_cm: number
-          id: string
-          target_calories: number
-          target_carbs_g: number
-          target_fats_g: number
-          target_protein_g: number
-          updated_at?: string
-          weight_kg: number
-          weight_loss_rate_kg_week?: number | null
-        }
-        Update: {
-          activity_level?: Database['public']['Enums']['activity_level_enum']
-          age?: number
-          created_at?: string
-          disclaimer_accepted_at?: string | null
-          email?: string
-          gender?: Database['public']['Enums']['gender_enum']
-          goal?: Database['public']['Enums']['goal_enum']
-          height_cm?: number
-          id?: string
-          target_calories?: number
-          target_carbs_g?: number
-          target_fats_g?: number
-          target_protein_g?: number
-          updated_at?: string
-          weight_kg?: number
-          weight_loss_rate_kg_week?: number | null
         }
         Relationships: []
       }
