@@ -284,6 +284,26 @@ export type SwappedMealDTO = {
 }
 
 // ============================================================================
+// 9. REPLACEMENT RECIPES API
+// ============================================================================
+
+/**
+ * DTO: Zamiennik przepisu dla GET /planned-meals/{id}/replacements
+ * Zawiera przepis z obliczoną różnicą kaloryczną względem oryginału
+ */
+export type ReplacementRecipeDTO = {
+  id: number
+  name: string
+  image_url: string | null
+  meal_types: Enums<'meal_type_enum'>[]
+  total_calories: number | null
+  total_protein_g: number | null
+  total_carbs_g: number | null
+  total_fats_g: number | null
+  calorie_diff: number // Różnica kaloryczna względem oryginalnego przepisu
+}
+
+// ============================================================================
 // Error Response Types
 // ============================================================================
 

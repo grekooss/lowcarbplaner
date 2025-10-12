@@ -1,0 +1,114 @@
+===============================================================
+PLANNED MEALS API - KROKI WDROŻENIA MIGRACJI
+===============================================================
+
+📋 STATUS: Gotowe do zastosowania
+📅 DATA: 2025-10-11
+
+===============================================================
+KROK 1: Zastosuj Migrację Bazy Danych
+===============================================================
+
+OPCJA A - Przez Supabase Dashboard (Zalecane):
+--------------------------------------------------------------
+1. Otwórz: https://supabase.com/dashboard
+2. Wybierz projekt: LowCarbPlaner
+3. Przejdź do: SQL Editor
+4. Kliknij: + New Query
+5. Skopiuj zawartość z:
+   supabase/migrations/20251011101810_add_planned_meals_performance_indexes.sql
+6. Wklej do edytora
+7. Kliknij: RUN (lub Ctrl+Enter)
+8. Sprawdź: Success. Rows returned: 0
+
+✅ Migracja zastosowana!
+
+OPCJA B - Przez Supabase CLI:
+--------------------------------------------------------------
+npx supabase login
+npx supabase link --project-ref YOUR_PROJECT_REF
+npx supabase db push --linked
+
+===============================================================
+KROK 2: Weryfikuj Indeksy
+===============================================================
+
+W Supabase SQL Editor uruchom:
+--------------------------------------------------------------
+SELECT schemaname, tablename, indexname
+FROM pg_indexes
+WHERE tablename IN ('planned_meals', 'recipes', 'recipe_ingredients')
+  AND schemaname IN ('public', 'content')
+ORDER BY tablename, indexname;
+
+Oczekiwane NOWE indeksy (4):
+✓ idx_planned_meals_recipe
+✓ idx_recipe_ingredients_recipe
+✓ idx_recipe_ingredients_ingredient
+✓ idx_recipes_total_calories
+
+LUB użyj pełnego skryptu weryfikacyjnego:
+supabase/verify_indexes.sql
+
+===============================================================
+KROK 3: Deploy Aplikacji
+===============================================================
+
+git add .
+git commit -m "feat(api): implement planned-meals endpoints
+
+🤖 Generated with Claude Code"
+git push origin main
+
+# Cloudflare Pages automatycznie wykona deployment
+
+===============================================================
+KROK 4: Test Endpointów
+===============================================================
+
+GET /api/planned-meals?start_date=2024-01-01&end_date=2024-01-07
+PATCH /api/planned-meals/123 (body: {"action": "mark_eaten", "is_eaten": true})
+GET /api/planned-meals/123/replacements
+
+Użyj Postman/Insomnia z tokenem:
+Authorization: Bearer YOUR_SUPABASE_TOKEN
+
+===============================================================
+DOKUMENTACJA
+===============================================================
+
+📖 Główny README:
+   README-PLANNED-MEALS-API.md
+
+📖 Szczegółowa dokumentacja:
+   .ai/10b01 api-planned-meals-implementation-plan.md (plan)
+   .ai/10b02 planned-meals-database-setup.md (RLS + indeksy)
+   .ai/10b03 deployment-checklist.md (deployment)
+   .ai/10b04 manual-migration-guide.md (migracja ręczna)
+
+📖 Kod:
+   src/lib/actions/planned-meals.ts (Server Actions)
+   src/lib/validation/planned-meals.ts (Walidacja)
+   app/api/planned-meals/**/route.ts (API Routes)
+
+===============================================================
+STATUS KOŃCOWY
+===============================================================
+
+✅ Backend (Server Actions) - GOTOWE
+✅ API Route Handlers - GOTOWE
+✅ Walidacja Zod - GOTOWE
+✅ Typy TypeScript - GOTOWE
+✅ RLS Policies - JUŻ ZAIMPLEMENTOWANE
+✅ Migracja Indeksów - GOTOWA DO ZASTOSOWANIA
+✅ Build - SUKCES
+✅ Dokumentacja - KOMPLETNA
+
+⏳ DO ZROBIENIA PRZEZ CIEBIE:
+   1. Zastosuj migrację (Krok 1)
+   2. Deploy aplikacji (Krok 3)
+   3. Test endpointów (Krok 4)
+
+===============================================================
+GOTOWE! 🚀
+===============================================================
