@@ -85,7 +85,10 @@ export default async function RecipeDetailPage({
     throw new Error(result.error)
   }
 
-  const recipe = result.data
+  // Sprawdź czy dane istnieją
+  if (!result.data) {
+    notFound()
+  }
 
-  return <RecipeDetailClient recipe={recipe} />
+  return <RecipeDetailClient recipe={result.data} />
 }
