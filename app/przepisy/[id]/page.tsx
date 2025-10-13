@@ -90,5 +90,7 @@ export default async function RecipeDetailPage({
     notFound()
   }
 
-  return <RecipeDetailClient recipe={result.data} />
+  const recipe = result.data
+
+  return <RecipeDetailClient recipe={recipe} />
 }

@@ -7,11 +7,15 @@
 
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { FeaturedRecipeCard } from './FeaturedRecipeCard'
 import { RecipeFilters } from './RecipeFilters'
 import { RecipesGrid } from './RecipesGrid'
+import { RecipeListItem } from './RecipeListItem'
+import { ViewToggle, type ViewMode } from './ViewToggle'
+import { SortSelect, type SortOption } from './SortSelect'
 import { LoadMoreButton } from './LoadMoreButton'
 import { AuthPromptModal } from './AuthPromptModal'
 import { useRecipesFilter } from '@/lib/hooks/useRecipesFilter'
@@ -47,6 +51,10 @@ export function RecipesBrowserClient({
 }: RecipesBrowserClientProps) {
   const router = useRouter()
 
+  // Stan lokalny dla widoku i sortowania
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [sortBy, setSortBy] = useState<SortOption>('calories')
+
   // Hooks dla state management
   const { filters, updateMealTypes, resetFilters } = useRecipesFilter({
     initialFilters,
@@ -80,8 +88,24 @@ export function RecipesBrowserClient({
   // Flatten wszystkie pages do jednej listy
   const allRecipes = data?.pages.flatMap((page) => page.results) || []
 
+  // Sortowanie przepisów
+  const sortedRecipes = [...allRecipes].sort((a, b) => {
+    switch (sortBy) {
+      case 'calories':
+        return (b.total_calories || 0) - (a.total_calories || 0)
+      case 'protein':
+        return (b.total_protein_g || 0) - (a.total_protein_g || 0)
+      case 'carbs':
+        return (a.total_carbs_g || 0) - (b.total_carbs_g || 0)
+      case 'name':
+        return a.name.localeCompare(b.name)
+      default:
+        return 0
+    }
+  })
+
   // Featured recipe - pierwszy przepis z listy (lub można losowy)
-  const featuredRecipe = allRecipes[0] || initialData.results[0]
+  const featuredRecipe = sortedRecipes[0] || initialData.results[0]
 
   // Handle recipe click - sprawdź auth i pokaż modal lub navigate
   const handleRecipeClick = (recipeId: number) => {
@@ -99,6 +123,12 @@ export function RecipesBrowserClient({
   // Handle signup CTA
   const handleSignup = () => {
     router.push('/signup')
+  }
+
+  // Handle Add to Meal Plan
+  const handleAddToMealPlan = (recipeId: number) => {
+    // TODO: Implementacja dodawania do planu posiłków
+    console.log('Add to meal plan:', recipeId)
   }
 
   return (
@@ -129,16 +159,22 @@ export function RecipesBrowserClient({
           </section>
         )}
 
-        {/* Filters */}
+        {/* Filters, Sort i View Toggle */}
         <section className='space-y-4'>
-          <h2 className='text-2xl font-semibold'>Wszystkie przepisy</h2>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+            <h2 className='text-2xl font-semibold'>Wszystkie przepisy</h2>
+            <div className='flex flex-wrap items-center gap-3'>
+              <SortSelect value={sortBy} onChange={setSortBy} />
+              <ViewToggle mode={viewMode} onChange={setViewMode} />
+            </div>
+          </div>
           <RecipeFilters
             selectedMealTypes={filters.meal_types}
             onChange={updateMealTypes}
           />
         </section>
 
-        {/* Recipes Grid */}
+        {/* Recipes Grid/List */}
         <section className='space-y-6'>
           {isLoading && allRecipes.length === 0 ? (
             // Initial loading
@@ -173,11 +209,25 @@ export function RecipesBrowserClient({
             </div>
           ) : (
             <>
-              {/* Grid z przepisami (bez featured - skip pierwszy) */}
-              <RecipesGrid
-                recipes={allRecipes.slice(1)}
-                onRecipeClick={handleRecipeClick}
-              />
+              {/* Grid lub List view */}
+              {viewMode === 'grid' ? (
+                <RecipesGrid
+                  recipes={sortedRecipes.slice(1)}
+                  onRecipeClick={handleRecipeClick}
+                />
+              ) : (
+                <div className='space-y-4'>
+                  {sortedRecipes.slice(1).map((recipe) => (
+                    <RecipeListItem
+                      key={recipe.id}
+                      recipe={recipe}
+                      onClick={handleRecipeClick}
+                      onAddToMealPlan={handleAddToMealPlan}
+                      isAuthenticated={isAuthenticated}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Load More Button */}
               <LoadMoreButton

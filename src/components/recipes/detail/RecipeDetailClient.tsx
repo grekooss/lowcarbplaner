@@ -11,8 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft } from 'lucide-react'
-import { RecipeHeader } from './RecipeHeader'
-import { MacroSummary } from './MacroSummary'
+import { RecipeDetailHero } from './RecipeDetailHero'
 import { IngredientsList } from './IngredientsList'
 import { InstructionsList } from './InstructionsList'
 import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
@@ -45,28 +44,24 @@ export function RecipeDetailClient({ recipe }: RecipeDetailClientProps) {
     router.push(`/signup?redirect=/przepisy/${recipe.id}`)
   }
 
+  const handleAddToMealPlan = () => {
+    // TODO: Implementacja dodawania do planu posiłków
+    console.log('Add to meal plan:', recipe.id)
+  }
+
   return (
-    <div className='mx-auto max-w-4xl space-y-8 px-4 py-8 md:px-6 lg:px-8'>
+    <div className='mx-auto max-w-5xl space-y-8 px-4 py-8 md:px-6 lg:px-8'>
       {/* Przycisk powrotu */}
       <Button variant='ghost' size='sm' onClick={handleBack} className='gap-2'>
         <ArrowLeft className='h-4 w-4' />
         Powrót do przepisów
       </Button>
 
-      {/* Header z zdjęciem i nazwą */}
-      <RecipeHeader
-        name={recipe.name}
-        imageUrl={recipe.image_url}
-        tags={recipe.tags}
-        mealTypes={recipe.meal_types}
-      />
-
-      {/* Podsumowanie makro */}
-      <MacroSummary
-        calories={recipe.total_calories}
-        protein_g={recipe.total_protein_g}
-        carbs_g={recipe.total_carbs_g}
-        fats_g={recipe.total_fats_g}
+      {/* Hero section z kolorowymi kartami makro */}
+      <RecipeDetailHero
+        recipe={recipe}
+        onAddToMealPlan={isAuthenticated ? handleAddToMealPlan : undefined}
+        isAuthenticated={isAuthenticated}
       />
 
       <Separator />

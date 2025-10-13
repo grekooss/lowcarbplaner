@@ -65,7 +65,38 @@ export type OnboardingResultDTO = Pick<
 // ============================================================================
 
 /**
- * DTO: Kompletny profil użytkownika
+ * Command Model: Tworzenie profilu użytkownika (POST /api/profile)
+ * Rozszerza OnboardingCommand o disclaimer_accepted_at
+ */
+export type CreateProfileCommand = OnboardingCommand & {
+  disclaimer_accepted_at: string
+}
+
+/**
+ * DTO: Odpowiedź dla POST /api/profile
+ * Zawiera pełny profil użytkownika z obliczonymi celami żywieniowymi
+ */
+export type CreateProfileResponseDTO = {
+  id: string
+  email: string
+  gender: Enums<'gender_enum'>
+  age: number
+  weight_kg: number
+  height_cm: number
+  activity_level: Enums<'activity_level_enum'>
+  goal: Enums<'goal_enum'>
+  weight_loss_rate_kg_week: number | null
+  disclaimer_accepted_at: string
+  target_calories: number
+  target_carbs_g: number
+  target_protein_g: number
+  target_fats_g: number
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * DTO: Kompletny profil użytkownika (GET /api/profile/me, PATCH /api/profile/me)
  * Bazuje na Tables<"profiles"> bez pól systemowych
  */
 export type ProfileDTO = Omit<
@@ -74,7 +105,7 @@ export type ProfileDTO = Omit<
 >
 
 /**
- * Command Model: Aktualizacja profilu użytkownika
+ * Command Model: Aktualizacja profilu użytkownika (PATCH /api/profile/me)
  * Bazuje na TablesUpdate<"profiles"> z wybranymi polami
  */
 export type UpdateProfileCommand = Pick<
@@ -87,6 +118,15 @@ export type UpdateProfileCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
 >
+
+/**
+ * DTO: Odpowiedź dla POST /api/profile/me/generate-plan
+ */
+export type GeneratePlanResponseDTO = {
+  status: 'success' | 'error'
+  message: string
+  generated_days: number
+}
 
 // ============================================================================
 // 3. MEAL PLAN API
@@ -219,8 +259,8 @@ export type MealStatusDTO = Pick<Tables<'planned_meals'>, 'id' | 'is_eaten'> & {
 // ============================================================================
 
 /**
- * DTO: Pojedynczy element listy zakupów
- * Agregacja z recipe_ingredients + ingredients
+ * DTO: Pojedynczy element listy zakupów (legacy - do usunięcia)
+ * @deprecated Użyj ShoppingListResponseDTO
  */
 export type ShoppingItemDTO = {
   ingredient_id: number
@@ -232,12 +272,26 @@ export type ShoppingItemDTO = {
 }
 
 /**
- * DTO: Kompletna lista zakupów
+ * DTO: Kompletna lista zakupów (legacy - do usunięcia)
+ * @deprecated Użyj ShoppingListResponseDTO
  */
 export type ShoppingListDTO = {
   items: ShoppingItemDTO[]
   categories: Enums<'ingredient_category_enum'>[] // Unikalne kategorie
 }
+
+/**
+ * DTO: Odpowiedź API dla listy zakupów (zgodna ze specyfikacją API)
+ * Format: tablica kategorii ze składnikami
+ */
+export type ShoppingListResponseDTO = {
+  category: Enums<'ingredient_category_enum'>
+  items: {
+    name: string
+    total_amount: number
+    unit: string
+  }[]
+}[]
 
 // ============================================================================
 // 7. MODIFY INGREDIENT AMOUNT API
@@ -301,6 +355,30 @@ export type ReplacementRecipeDTO = {
   total_carbs_g: number | null
   total_fats_g: number | null
   calorie_diff: number // Różnica kaloryczna względem oryginalnego przepisu
+}
+
+// ============================================================================
+// 10. FEEDBACK API
+// ============================================================================
+
+/**
+ * Command Model: Tworzenie nowego feedbacku (POST /api/feedback)
+ */
+export type CreateFeedbackCommand = {
+  content: string
+  metadata?: Record<string, unknown>
+}
+
+/**
+ * DTO: Odpowiedź dla POST /api/feedback
+ * Zawiera pełne dane zapisanego feedbacku
+ */
+export type FeedbackResponseDTO = {
+  id: number
+  user_id: string
+  content: string
+  metadata: Record<string, unknown> | null
+  created_at: string
 }
 
 // ============================================================================
