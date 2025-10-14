@@ -68,8 +68,8 @@ export function useRecipesQuery(options: UseRecipesQueryOptions) {
         offset: pageParam,
       })
 
-      if (result.error) {
-        throw new Error(result.error)
+      if (result.error || !result.data) {
+        throw new Error(result.error || 'Nie udało się załadować przepisów')
       }
 
       return result.data
@@ -86,16 +86,7 @@ export function useRecipesQuery(options: UseRecipesQueryOptions) {
         const nextOffset = url.searchParams.get('offset')
         return nextOffset ? Number(nextOffset) : undefined
       } catch {
-        // Jeśli parsing fails, oblicz offset ręcznie
-        const currentOffset = filters.offset || 0
-        const limit = filters.limit || 20
-        const nextOffset = currentOffset + limit
-
-        // Sprawdź czy jest więcej wyników
-        if (nextOffset < lastPage.count) {
-          return nextOffset
-        }
-
+        // Jeśli parsing fails, return undefined (nie ma next page)
         return undefined
       }
     },

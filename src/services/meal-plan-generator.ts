@@ -98,7 +98,7 @@ function selectRandomRecipe(recipes: Recipe[]): Recipe | null {
   }
 
   const randomIndex = Math.floor(Math.random() * recipes.length)
-  return recipes[randomIndex]
+  return recipes[randomIndex] || null
 }
 
 /**
@@ -254,7 +254,7 @@ function generateDates(
   for (let i = 0; i < numDays; i++) {
     const date = new Date(startDate)
     date.setDate(date.getDate() + i)
-    dates.push(date.toISOString().split('T')[0]) // YYYY-MM-DD
+    dates.push(date.toISOString().split('T')[0]!) // YYYY-MM-DD
   }
 
   return dates

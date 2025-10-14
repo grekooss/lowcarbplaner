@@ -25,55 +25,35 @@ import { z } from 'zod'
  */
 export const createProfileSchema = z
   .object({
-    gender: z.enum(['male', 'female'] as const, {
-      required_error: 'Płeć jest wymagana',
-      invalid_type_error: 'Płeć musi być "male" lub "female"',
-    }),
+    gender: z.enum(['male', 'female'] as const),
     age: z
-      .number({
-        required_error: 'Wiek jest wymagany',
-        invalid_type_error: 'Wiek musi być liczbą',
-      })
+      .number()
       .int('Wiek musi być liczbą całkowitą')
       .min(18, 'Wiek musi wynosić co najmniej 18 lat')
       .max(100, 'Wiek nie może przekraczać 100 lat'),
     weight_kg: z
-      .number({
-        required_error: 'Waga jest wymagana',
-        invalid_type_error: 'Waga musi być liczbą',
-      })
+      .number()
       .min(40, 'Waga musi wynosić co najmniej 40 kg')
       .max(300, 'Waga nie może przekraczać 300 kg'),
     height_cm: z
-      .number({
-        required_error: 'Wzrost jest wymagany',
-        invalid_type_error: 'Wzrost musi być liczbą',
-      })
+      .number()
       .min(140, 'Wzrost musi wynosić co najmniej 140 cm')
       .max(250, 'Wzrost nie może przekraczać 250 cm'),
-    activity_level: z.enum(
-      ['very_low', 'low', 'moderate', 'high', 'very_high'] as const,
-      {
-        required_error: 'Poziom aktywności jest wymagany',
-        invalid_type_error:
-          'Poziom aktywności musi być jedną z wartości: very_low, low, moderate, high, very_high',
-      }
-    ),
-    goal: z.enum(['weight_loss', 'weight_maintenance'] as const, {
-      required_error: 'Cel dietetyczny jest wymagany',
-      invalid_type_error: 'Cel musi być "weight_loss" lub "weight_maintenance"',
-    }),
+    activity_level: z.enum([
+      'very_low',
+      'low',
+      'moderate',
+      'high',
+      'very_high',
+    ] as const),
+    goal: z.enum(['weight_loss', 'weight_maintenance'] as const),
     weight_loss_rate_kg_week: z
-      .number({
-        invalid_type_error: 'Tempo utraty wagi musi być liczbą',
-      })
+      .number()
       .min(0.25, 'Tempo utraty wagi musi wynosić co najmniej 0.25 kg/tydzień')
       .max(1.0, 'Tempo utraty wagi nie może przekraczać 1.0 kg/tydzień')
       .optional(),
     disclaimer_accepted_at: z
-      .string({
-        required_error: 'Data akceptacji disclaimera jest wymagana',
-      })
+      .string()
       .datetime('Nieprawidłowy format daty (wymagany ISO 8601)'),
   })
   .refine(

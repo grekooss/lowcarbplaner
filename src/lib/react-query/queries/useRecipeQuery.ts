@@ -62,8 +62,8 @@ export function useRecipeQuery(options: UseRecipeQueryOptions) {
     queryFn: async () => {
       const result = await getRecipeById(recipeId)
 
-      if (result.error) {
-        throw new Error(result.error)
+      if (result.error || !result.data) {
+        throw new Error(result.error || 'Przepis nie został znaleziony')
       }
 
       return result.data

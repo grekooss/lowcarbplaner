@@ -22,7 +22,7 @@ export const createFeedbackSchema = z.object({
     .max(5000, 'Treść może mieć maksymalnie 5000 znaków')
     .trim(),
   metadata: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .nullable()
     .refine(

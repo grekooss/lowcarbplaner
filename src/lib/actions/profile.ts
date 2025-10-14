@@ -194,7 +194,8 @@ export async function createProfile(
       activity_level: createdProfile.activity_level,
       goal: createdProfile.goal,
       weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
-      disclaimer_accepted_at: createdProfile.disclaimer_accepted_at,
+      disclaimer_accepted_at:
+        createdProfile.disclaimer_accepted_at || new Date().toISOString(),
       target_calories: createdProfile.target_calories,
       target_carbs_g: createdProfile.target_carbs_g,
       target_protein_g: createdProfile.target_protein_g,
@@ -280,7 +281,8 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       activity_level: profile.activity_level,
       goal: profile.goal,
       weight_loss_rate_kg_week: profile.weight_loss_rate_kg_week,
-      disclaimer_accepted_at: profile.disclaimer_accepted_at,
+      disclaimer_accepted_at:
+        profile.disclaimer_accepted_at || new Date().toISOString(),
       target_calories: profile.target_calories,
       target_carbs_g: profile.target_carbs_g,
       target_protein_g: profile.target_protein_g,
@@ -444,7 +446,8 @@ export async function updateMyProfile(
       activity_level: updatedProfile.activity_level,
       goal: updatedProfile.goal,
       weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
-      disclaimer_accepted_at: updatedProfile.disclaimer_accepted_at,
+      disclaimer_accepted_at:
+        updatedProfile.disclaimer_accepted_at || new Date().toISOString(),
       target_calories: updatedProfile.target_calories,
       target_carbs_g: updatedProfile.target_carbs_g,
       target_protein_g: updatedProfile.target_protein_g,
@@ -531,10 +534,10 @@ export async function generateMealPlan(): Promise<
     )
 
     const today = new Date()
-    const startDate = today.toISOString().split('T')[0]
+    const startDate = today.toISOString().split('T')[0]!
     const endDate = new Date(today.getTime() + 6 * 24 * 60 * 60 * 1000)
       .toISOString()
-      .split('T')[0]
+      .split('T')[0]!
 
     const existingMealsCount = await checkExistingPlan(
       user.id,

@@ -48,7 +48,7 @@ export const recipeQueryParamsSchema = z.object({
       const validTypes = ['breakfast', 'lunch', 'dinner'] as const
 
       const invalidTypes = types.filter(
-        (type) => !validTypes.includes(type as any)
+        (type) => !validTypes.includes(type as 'breakfast' | 'lunch' | 'dinner')
       )
 
       if (invalidTypes.length > 0) {

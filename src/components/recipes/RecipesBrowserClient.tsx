@@ -227,7 +227,7 @@ export function RecipesBrowserClient({
                       recipe={recipe}
                       onClick={handleRecipeClick}
                       onAddToMealPlan={handleAddToMealPlan}
-                      isAuthenticated={isAuthenticated}
+                      isAuthenticated={isAuthenticated ?? undefined}
                     />
                   ))}
                 </div>

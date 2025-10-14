@@ -82,7 +82,10 @@ export async function createFeedback(
       }
     }
 
-    const command: CreateFeedbackCommand = validated.data
+    const command: CreateFeedbackCommand = {
+      content: validated.data.content,
+      metadata: validated.data.metadata ?? undefined,
+    }
 
     // 3. Przygotowanie danych do zapisu
     const feedbackData: TablesInsert<'feedback'> = {

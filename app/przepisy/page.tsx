@@ -45,20 +45,22 @@ export default async function RecipesBrowserPage({
   // Await searchParams w Next.js 15+
   const searchParams = await searchParamsPromise
 
-  // Walidacja searchParams przez Zod schema
-  const validationResult = recipeQueryParamsSchema.safeParse({
+  // Przygotuj raw params dla getRecipes (input format)
+  const rawParams = {
     limit: searchParams?.limit || '20',
     offset: searchParams?.offset || '0',
     meal_types: searchParams?.meal_types,
-  })
+  }
 
-  // Jeśli walidacja failed - użyj domyślnych wartości
+  // Pobierz initial batch przepisów (SSR)
+  // getRecipes sam waliduje i transformuje parametry
+  const result = await getRecipes(rawParams)
+
+  // Waliduj dla initial filters (potrzebujemy przetransformowanych danych)
+  const validationResult = recipeQueryParamsSchema.safeParse(rawParams)
   const params = validationResult.success
     ? validationResult.data
     : { limit: 20, offset: 0 }
-
-  // Pobierz initial batch przepisów (SSR)
-  const result = await getRecipes(params)
 
   // Obsługa błędu - pokaż error message
   if (result.error) {
@@ -78,10 +80,29 @@ export default async function RecipesBrowserPage({
 
   const initialData = result.data
 
+  // Jeśli brak danych (edge case) - pokaż fallback
+  if (!initialData) {
+    return (
+      <div className='mx-auto max-w-4xl px-4 py-16 text-center'>
+        <h1 className='mb-4 text-2xl font-bold'>Brak danych</h1>
+        <p className='text-text-muted mb-8'>
+          Nie udało się załadować przepisów
+        </p>
+        <Link
+          href='/przepisy'
+          className='text-primary underline hover:no-underline'
+        >
+          Spróbuj ponownie
+        </Link>
+      </div>
+    )
+  }
+
   // Parse meal_types z searchParams dla initial filters
-  const initialFilters = params.meal_types
-    ? { meal_types: params.meal_types }
-    : undefined
+  const initialFilters =
+    'meal_types' in params && params.meal_types
+      ? { meal_types: params.meal_types }
+      : undefined
 
   return (
     <RecipesBrowserClient

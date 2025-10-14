@@ -61,7 +61,7 @@ export function RecipeDetailClient({ recipe }: RecipeDetailClientProps) {
       <RecipeDetailHero
         recipe={recipe}
         onAddToMealPlan={isAuthenticated ? handleAddToMealPlan : undefined}
-        isAuthenticated={isAuthenticated}
+        isAuthenticated={isAuthenticated ?? undefined}
       />
 
       <Separator />
