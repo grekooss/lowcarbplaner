@@ -133,13 +133,13 @@ export function RecipesBrowserClient({
 
   return (
     <>
-      <div className='mx-auto max-w-7xl space-y-12 px-4 py-8 md:px-6 lg:px-8'>
+      <div className='mx-auto max-w-7xl space-y-8 px-6 py-8 md:px-8 lg:px-8'>
         {/* Header Section */}
-        <div className='space-y-4 text-center'>
-          <h1 className='text-4xl font-bold tracking-tight md:text-5xl'>
+        <div className='space-y-6 text-center'>
+          <h1 className='text-text-main text-4xl leading-tight font-bold tracking-tight md:text-5xl'>
             Przeglądaj przepisy
           </h1>
-          <p className='text-muted-foreground mx-auto max-w-2xl text-lg'>
+          <p className='text-text-secondary mx-auto max-w-2xl text-base leading-relaxed md:text-lg'>
             Odkryj pyszne przepisy niskowęglowodanowe. Zarejestruj się, aby
             automatycznie planować swoje posiłki i śledzić makroskładniki.
           </p>
@@ -151,7 +151,9 @@ export function RecipesBrowserClient({
         {/* Featured Recipe */}
         {featuredRecipe && (
           <section className='space-y-4'>
-            <h2 className='text-2xl font-semibold'>Polecany przepis</h2>
+            <h2 className='text-text-main text-2xl leading-tight font-semibold'>
+              Polecany przepis
+            </h2>
             <FeaturedRecipeCard
               recipe={featuredRecipe}
               onClick={handleRecipeClick}
@@ -162,7 +164,9 @@ export function RecipesBrowserClient({
         {/* Filters, Sort i View Toggle */}
         <section className='space-y-4'>
           <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <h2 className='text-2xl font-semibold'>Wszystkie przepisy</h2>
+            <h2 className='text-text-main text-2xl leading-tight font-semibold'>
+              Wszystkie przepisy
+            </h2>
             <div className='flex flex-wrap items-center gap-3'>
               <SortSelect value={sortBy} onChange={setSortBy} />
               <ViewToggle mode={viewMode} onChange={setViewMode} />
@@ -179,12 +183,12 @@ export function RecipesBrowserClient({
           {isLoading && allRecipes.length === 0 ? (
             // Initial loading
             <div className='py-12 text-center'>
-              <p className='text-muted-foreground'>Ładowanie przepisów...</p>
+              <p className='text-text-muted'>Ładowanie przepisów...</p>
             </div>
           ) : isError ? (
             // Error state
             <div className='py-12 text-center'>
-              <p className='mb-4 text-red-500'>
+              <p className='text-error mb-4'>
                 Wystąpił błąd:{' '}
                 {error?.message || 'Nie udało się załadować przepisów'}
               </p>
@@ -198,7 +202,7 @@ export function RecipesBrowserClient({
           ) : allRecipes.length === 0 ? (
             // Empty state
             <div className='py-12 text-center'>
-              <p className='text-muted-foreground mb-4 text-lg'>
+              <p className='text-text-muted mb-4 text-lg'>
                 Brak przepisów spełniających kryteria
               </p>
               {filters.meal_types.length > 0 && (

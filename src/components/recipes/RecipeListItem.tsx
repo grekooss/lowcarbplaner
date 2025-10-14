@@ -49,14 +49,11 @@ export function RecipeListItem({
   }
 
   return (
-    <Card
-      className='group cursor-pointer transition-all hover:shadow-lg'
-      onClick={handleClick}
-    >
+    <Card hoverable className='group cursor-pointer' onClick={handleClick}>
       <CardContent className='p-0'>
         <div className='flex flex-col gap-4 p-4 sm:flex-row'>
           {/* Miniaturka */}
-          <div className='bg-muted relative h-32 w-full flex-shrink-0 overflow-hidden rounded-lg sm:h-28 sm:w-48'>
+          <div className='bg-bg-secondary relative h-32 w-full flex-shrink-0 overflow-hidden rounded-[12px] sm:h-28 sm:w-48'>
             {recipe.image_url ? (
               <Image
                 src={recipe.image_url}
@@ -66,7 +63,7 @@ export function RecipeListItem({
                 sizes='(max-width: 640px) 100vw, 192px'
               />
             ) : (
-              <div className='text-muted-foreground flex h-full items-center justify-center text-sm'>
+              <div className='text-text-muted flex h-full items-center justify-center text-sm'>
                 Brak zdjęcia
               </div>
             )}
@@ -77,16 +74,16 @@ export function RecipeListItem({
             {/* Górna sekcja */}
             <div className='space-y-2'>
               {/* Meal type badge */}
-              <div className='flex flex-wrap gap-1'>
+              <div className='flex flex-wrap gap-2'>
                 {recipe.meal_types.map((type) => (
-                  <Badge key={type} variant='secondary' className='text-xs'>
+                  <Badge key={type} variant={type}>
                     {MEAL_TYPE_LABELS[type]}
                   </Badge>
                 ))}
               </div>
 
               {/* Nazwa */}
-              <h3 className='line-clamp-1 text-lg leading-tight font-semibold'>
+              <h3 className='text-text-main line-clamp-1 text-lg leading-tight font-semibold'>
                 {recipe.name}
               </h3>
             </div>
@@ -94,28 +91,28 @@ export function RecipeListItem({
             {/* Dolna sekcja - makro i przycisk */}
             <div className='flex flex-wrap items-center justify-between gap-3'>
               {/* Makroskładniki */}
-              <div className='flex flex-wrap gap-x-4 gap-y-1 text-sm'>
+              <div className='text-text-secondary flex flex-wrap gap-x-4 gap-y-1 text-sm'>
                 <div className='flex items-center gap-1'>
-                  <span className='text-muted-foreground'>Kalorie:</span>
-                  <span className='font-semibold'>
+                  <span>Kalorie:</span>
+                  <span className='text-text-main font-semibold'>
                     {formatMacro(recipe.total_calories, ' kcal')}
                   </span>
                 </div>
                 <div className='flex items-center gap-1'>
-                  <span className='text-muted-foreground'>B:</span>
-                  <span className='font-medium'>
+                  <span>B:</span>
+                  <span className='text-text-main font-medium'>
                     {formatMacro(recipe.total_protein_g, 'g')}
                   </span>
                 </div>
                 <div className='flex items-center gap-1'>
-                  <span className='text-muted-foreground'>W:</span>
-                  <span className='font-medium'>
+                  <span>W:</span>
+                  <span className='text-text-main font-medium'>
                     {formatMacro(recipe.total_carbs_g, 'g')}
                   </span>
                 </div>
                 <div className='flex items-center gap-1'>
-                  <span className='text-muted-foreground'>T:</span>
-                  <span className='font-medium'>
+                  <span>T:</span>
+                  <span className='text-text-main font-medium'>
                     {formatMacro(recipe.total_fats_g, 'g')}
                   </span>
                 </div>
@@ -123,11 +120,7 @@ export function RecipeListItem({
 
               {/* Przycisk Add to Meal Plan - tylko dla zalogowanych */}
               {isAuthenticated && onAddToMealPlan && (
-                <Button
-                  size='sm'
-                  className='bg-green-500 hover:bg-green-600'
-                  onClick={handleAddClick}
-                >
+                <Button size='sm' onClick={handleAddClick}>
                   Add to Meal Plan
                 </Button>
               )}

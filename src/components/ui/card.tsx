@@ -1,20 +1,56 @@
 import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      'bg-card text-card-foreground rounded-xl border shadow',
-      className
-    )}
-    {...props}
-  />
-))
+const cardVariants = cva(
+  'bg-background text-foreground rounded-[12px] transition-all',
+  {
+    variants: {
+      variant: {
+        // Standard Recipe Card
+        default:
+          'border-border-light border shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_4px_rgba(0,0,0,0.04)]',
+        // Hero Card (Featured Recipe)
+        hero: 'border-none shadow-[0_4px_12px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.04)]',
+        // Elevated Card (Modals, Dropdowns)
+        elevated:
+          'border-none shadow-[0_8px_24px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.08)]',
+        // Flat Panel (bez cienia)
+        flat: 'border-border-light border shadow-none',
+        // Meal Card Categories
+        breakfast: 'bg-breakfast-bg border-none shadow-none',
+        lunch: 'bg-lunch-bg border-none shadow-none',
+        snack: 'bg-snack-bg border-none shadow-none',
+        dinner: 'bg-dinner-bg border-none shadow-none',
+        // Info Panel (szare tło)
+        panel: 'bg-bg-secondary border-border-light border shadow-none',
+      },
+      hoverable: {
+        true: 'cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1),0_2px_8px_rgba(0,0,0,0.06)]',
+        false: '',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      hoverable: false,
+    },
+  }
+)
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, hoverable, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardVariants({ variant, hoverable, className }))}
+      {...props}
+    />
+  )
+)
 Card.displayName = 'Card'
 
 const CardHeader = React.forwardRef<
@@ -23,31 +59,34 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex flex-col space-y-1.5 p-6', className)}
+    className={cn('flex flex-col space-y-1.5 p-4', className)}
     {...props}
   />
 ))
 CardHeader.displayName = 'CardHeader'
 
 const CardTitle = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  HTMLHeadingElement,
+  React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <h3
     ref={ref}
-    className={cn('leading-none font-semibold tracking-tight', className)}
+    className={cn(
+      'text-text-main text-base leading-tight font-semibold tracking-tight',
+      className
+    )}
     {...props}
   />
 ))
 CardTitle.displayName = 'CardTitle'
 
 const CardDescription = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <div
+  <p
     ref={ref}
-    className={cn('text-muted-foreground text-sm', className)}
+    className={cn('text-text-secondary text-sm leading-relaxed', className)}
     {...props}
   />
 ))
@@ -57,7 +96,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+  <div ref={ref} className={cn('p-4 pt-0', className)} {...props} />
 ))
 CardContent.displayName = 'CardContent'
 
@@ -67,10 +106,18 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex items-center p-6 pt-0', className)}
+    className={cn('flex items-center p-4 pt-0', className)}
     {...props}
   />
 ))
 CardFooter.displayName = 'CardFooter'
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  cardVariants,
+}
