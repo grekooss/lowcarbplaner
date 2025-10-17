@@ -172,6 +172,10 @@ Planowanie zostało zakończone. Wszystkie kroki zostały wykonane, a ja mam jas
 </ui_architecture_planning>
 
 ```markdown
+Jasne, oto zaktualizowany plan architektury UI, który zawiera szczegółowy opis menu nawigacyjnego na podstawie dostarczonych obrazów, zgodnie z Twoją prośbą. Zastąpiłem oryginalną sekcję 4 nową, bardziej rozbudowaną wersją.
+
+---
+
 # Architektura UI dla LowCarbPlaner (MVP)
 
 ## 1. Przegląd struktury UI
@@ -191,10 +195,10 @@ Nawigacja opiera się na stałym, pionowym pasku bocznym na urządzeniach deskto
   - Siatka lub lista dostępnych przepisów.
   - Filtry (np. po typie posiłku: śniadanie, obiad, kolacja).
   - Wyraźne wezwanie do akcji (CTA) do rejestracji/logowania.
-- **Kluczowe komponenty widoku:** `RecipeCard`, `Filters`, `Pagination` (typu "Załaduj więcej").
+- **Kluczowe komponenty widoku:** `RecipeCard`, `Filters`, `Pagination`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Kliknięcie na przepis przez niezalogowanego użytkownika otwiera modal z prośbą o rejestrację, zapamiętując docelowy przepis do wyświetlenia po zalogowaniu.
-  - **Dostępność:** Karty przepisów są w pełni nawigowalne klawiaturą i zawierają semantyczny HTML.
+  - **UX:** Kliknięcie na przepis przez niezalogowanego użytkownika otwiera modal z prośbą o rejestrację.
+  - **Dostępność:** Karty przepisów są w pełni nawigowalne klawiaturą.
   - **Bezpieczeństwo:** Widok publiczny, brak dostępu do danych wrażliwych.
 
 ### Widok: Uwierzytelnianie
@@ -202,126 +206,133 @@ Nawigacja opiera się na stałym, pionowym pasku bocznym na urządzeniach deskto
 - **Ścieżka widoku:** `/auth`
 - **Główny cel:** Umożliwienie nowym użytkownikom rejestracji, a istniejącym zalogowania się do aplikacji.
 - **Kluczowe informacje do wyświetlenia:**
-  - Zakładki do przełączania między formularzem logowania i rejestracji.
-  - Pola formularza: e-mail, hasło, powtórz hasło (dla rejestracji).
+  - Formularz logowania i rejestracji.
   - Przycisk logowania/rejestracji przez Google.
   - Link do procesu odzyskiwania hasła.
 - **Kluczowe komponenty widoku:** `Tabs`, `AuthForm`, `SocialAuthButton`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Walidacja formularza w czasie rzeczywistym. System zapamiętuje URL, do którego użytkownik próbował dotrzeć przed przekierowaniem na logowanie.
-  - **Dostępność:** Wszystkie pola formularza mają powiązane etykiety. Komunikaty o błędach są powiązane z polami za pomocą atrybutów `aria-describedby`.
-  - **Bezpieczeństwo:** Wdrożona walidacja siły hasła po stronie klienta. Komunikacja z API odbywa się przez HTTPS.
+  - **UX:** Walidacja formularza w czasie rzeczywistym.
+  - **Dostępność:** Poprawne etykiety formularzy, komunikaty o błędach dostępne dla czytników ekranu.
+  - **Bezpieczeństwo:** Walidacja siły hasła, komunikacja przez HTTPS.
 
 ### Widok: Kreator Onboardingu
 
 - **Ścieżka widoku:** `/onboarding`
-- **Główny cel:** Zebranie od nowego użytkownika wszystkich niezbędnych informacji do wygenerowania spersonalizowanego planu żywieniowego.
+- **Główny cel:** Zebranie od nowego użytkownika wszystkich niezbędnych informacji do wygenerowania spersonalizowanego planu.
 - **Kluczowe informacje do wyświetlenia:**
-  - Wieloetapowy formularz zbierający dane: płeć, wiek, waga, wzrost, poziom aktywności, cel.
-  - Ekran podsumowujący obliczone zapotrzebowanie kaloryczne i makroskładniki.
-  - Ekran z obowiązkowym disclaimerem do akceptacji.
-- **Kluczowe komponenty widoku:** `Stepper` (wizualizacja kroków), `Slider`, `RadioGroup`, `Checkbox`.
+  - Wieloetapowy formularz (płeć, wiek, waga, cel, etc.).
+  - Podsumowanie obliczonych celów.
+  - Obowiązkowy disclaimer do akceptacji.
+- **Kluczowe komponenty widoku:** `Stepper`, `Slider`, `RadioGroup`, `Checkbox`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Podział procesu na mniejsze kroki zapobiega przytłoczeniu użytkownika. Stan formularza jest zarządzany przez Zustand, co umożliwia potencjalne wznowienie procesu w przyszłości.
-  - **Dostępność:** Jasne instrukcje na każdym kroku. Pełna obsługa z klawiatury dla wszystkich kontrolek.
-  - **Bezpieczeństwo:** Dane są walidowane na każdym kroku, zarówno po stronie klienta, jak i serwera po finalnym przesłaniu.
+  - **UX:** Podział procesu na mniejsze kroki zapobiega przytłoczeniu użytkownika.
+  - **Dostępność:** Pełna obsługa z klawiatury dla wszystkich kontrolek.
+  - **Bezpieczeństwo:** Walidacja danych po stronie klienta i serwera.
 
 ### Widok: Panel Dzienny (Dashboard)
 
-- **Ścieżka widoku:** `/`
+- **Ścieżka widoku:** `/` lub `/dashboard`
 - **Główny cel:** Centralny punkt aplikacji, pokazujący plan na bieżący dzień i umożliwiający śledzenie postępów.
 - **Kluczowe informacje do wyświetlenia:**
-  - Nawigacja kalendarzowa na 7 dni.
   - Cztery paski postępu: Kalorie, Białko, Węglowodany, Tłuszcze.
-  - Trzy karty posiłków: Śniadanie, Obiad, Kolacja, z nazwą dania, kalorycznością i przyciskiem do interakcji.
-- **Kluczowe komponenty widoku:** `CalendarStrip`, `MacroProgressBar`, `MealCard`.
+  - Karty zaplanowanych posiłków.
+- **Kluczowe komponenty widoku:** `MacroProgressBar`, `MealCard`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Oznaczenie posiłku jako "Zjedzony" powoduje natychmiastową, optymistyczną aktualizację pasków postępu. Długie operacje (np. generowanie planu) są sygnalizowane przez szkielety interfejsu (skeleton UI).
-  - **Dostępność:** Paski postępu wykorzystują semantyczny element `<progress>` z odpowiednimi etykietami ARIA. Wszystkie interaktywne elementy są dostępne z klawiatury.
-  - **Bezpieczeństwo:** Widok wyświetla tylko dane zalogowanego użytkownika, co jest gwarantowane przez mechanizm RLS w Supabase.
+  - **UX:** Optymistyczna aktualizacja UI po interakcji użytkownika. Użycie szkieletów interfejsu (skeleton UI) podczas ładowania danych.
+  - **Dostępność:** Paski postępu wykorzystują semantyczny element `<progress>` z etykietami ARIA.
+  - **Bezpieczeństwo:** Widok wyświetla tylko dane zalogowanego użytkownika.
 
-### Widok: Widok Tygodnia
+### Widok: Plan Posiłków (Meal Plan / Calendar)
 
-- **Ścieżka widoku:** `/tydzien`
-- **Główny cel:** Zapewnienie użytkownikowi wglądu w cały 7-dniowy plan posiłków, co ułatwia planowanie.
+- **Ścieżka widoku:** `/meal-plan`
+- **Główny cel:** Zapewnienie użytkownikowi wglądu w cały 7-dniowy plan posiłków.
 - **Kluczowe informacje do wyświetlenia:**
   - Widok tabelaryczny (desktop) lub lista (mobile) z podziałem na dni tygodnia i typy posiłków.
   - Nazwa i zdjęcie każdego zaplanowanego posiłku.
-- **Kluczowe komponenty widoku:** `WeekTable`, `DayList` (wersja mobilna), `MealCard`.
+- **Kluczowe komponenty widoku:** `WeekTable`, `DayList`, `MealCard`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Umożliwia szybki podgląd przepisu (w modalu) oraz inicjację wymiany posiłku bezpośrednio z tego widoku.
-  - **Dostępność:** Tabela na desktopie ma odpowiednie nagłówki (`<th>`, `scope`). Widok mobilny to semantyczna lista.
+  - **UX:** Umożliwia szybki podgląd przepisu (w modalu) oraz inicjację wymiany posiłku.
+  - **Dostępność:** Tabela na desktopie ma odpowiednie nagłówki.
   - **Bezpieczeństwo:** Dostęp do widoku jest chroniony i wymaga uwierzytelnienia.
 
 ### Widok: Lista Zakupów
 
-- **Ścieżka widoku:** `/lista-zakupow`
-- **Główny cel:** Uproszczenie procesu zakupów poprzez dostarczenie jednej, zagregowanej listy wszystkich potrzebnych składników.
+- **Ścieżka widoku:** `/shopping-list`
+- **Główny cel:** Uproszczenie procesu zakupów poprzez dostarczenie jednej, zagregowanej listy składników.
 - **Kluczowe informacje do wyświetlenia:**
-  - Lista składników pogrupowana według kategorii (np. Nabiał, Mięso, Warzywa).
+  - Lista składników pogrupowana według kategorii.
   - Zsumowana ilość/waga każdego składnika.
-  - Informacja, że lista bazuje na oryginalnym planie i nie uwzględnia modyfikacji.
-- **Kluczowe komponenty widoku:** `Accordion` (dla kategorii), `ShoppingListItem` (z checkboxem).
+- **Kluczowe komponenty widoku:** `Accordion`, `ShoppingListItem`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Odznaczenie produktu powoduje jego wizualne przekreślenie i przeniesienie na dół listy w danej kategorii. Stan odznaczeń jest przechowywany w sesji (Zustand).
-  - **Dostępność:** Struktura oparta na listach semantycznych. Każdy checkbox jest powiązany z etykietą produktu.
-  - **Bezpieczeństwo:** Dostęp do widoku jest chroniony i wymaga uwierzytelnienia.
+  - **UX:** Odznaczenie produktu powoduje jego wizualne przekreślenie.
+  - **Dostępność:** Struktura oparta na listach semantycznych.
+  - **Bezpieczeństwo:** Dostęp do widoku jest chroniony.
 
 ### Widok: Profil i Ustawienia
 
-- **Ścieżka widoku:** `/profil`
+- **Ścieżka widoku:** `/profil` (dostępny z menu użytkownika w prawym górnym rogu)
 - **Główny cel:** Umożliwienie użytkownikowi zarządzania swoimi danymi, celami i kontem.
 - **Kluczowe informacje do wyświetlenia:**
-  - Formularz edycji danych profilowych (waga, poziom aktywności).
-  - Sekcja zarządzania kontem z opcjami "Zacznij od nowa" (reset planu).
-  - Link do formularza opinii/zgłaszania problemów.
-- **Kluczowe komponenty widoku:** `ProfileForm`, `AlertDialog` (do potwierdzania akcji destrukcyjnych).
+  - Formularz edycji danych profilowych.
+  - Opcja resetu planu.
+  - Link do formularza opinii.
+- **Kluczowe komponenty widoku:** `ProfileForm`, `AlertDialog`.
 - **UX, dostępność i względy bezpieczeństwa:**
-  - **UX:** Zapisanie zmian w profilu skutkuje wyświetleniem komunikatu (Toast) informującego o przeliczeniu planu. Akcje destrukcyjne wymagają dwuetapowego potwierdzenia.
-  - **Dostępność:** Formularze są w pełni dostępne i poprawnie oetykietowane.
+  - **UX:** Zapisanie zmian w profilu skutkuje wyświetleniem komunikatu (Toast) o przeliczeniu planu.
+  - **Dostępność:** Formularze są w pełni dostępne.
   - **Bezpieczeństwo:** Zmiany danych są walidowane po stronie serwera.
 
 ## 3. Mapa podróży użytkownika
 
 **Scenariusz 1: Nowy Użytkownik**
 
-1.  **Odkrycie:** Użytkownik ląduje na `/przepisy`. Przegląda dania.
+1.  **Odkrycie:** Użytkownik ląduje na `/healthy-menu`. Przegląda dania.
 2.  **Rejestracja:** Klika "Zarejestruj się", przechodzi do `/auth`, tworzy konto.
-3.  **Konfiguracja:** Zostaje przekierowany na `/onboarding`, gdzie krok po kroku podaje swoje dane, akceptuje cele i disclaimer.
-4.  **Generowanie Planu:** Aplikacja wyświetla stan ładowania podczas generowania pierwszego planu.
-5.  **Pierwsze Użycie:** Ląduje na `/`, czyli Panelu Dziennym. Widzi swój plan na dziś.
-6.  **Codzienna Interakcja:** Oznacza posiłki jako zjedzone, obserwuje paski postępu. Klika na posiłek, aby zobaczyć przepis w modalu.
-7.  **Planowanie Zakupów:** Przechodzi do `/lista-zakupow`, aby przygotować się do zakupów.
+3.  **Konfiguracja:** Zostaje przekierowany na `/onboarding`, gdzie podaje swoje dane.
+4.  **Generowanie Planu:** Aplikacja wyświetla stan ładowania podczas generowania planu.
+5.  **Pierwsze Użycie:** Ląduje na `/dashboard`, czyli Panelu Dziennym.
+6.  **Codzienna Interakcja:** Oznacza posiłki jako zjedzone, obserwuje postępy.
+7.  **Planowanie Zakupów:** Przechodzi do widoku planu (`/meal-plan`) skąd może wygenerować listę zakupów.
 
 **Scenariusz 2: Powracający Użytkownik**
 
-1.  **Logowanie:** Użytkownik wchodzi na stronę i zostaje automatycznie zalogowany (dzięki tokenowi) lub loguje się manualnie przez `/auth`.
-2.  **Panel Główny:** Zostaje przekierowany na `/`. Widzi dzisiejszy plan i swój aktualny postęp.
-3.  **Modyfikacja Planu:** Użytkownik nie ma ochoty na proponowany obiad. Klika "Zmień danie", otwiera się modal z propozycjami, wybiera nową.
-4.  **Aktualizacja Celów:** Po tygodniu wchodzi w `/profil`, aktualizuje swoją wagę. Aplikacja przelicza jego cele i informuje o aktualizacji przyszłych dni planu.
+1.  **Logowanie:** Użytkownik wchodzi na stronę i jest logowany automatycznie.
+2.  **Panel Główny:** Zostaje przekierowany na `/dashboard`.
+3.  **Modyfikacja Planu:** Użytkownik nie ma ochoty na proponowany obiad. Klika "Zmień danie".
+4.  **Aktualizacja Celów:** Wchodzi w swój profil (prawy górny róg), aktualizuje wagę.
 
-## 4. Układ i struktura nawigacji
+## 4. Układ i Struktura Nawigacji
 
-- **Układ Główny:** Aplikacja ma stały układ z pionowym paskiem nawigacyjnym po lewej stronie na ekranach desktopowych. Na urządzeniach mobilnych pasek ten jest zwinięty do ikony "hamburgera" w nagłówku. Główna treść widoku jest wyświetlana w centralnej części ekranu.
-- **Elementy Nawigacji:**
-  - **Panel Dzienny (`/`)**
-  - **Widok Tygodnia (`/tydzien`)**
-  - **Lista Zakupów (`/lista-zakupow`)**
-  - **Wszystkie przepisy (`/przepisy`)**
-  - **Profil (`/profil`)**
-- **Logika Nawigacji:**
-  - **Użytkownik zalogowany:** Widzi i ma dostęp do wszystkich elementów nawigacji.
-  - **Użytkownik niezalogowany:** Widzi wszystkie elementy, ale kliknięcie na pozycje wymagające autentykacji (wszystkie oprócz "Wszystkie przepisy") przekierowuje go do widoku logowania (`/auth`).
+Układ aplikacji jest oparty na stałym panelu nawigacyjnym po lewej stronie dla widoków desktopowych i tabletowych, który zwija się do menu typu "hamburger" na urządzeniach mobilnych. Struktura ta jest bezpośrednio wzorowana na dostarczonym projekcie UI.
+
+### a. Nawigacja na urządzeniach Desktop / Tablet
+
+- **Lokalizacja:** Stały, pionowy pasek po lewej stronie ekranu.
+- **Komponenty:**
+  - **Logo:** W górnej części paska znajduje się logo aplikacji ("LowCarbPlaner").
+  - **Lista linków:** Poniżej logo znajduje się pionowa lista ikon z etykietami tekstowymi. Aktywny link jest wyraźnie wyróżniony innym kolorem tła i ikony.
+- **Elementy Menu:**
+  - **Panel Dzienny**: Link do `/dashboard`
+  - **Widok Tygodnia**: Link do `/meal-plan`
+  - **Przepisy**: Link do `/przepisy`
+  - **Lista zakupów**: Link do `/shopping-list`
+- **Nawigacja dodatkowa:**
+  - **Profil Użytkownika:** Dostęp do profilu, ustawień i wylogowania znajduje się w prawym górnym rogu ekranu, gdzie wyświetlane jest imię i awatar użytkownika.
+
+### b. Nawigacja na urządzeniach Mobilnych
+
+- **Lokalizacja:** Menu jest domyślnie ukryte. Dostęp do niego uzyskuje się poprzez kliknięcie ikony "hamburgera" (trzy poziome linie) umieszczonej w nagłówku aplikacji.
+- **Działanie:** Po kliknięciu ikony, z lewej strony ekranu wysuwa się panel (lub pojawia się jako nakładka), który zawiera tę samą listę linków co wersja desktopowa (logo, ikony z etykietami). Kliknięcie poza obszarem menu lub na ikonę zamknięcia powoduje jego schowanie.
+- **Spójność:** Zawartość menu mobilnego jest identyczna z menu na większych ekranach, zapewniając spójne doświadczenie na wszystkich urządzeniach.
 
 ## 5. Kluczowe komponenty
 
-Poniżej znajduje się lista kluczowych, reużywalnych komponentów, które będą stanowić podstawę interfejsu użytkownika:
+Poniżej znajduje się lista kluczowych, reużywalnych komponentów:
 
-- **`MealCard`**: Karta wyświetlająca podstawowe informacje o posiłku (zdjęcie, nazwa, kaloryczność) wraz z przyciskami interakcji ("Zjedzono", "Zmień danie"). Używana w Panelu Dziennym i Widoku Tygodnia.
-- **`MacroProgressBar`**: Wizualny wskaźnik postępu dla pojedynczego makroskładnika lub kalorii, pokazujący aktualną wartość w stosunku do celu.
-- **`RecipeDetailModal`**: Modal wyświetlający pełne informacje o przepisie, w tym składniki, instrukcje i wartości odżywcze. Umożliwia edycję gramatury skalowalnych składników.
-- **`GlobalErrorToast`**: Komponent wyświetlający globalne, nieblokujące powiadomienia o błędach (np. błąd API, utrata połączenia).
-- **`SkeletonLoader`**: Komponent szkieletu UI używany do sygnalizowania ładowania danych w kluczowych widokach (np. Panel Dzienny, Lista Zakupów), poprawiający postrzeganą wydajność.
-- **`AlertDialog`**: Modal dialogowy używany do uzyskania od użytkownika potwierdzenia wykonania akcji destrukcyjnej (np. reset planu).
-- **`CalendarStrip`**: Poziomy, przewijany pasek z dniami tygodnia, umożliwiający nawigację w Panelu Dziennym.
+- **`MealCard`**: Karta wyświetlająca podstawowe informacje o posiłku (zdjęcie, nazwa, kaloryczność) wraz z przyciskami interakcji ("Zjedzono", "Zmień danie").
+- **`MacroProgressBar`**: Wizualny wskaźnik postępu dla pojedynczego makroskładnika lub kalorii.
+- **`RecipeDetailModal`**: Modal wyświetlający pełne informacje o przepisie.
+- **`GlobalErrorToast`**: Komponent wyświetlający globalne, nieblokujące powiadomienia o błędach.
+- **`SkeletonLoader`**: Komponent szkieletu UI używany do sygnalizowania ładowania danych.
+- **`AlertDialog`**: Modal dialogowy używany do potwierdzenia akcji destrukcyjnej.
 ```

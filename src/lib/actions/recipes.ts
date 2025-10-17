@@ -44,6 +44,111 @@ type ActionResult<T> =
  * @param recipe - Raw row z tabeli content.recipes + joins
  * @returns RecipeDTO - Typowany obiekt zgodny z DTO
  */
+function normalizeInstructions(raw: unknown): RecipeInstructions {
+  const parseSteps = (input: unknown): RecipeInstructions['steps'] => {
+    if (!Array.isArray(input)) {
+      return []
+    }
+
+    return input
+      .map((item, index) => {
+        if (typeof item === 'string') {
+          const description = item.trim()
+          if (!description) return null
+          return { step: index + 1, description }
+        }
+
+        if (item && typeof item === 'object') {
+          const stepObj = item as Record<string, unknown>
+          const rawDescription =
+            typeof stepObj.description === 'string'
+              ? stepObj.description
+              : typeof stepObj.text === 'string'
+                ? stepObj.text
+                : ''
+          const description = rawDescription.trim()
+          if (!description) return null
+
+          const stepNumber =
+            typeof stepObj.step === 'number' && Number.isFinite(stepObj.step)
+              ? stepObj.step
+              : index + 1
+
+          return {
+            step: stepNumber,
+            description,
+          }
+        }
+
+        return null
+      })
+      .filter(
+        (value): value is RecipeInstructions['steps'][number] => value !== null
+      )
+  }
+
+  const handleObject = (value: Record<string, unknown>): RecipeInstructions => {
+    const preferredSteps = Array.isArray(value.steps)
+      ? value.steps
+      : Array.isArray(value.step_list)
+        ? value.step_list
+        : []
+
+    let steps = parseSteps(preferredSteps)
+
+    if (steps.length === 0) {
+      const numericKeys = Object.keys(value)
+        .filter((key) => Number.isInteger(Number(key)))
+        .map((key) => value[key])
+
+      steps = parseSteps(numericKeys)
+    }
+
+    const prepRaw = value.prep_time_minutes
+    const cookRaw = value.cook_time_minutes
+
+    const normalizeTime = (input: unknown): number | undefined => {
+      if (typeof input === 'number' && Number.isFinite(input)) {
+        return input
+      }
+      if (typeof input === 'string') {
+        const parsed = Number.parseInt(input, 10)
+        return Number.isFinite(parsed) ? parsed : undefined
+      }
+      return undefined
+    }
+
+    return {
+      steps,
+      prep_time_minutes: normalizeTime(prepRaw),
+      cook_time_minutes: normalizeTime(cookRaw),
+    }
+  }
+
+  if (raw === null || raw === undefined) {
+    return { steps: [] }
+  }
+
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return normalizeInstructions(parsed)
+    } catch {
+      return { steps: [] }
+    }
+  }
+
+  if (Array.isArray(raw)) {
+    return { steps: parseSteps(raw) }
+  }
+
+  if (typeof raw === 'object') {
+    return handleObject(raw as Record<string, unknown>)
+  }
+
+  return { steps: [] }
+}
+
 function transformRecipeToDTO(recipe: {
   id: number
   name: string
@@ -51,6 +156,10 @@ function transformRecipeToDTO(recipe: {
   meal_types: unknown
   tags: string[] | null
   image_url: string | null
+  difficulty_level: unknown
+  average_rating: number | null
+  reviews_count: number
+  health_score: number | null
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
@@ -89,10 +198,14 @@ function transformRecipeToDTO(recipe: {
   return {
     id: recipe.id,
     name: recipe.name,
-    instructions: recipe.instructions as RecipeInstructions,
+    instructions: normalizeInstructions(recipe.instructions),
     meal_types: recipe.meal_types as RecipeDTO['meal_types'],
     tags: recipe.tags,
     image_url: recipe.image_url,
+    difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
+    average_rating: recipe.average_rating,
+    reviews_count: recipe.reviews_count,
+    health_score: recipe.health_score,
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
@@ -147,6 +260,10 @@ export async function getRecipes(
         meal_types,
         tags,
         image_url,
+        difficulty_level,
+        average_rating,
+        reviews_count,
+        health_score,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -262,6 +379,10 @@ export async function getRecipeById(
         meal_types,
         tags,
         image_url,
+        difficulty_level,
+        average_rating,
+        reviews_count,
+        health_score,
         total_calories,
         total_protein_g,
         total_carbs_g,

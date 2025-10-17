@@ -295,12 +295,16 @@ export type Database = {
       }
       recipes: {
         Row: {
+          average_rating: number | null
           created_at: string
+          difficulty_level: Database['public']['Enums']['difficulty_level_enum']
+          health_score: number | null
           id: number
           image_url: string | null
           instructions: Json
           meal_types: Database['public']['Enums']['meal_type_enum'][]
           name: string
+          reviews_count: number
           tags: string[] | null
           total_calories: number | null
           total_carbs_g: number | null
@@ -309,12 +313,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          average_rating?: number | null
           created_at?: string
+          difficulty_level?: Database['public']['Enums']['difficulty_level_enum']
+          health_score?: number | null
           id?: number
           image_url?: string | null
           instructions: Json
           meal_types: Database['public']['Enums']['meal_type_enum'][]
           name: string
+          reviews_count?: number
           tags?: string[] | null
           total_calories?: number | null
           total_carbs_g?: number | null
@@ -323,12 +331,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          average_rating?: number | null
           created_at?: string
+          difficulty_level?: Database['public']['Enums']['difficulty_level_enum']
+          health_score?: number | null
           id?: number
           image_url?: string | null
           instructions?: Json
           meal_types?: Database['public']['Enums']['meal_type_enum'][]
           name?: string
+          reviews_count?: number
           tags?: string[] | null
           total_calories?: number | null
           total_carbs_g?: number | null
@@ -352,6 +364,7 @@ export type Database = {
         | 'moderate'
         | 'high'
         | 'very_high'
+      difficulty_level_enum: 'easy' | 'medium' | 'hard'
       gender_enum: 'male' | 'female'
       goal_enum: 'weight_loss' | 'weight_maintenance'
       ingredient_category_enum:
@@ -501,6 +514,7 @@ export const Constants = {
   public: {
     Enums: {
       activity_level_enum: ['very_low', 'low', 'moderate', 'high', 'very_high'],
+      difficulty_level_enum: ['easy', 'medium', 'hard'],
       gender_enum: ['male', 'female'],
       goal_enum: ['weight_loss', 'weight_maintenance'],
       ingredient_category_enum: [

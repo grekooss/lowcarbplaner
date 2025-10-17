@@ -70,8 +70,12 @@ export function RecipeHeader({
           {/* Tags - secondary badges */}
           {tags &&
             tags.length > 0 &&
-            tags.map((tag) => (
-              <Badge key={tag} variant='secondary'>
+            tags.slice(0, 5).map((tag) => (
+              <Badge
+                key={tag}
+                variant='secondary'
+                className='rounded-full px-2.5 py-0.5 text-xs font-medium'
+              >
                 {tag}
               </Badge>
             ))}

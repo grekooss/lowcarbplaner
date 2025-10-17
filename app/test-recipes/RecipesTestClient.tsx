@@ -311,7 +311,7 @@ export default function RecipesTestClient() {
               <div className='mt-4'>
                 <strong className='text-lg'>Instrukcje:</strong>
                 <ol className='mt-2 ml-6 list-decimal'>
-                  {singleResponse.instructions.map((instr) => (
+                  {singleResponse.instructions.steps.map((instr) => (
                     <li key={instr.step} className='mb-1'>
                       {instr.description}
                     </li>

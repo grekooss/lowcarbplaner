@@ -48,6 +48,10 @@ function transformRecipeToDTO(recipe: {
   meal_types: unknown
   tags: string[] | null
   image_url: string | null
+  difficulty_level: unknown
+  average_rating?: number | null
+  reviews_count?: number
+  health_score?: number | null
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
@@ -90,6 +94,10 @@ function transformRecipeToDTO(recipe: {
     meal_types: recipe.meal_types as RecipeDTO['meal_types'],
     tags: recipe.tags,
     image_url: recipe.image_url,
+    difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
+    average_rating: recipe.average_rating ?? null,
+    reviews_count: recipe.reviews_count ?? 0,
+    health_score: recipe.health_score ?? null,
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
@@ -118,6 +126,7 @@ function transformPlannedMealToDTO(meal: {
     meal_types: unknown
     tags: string[] | null
     image_url: string | null
+    difficulty_level: unknown
     total_calories: number | null
     total_protein_g: number | null
     total_carbs_g: number | null
@@ -213,6 +222,7 @@ export async function getPlannedMeals(
           meal_types,
           tags,
           image_url,
+          difficulty_level,
           total_calories,
           total_protein_g,
           total_carbs_g,
@@ -401,6 +411,7 @@ async function markMealAsEaten(
         meal_types,
         tags,
         image_url,
+        difficulty_level,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -537,6 +548,7 @@ async function swapMealRecipe(
         meal_types,
         tags,
         image_url,
+        difficulty_level,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -672,6 +684,7 @@ async function modifyMealIngredients(
         meal_types,
         tags,
         image_url,
+        difficulty_level,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -792,7 +805,7 @@ export async function getReplacementRecipes(
     const { data: replacements, error: searchError } = await supabase
       .from('recipes')
       .select(
-        'id, name, image_url, meal_types, total_calories, total_protein_g, total_carbs_g, total_fats_g'
+        'id, name, image_url, meal_types, difficulty_level, total_calories, total_protein_g, total_carbs_g, total_fats_g'
       )
       .contains('meal_types', [meal.meal_type])
       .neq('id', meal.recipe.id)
@@ -813,6 +826,8 @@ export async function getReplacementRecipes(
       name: recipe.name,
       image_url: recipe.image_url,
       meal_types: recipe.meal_types as ReplacementRecipeDTO['meal_types'],
+      difficulty_level:
+        recipe.difficulty_level as ReplacementRecipeDTO['difficulty_level'],
       total_calories: recipe.total_calories,
       total_protein_g: recipe.total_protein_g,
       total_carbs_g: recipe.total_carbs_g,

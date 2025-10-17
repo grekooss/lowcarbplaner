@@ -64,18 +64,20 @@ export function AuthPromptModal({
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle>Zaloguj się, aby zobaczyć przepis</DialogTitle>
-          <DialogDescription className='space-y-2 pt-2'>
-            <p>
-              Dołącz do LowCarbPlaner i uzyskaj dostęp do wszystkich przepisów
-              oraz funkcji planowania diety.
-            </p>
-            <p className='text-sm'>
-              ✨ Automatyczne planowanie posiłków
-              <br />
-              📊 Śledzenie makroskładników
-              <br />
-              🛒 Inteligentna lista zakupów
-            </p>
+          <DialogDescription asChild>
+            <div className='space-y-2 pt-2'>
+              <p>
+                Dołącz do LowCarbPlaner i uzyskaj dostęp do wszystkich przepisów
+                oraz funkcji planowania diety.
+              </p>
+              <p className='text-sm'>
+                ✨ Automatyczne planowanie posiłków
+                <br />
+                📊 Śledzenie makroskładników
+                <br />
+                🛒 Inteligentna lista zakupów
+              </p>
+            </div>
           </DialogDescription>
         </DialogHeader>
 

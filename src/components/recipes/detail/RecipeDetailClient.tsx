@@ -50,7 +50,7 @@ export function RecipeDetailClient({ recipe }: RecipeDetailClientProps) {
   }
 
   return (
-    <div className='mx-auto max-w-5xl space-y-8 px-4 py-8 md:px-6 lg:px-8'>
+    <div className='mx-auto max-w-7xl space-y-8 px-4 py-8 md:px-6 lg:px-8'>
       {/* Przycisk powrotu */}
       <Button variant='ghost' size='sm' onClick={handleBack} className='gap-2'>
         <ArrowLeft className='h-4 w-4' />

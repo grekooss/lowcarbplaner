@@ -14,13 +14,13 @@ const buttonVariants = cva(
           'bg-primary text-primary-foreground hover:bg-primary-dark active:bg-primary-hover rounded-[8px] shadow-sm hover:shadow-md active:shadow-none',
         // Secondary Button (Outlined)
         outline:
-          'border-border bg-background text-text-main hover:border-primary hover:text-primary active:border-primary-dark active:bg-breakfast-bg rounded-[8px] border-[1.5px] hover:bg-[#f8fff5]',
+          'border-border bg-background text-text-main hover:border-primary hover:text-primary active:border-primary-dark active:bg-breakfast-bg hover:bg-breakfast-bg rounded-[8px] border-[1.5px]',
         // Ghost Button
         ghost:
           'text-text-secondary hover:bg-bg-tertiary active:bg-border rounded-[8px] bg-transparent',
         // Destructive Button
         destructive:
-          'bg-error rounded-[8px] text-white shadow-sm hover:bg-[#e74c3c] hover:shadow-md active:shadow-none',
+          'bg-error hover:bg-error-hover rounded-[8px] text-white shadow-sm hover:shadow-md active:shadow-none',
         // Link Button
         link: 'text-primary font-medium underline-offset-4 hover:underline',
         // Secondary Filled (żółty)

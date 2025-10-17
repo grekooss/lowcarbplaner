@@ -18,8 +18,8 @@ const badgeVariants = cva(
         success: 'bg-breakfast-bg text-breakfast-text border-none',
         pending: 'bg-bg-tertiary text-text-muted border-none',
         warning: 'bg-lunch-bg text-lunch-text border-none',
-        error: 'text-error border-none bg-[#ffe5e5]',
-        destructive: 'text-error border-none bg-[#ffe5e5]',
+        error: 'text-error bg-error-bg border-none',
+        destructive: 'text-error bg-error-bg border-none',
 
         // Standard Variants
         default: 'bg-primary text-primary-foreground border-none',
@@ -36,8 +36,8 @@ const badgeVariants = cva(
         grains: 'bg-lunch-bg text-lunch-text border-none',
         veggies: 'bg-breakfast-bg text-breakfast-text border-none',
         protein: 'bg-snack-bg text-snack-text border-none',
-        fruits: 'border-none bg-[#fff4d6] text-[#b8860b]',
-        dairy: 'border-none bg-[#f0d9b5] text-[#8b6914]',
+        fruits: 'bg-lunch-bg text-lunch-text border-none',
+        dairy: 'bg-snack-bg text-snack-text border-none',
         others: 'bg-dinner-bg text-dinner-text border-none',
       },
       size: {

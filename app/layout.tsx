@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import { Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/lib/react-query/query-provider'
+import { Toaster } from '@/components/ui/sonner'
+import { AppShell } from '@/components/layout/AppShell'
 
-const inter = Inter({
-  variable: '--font-inter',
+const poppins = Poppins({
+  variable: '--font-sans',
   subsets: ['latin', 'latin-ext'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '900'],
   display: 'swap',
 })
 
@@ -29,8 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='pl'>
-      <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
-        <QueryProvider>{children}</QueryProvider>
+      <body className={`${poppins.variable} ${geistMono.variable} antialiased`}>
+        <QueryProvider>
+          <AppShell>{children}</AppShell>
+        </QueryProvider>
+        <Toaster />
       </body>
     </html>
   )

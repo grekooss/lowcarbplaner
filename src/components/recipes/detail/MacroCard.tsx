@@ -1,7 +1,7 @@
 /**
- * Komponent karty makroskładnika
+ * Komponent karty makrosk�'adnika
  *
- * Wyświetla pojedynczy makroskładnik w kolorowej karcie z ikoną.
+ * Wy�>wietla pojedynczy makrosk�'adnik w kolorowej karcie z ikon�.
  */
 
 'use client'
@@ -14,41 +14,38 @@ interface MacroCardProps {
   value: number | null
   unit: string
   variant: 'calories' | 'carbs' | 'protein' | 'fat'
+  size?: 'default' | 'compact'
 }
 
 const variantStyles = {
   calories: {
-    bg: 'bg-green-50',
-    border: 'border-green-200',
-    icon: 'text-green-600',
-    text: 'text-green-900',
+    bg: 'bg-[color:var(--quaternary)]',
+    border: 'border-[color:var(--quaternary)]',
+    icon: 'text-black',
     Icon: Flame,
   },
   carbs: {
-    bg: 'bg-yellow-50',
-    border: 'border-yellow-200',
-    icon: 'text-yellow-600',
-    text: 'text-yellow-900',
+    bg: 'bg-[color:var(--tertiary)]',
+    border: 'border-[color:var(--tertiary)]',
+    icon: 'text-black',
     Icon: Wheat,
   },
   protein: {
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    icon: 'text-orange-600',
-    text: 'text-orange-900',
+    bg: 'bg-[color:var(--secondary)]',
+    border: 'border-[color:var(--secondary)]',
+    icon: 'text-black',
     Icon: Beef,
   },
   fat: {
-    bg: 'bg-gray-50',
-    border: 'border-gray-200',
-    icon: 'text-gray-600',
-    text: 'text-gray-900',
+    bg: 'bg-[color:var(--primary)]',
+    border: 'border-[color:var(--primary)]',
+    icon: 'text-black',
     Icon: Droplet,
   },
 }
 
 /**
- * Komponent pojedynczej karty makroskładnika
+ * Komponent pojedynczej karty makrosk�'adnika
  *
  * @example
  * ```tsx
@@ -60,26 +57,45 @@ const variantStyles = {
  * />
  * ```
  */
-export function MacroCard({ label, value, unit, variant }: MacroCardProps) {
+export function MacroCard({
+  label,
+  value,
+  unit,
+  variant,
+  size = 'default',
+}: MacroCardProps) {
   const styles = variantStyles[variant]
   const Icon = styles.Icon
 
+  const isCompact = size === 'compact'
+
   return (
     <Card
-      className={`${styles.bg} ${styles.border} border-2 p-4 transition-all hover:shadow-md`}
+      className={`${styles.bg} ${styles.border} flex items-center ${isCompact ? 'gap-2 p-2' : 'gap-2.5 p-2.5'} border-2 ${isCompact ? 'min-w-[112px] flex-none' : 'flex-1'} shadow-none transition-all hover:shadow-none`}
     >
-      <div className='flex items-center gap-3'>
-        <div className={`rounded-full bg-white p-2 ${styles.icon}`}>
-          <Icon className='h-6 w-6' />
-        </div>
-        <div>
-          <p className={`text-sm font-medium ${styles.text}`}>{label}</p>
-          <p className={`text-2xl font-bold ${styles.text}`}>
-            {value !== null && value !== undefined
-              ? `${Math.round(value)} ${unit}`
-              : '—'}
-          </p>
-        </div>
+      <div
+        className={`rounded-md bg-white shadow-none ${isCompact ? 'p-2' : 'p-2.5'} ${styles.icon}`}
+      >
+        <Icon className={isCompact ? 'h-4 w-4' : 'h-5 w-5'} />
+      </div>
+      <div className='flex flex-col'>
+        <p
+          className={`${isCompact ? 'text-[0.65rem]' : 'text-xs'} font-medium text-slate-600`}
+        >
+          {label}
+        </p>
+        <p className='flex items-baseline gap-1'>
+          <span
+            className={`${isCompact ? 'text-lg' : 'text-xl'} font-bold text-slate-900`}
+          >
+            {value !== null && value !== undefined ? Math.round(value) : '�?"'}
+          </span>
+          <span
+            className={`${isCompact ? 'text-[0.65rem]' : 'text-xs'} text-slate-600`}
+          >
+            {unit}
+          </span>
+        </p>
       </div>
     </Card>
   )

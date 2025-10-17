@@ -20,9 +20,13 @@ import type {
  * Typ dla instrukcji przepisu (parsowany z JSON)
  */
 export type RecipeInstructions = {
-  step: number
-  description: string
-}[]
+  steps: {
+    step: number
+    description: string
+  }[]
+  prep_time_minutes?: number
+  cook_time_minutes?: number
+}
 
 /**
  * Typ dla nadpisań składników (parsowany z JSON w planned_meals.ingredient_overrides)
@@ -160,6 +164,10 @@ export type RecipeDTO = {
   meal_types: Enums<'meal_type_enum'>[]
   tags: string[] | null
   image_url: string | null
+  difficulty_level: Enums<'difficulty_level_enum'>
+  average_rating: number | null
+  reviews_count: number
+  health_score: number | null
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
@@ -350,6 +358,7 @@ export type ReplacementRecipeDTO = {
   name: string
   image_url: string | null
   meal_types: Enums<'meal_type_enum'>[]
+  difficulty_level: Enums<'difficulty_level_enum'>
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null

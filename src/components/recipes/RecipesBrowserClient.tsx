@@ -52,7 +52,7 @@ export function RecipesBrowserClient({
   const router = useRouter()
 
   // Stan lokalny dla widoku i sortowania
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [sortBy, setSortBy] = useState<SortOption>('calories')
 
   // Hooks dla state management
@@ -120,11 +120,6 @@ export function RecipesBrowserClient({
     }
   }
 
-  // Handle signup CTA
-  const handleSignup = () => {
-    router.push('/signup')
-  }
-
   // Handle Add to Meal Plan
   const handleAddToMealPlan = (recipeId: number) => {
     // TODO: Implementacja dodawania do planu posiłków
@@ -133,27 +128,10 @@ export function RecipesBrowserClient({
 
   return (
     <>
-      <div className='mx-auto max-w-7xl space-y-8 px-6 py-8 md:px-8 lg:px-8'>
-        {/* Header Section */}
-        <div className='space-y-6 text-center'>
-          <h1 className='text-text-main text-4xl leading-tight font-bold tracking-tight md:text-5xl'>
-            Przeglądaj przepisy
-          </h1>
-          <p className='text-text-secondary mx-auto max-w-2xl text-base leading-relaxed md:text-lg'>
-            Odkryj pyszne przepisy niskowęglowodanowe. Zarejestruj się, aby
-            automatycznie planować swoje posiłki i śledzić makroskładniki.
-          </p>
-          <Button size='lg' onClick={handleSignup}>
-            Rozpocznij dietę
-          </Button>
-        </div>
-
+      <div className='mx-auto w-full space-y-8'>
         {/* Featured Recipe */}
         {featuredRecipe && (
-          <section className='space-y-4'>
-            <h2 className='text-text-main text-2xl leading-tight font-semibold'>
-              Polecany przepis
-            </h2>
+          <section className='w-full space-y-4'>
             <FeaturedRecipeCard
               recipe={featuredRecipe}
               onClick={handleRecipeClick}
@@ -162,24 +140,21 @@ export function RecipesBrowserClient({
         )}
 
         {/* Filters, Sort i View Toggle */}
-        <section className='space-y-4'>
+        <section className='w-full space-y-4'>
           <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <h2 className='text-text-main text-2xl leading-tight font-semibold'>
-              Wszystkie przepisy
-            </h2>
+            <RecipeFilters
+              selectedMealTypes={filters.meal_types}
+              onChange={updateMealTypes}
+            />
             <div className='flex flex-wrap items-center gap-3'>
               <SortSelect value={sortBy} onChange={setSortBy} />
               <ViewToggle mode={viewMode} onChange={setViewMode} />
             </div>
           </div>
-          <RecipeFilters
-            selectedMealTypes={filters.meal_types}
-            onChange={updateMealTypes}
-          />
         </section>
 
         {/* Recipes Grid/List */}
-        <section className='space-y-6'>
+        <section className='w-full space-y-6'>
           {isLoading && allRecipes.length === 0 ? (
             // Initial loading
             <div className='py-12 text-center'>
@@ -220,7 +195,7 @@ export function RecipesBrowserClient({
                   onRecipeClick={handleRecipeClick}
                 />
               ) : (
-                <div className='space-y-4'>
+                <div className='w-full space-y-4'>
                   {sortedRecipes.slice(1).map((recipe) => (
                     <RecipeListItem
                       key={recipe.id}

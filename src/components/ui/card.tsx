@@ -9,13 +9,11 @@ const cardVariants = cva(
     variants: {
       variant: {
         // Standard Recipe Card
-        default:
-          'border-border-light border shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_4px_rgba(0,0,0,0.04)]',
+        default: 'border-border-light border',
         // Hero Card (Featured Recipe)
-        hero: 'border-none shadow-[0_4px_12px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.04)]',
+        hero: 'border-none',
         // Elevated Card (Modals, Dropdowns)
-        elevated:
-          'border-none shadow-[0_8px_24px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.08)]',
+        elevated: 'border-none',
         // Flat Panel (bez cienia)
         flat: 'border-border-light border shadow-none',
         // Meal Card Categories

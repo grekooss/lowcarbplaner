@@ -31,10 +31,20 @@ CREATE INDEX IF NOT EXISTS idx_feedback_created_at
 -- Policy: Users can delete their own feedback
 -- This allows users to remove their feedback if needed (GDPR right to erasure)
 -- Note: In production, consider soft deletes (is_deleted flag) instead of hard deletes
-CREATE POLICY "feedback_delete_own"
-  ON public.feedback FOR DELETE
-  TO authenticated
-  USING (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+    AND tablename = 'feedback'
+    AND policyname = 'feedback_delete_own'
+  ) THEN
+    CREATE POLICY "feedback_delete_own"
+      ON public.feedback FOR DELETE
+      TO authenticated
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- ============================================================================
 -- 3. Add comments for documentation

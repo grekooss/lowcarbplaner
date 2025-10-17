@@ -26,11 +26,14 @@ interface InstructionsListProps {
  * ```
  */
 export function InstructionsList({ instructions }: InstructionsListProps) {
+  // Wyciągnij kroki z nowej struktury
+  const steps = instructions.steps || []
+
   // Sortuj kroki według numeru (ascending)
-  const sortedInstructions = [...instructions].sort((a, b) => a.step - b.step)
+  const sortedSteps = [...steps].sort((a, b) => a.step - b.step)
 
   // Empty state
-  if (sortedInstructions.length === 0) {
+  if (sortedSteps.length === 0) {
     return (
       <div className='space-y-4'>
         <h2 className='text-2xl font-bold'>Instrukcje przygotowania</h2>
@@ -44,9 +47,27 @@ export function InstructionsList({ instructions }: InstructionsListProps) {
       {/* Nagłówek sekcji */}
       <h2 className='text-2xl font-bold'>Instrukcje przygotowania</h2>
 
+      {/* Wyświetl czasy przygotowania i gotowania (jeśli dostępne) */}
+      {(instructions.prep_time_minutes || instructions.cook_time_minutes) && (
+        <div className='text-muted-foreground flex gap-4 text-sm'>
+          {instructions.prep_time_minutes && (
+            <div className='flex items-center gap-2'>
+              <span className='font-medium'>Przygotowanie:</span>
+              <span>{instructions.prep_time_minutes} min</span>
+            </div>
+          )}
+          {instructions.cook_time_minutes && (
+            <div className='flex items-center gap-2'>
+              <span className='font-medium'>Gotowanie:</span>
+              <span>{instructions.cook_time_minutes} min</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Lista kroków */}
       <div className='space-y-6'>
-        {sortedInstructions.map((instruction) => (
+        {sortedSteps.map((instruction) => (
           <InstructionStep
             key={instruction.step}
             step={instruction.step}

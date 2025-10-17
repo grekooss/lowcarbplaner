@@ -6,23 +6,29 @@
   --foreground: #1a1a1a;
 
   /* Primary Green */
-  --primary: #a4d96c;
-  --primary-light: #b8e58a;
-  --primary-dark: #8bc34a;
-  --primary-hover: #7ab03a;
+  --primary: #c3e672;
+  --primary-light: #d3f682;
+  --primary-dark: #a3c652;
+  --primary-hover: #93b642;
   --primary-foreground: #ffffff;
 
-  /* Secondary Yellow */
-  --secondary: #ffd666;
-  --secondary-light: #ffe194;
-  --secondary-dark: #ffb84d;
-  --secondary-foreground: #2d2d2d;
+  /* Secondary Brown */
+  --secondary: #f7a45c;
+  --secondary-light: #ffb46c;
+  --secondary-dark: #d7843c;
+  --secondary-foreground: #ffffff;
 
   /* Tertiary Orange */
-  --tertiary: #ff9966;
-  --tertiary-light: #ffb894;
-  --tertiary-dark: #ff8c5c;
+  --tertiary: #f9cd6a;
+  --tertiary-light: #ffdd7a;
+  --tertiary-dark: #d9ad4a;
   --tertiary-foreground: #ffffff;
+
+  /* Quaternary Gray */
+  --quaternary: #e1e1e3;
+  --quaternary-light: #f1f1f3;
+  --quaternary-dark: #c1c1c3;
+  --quaternary-foreground: #1a1a1a;
 
   /* Meal Category Colors */
   --breakfast-bg: #e8f5d8;
@@ -35,9 +41,11 @@
   --dinner-text: #666666;
 
   /* State Colors */
-  --success: #a4d96c;
+  --success: #c3e672;
   --warning: #ffd666;
   --error: #ff5757;
+  --error-bg: #ffe5e5;
+  --error-hover: #e74c3c;
   --info: #5dade2;
 
   /* Text Colors */
@@ -50,10 +58,11 @@
   --bg-main: #ffffff;
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #f5f5f5;
+  --bg-card: #f8f4f1; /* Domyślny kolor dla kart/okien/kwadratów */
 
   /* Border Colors */
-  --border: #e0e0e0;
-  --border-light: #f0f0f0;
+  --border: #e1e1e3;
+  --border-light: #f1f1f3;
   --border-focus: var(--primary);
 
   /* Shadows */
@@ -96,6 +105,12 @@
   --color-tertiary-dark: var(--tertiary-dark);
   --color-tertiary-foreground: var(--tertiary-foreground);
 
+  /* Quaternary */
+  --color-quaternary: var(--quaternary);
+  --color-quaternary-light: var(--quaternary-light);
+  --color-quaternary-dark: var(--quaternary-dark);
+  --color-quaternary-foreground: var(--quaternary-foreground);
+
   /* Meal Categories */
   --color-breakfast-bg: var(--breakfast-bg);
   --color-breakfast-text: var(--breakfast-text);
@@ -110,6 +125,8 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-error-hover: var(--error-hover);
   --color-info: var(--info);
 
   /* Text */
@@ -122,6 +139,7 @@
   --color-bg-main: var(--bg-main);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-card: var(--bg-card);
 
   /* Borders */
   --color-border: var(--border);
@@ -129,7 +147,8 @@
   --color-border-focus: var(--border-focus);
 
   /* Font Family */
-  --font-sans: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans:
+    var(--font-poppins), 'Poppins', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono);
 
   /* Spacing Scale (base 4px) */
@@ -174,13 +193,29 @@ body {
 
 /* Smooth transitions */
 * {
-  transition-property:
-    color, background-color, border-color, box-shadow, transform;
+  transition-property: color, background-color, border-color, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+}
+
+/* Wyłącz animację transform dla Radix UI dropdowns */
+[data-radix-select-content],
+[data-radix-popper-content-wrapper],
+[data-radix-popper-content-wrapper] * {
+  transition: none !important;
 }
 
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
+}
+
+/* Hide scrollbar (dla CalendarStrip) */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
