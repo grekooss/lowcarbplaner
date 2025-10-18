@@ -2,7 +2,7 @@
 
 ## 1. Przegląd
 
-Widok Przeglądarki Przepisów to **publiczna strona docelowa** aplikacji LowCarbPlaner, dostępna dla niezalogowanych użytkowników pod ścieżką `/przepisy`. Głównym celem jest **prezentacja wartości aplikacji** poprzez pokazanie dostępnych przepisów niskowęglowodanowych oraz **zachęcenie do rejestracji**. Widok umożliwia przeglądanie wszystkich przepisów z filtrowaniem według typu posiłku (śniadanie, obiad, kolacja) oraz wyświetlenie szczegółów wybranego przepisu z pełną listą składników i instrukcjami przygotowania.
+Widok Przeglądarki Przepisów to **publiczna strona docelowa** aplikacji LowCarbPlaner, dostępna dla niezalogowanych użytkowników pod ścieżką `/recipes`. Głównym celem jest **prezentacja wartości aplikacji** poprzez pokazanie dostępnych przepisów niskowęglowodanowych oraz **zachęcenie do rejestracji**. Widok umożliwia przeglądanie wszystkich przepisów z filtrowaniem według typu posiłku (śniadanie, obiad, kolacja) oraz wyświetlenie szczegółów wybranego przepisu z pełną listą składników i instrukcjami przygotowania.
 
 Kluczową funkcjonalnością jest **inteligentny modal rejestracji**: gdy niezalogowany użytkownik próbuje zobaczyć szczegóły przepisu, system zapamiętuje wybrany przepis i po zalogowaniu automatycznie przekierowuje użytkownika do tego przepisu.
 
@@ -12,15 +12,15 @@ Kluczową funkcjonalnością jest **inteligentny modal rejestracji**: gdy niezal
 
 ### Główne ścieżki:
 
-- **`/przepisy`** - Strona główna z listą przepisów (Server Component)
-- **`/przepisy/[id]`** - Szczegóły pojedynczego przepisu (Server Component)
+- **`/recipes`** - Strona główna z listą przepisów (Server Component)
+- **`/recipes/[id]`** - Szczegóły pojedynczego przepisu (Server Component)
 
 ### Dodatkowe ścieżki relacyjne:
 
-- **`/signup?redirect=/przepisy/[id]`** - Rejestracja z przekierowaniem
-- **`/login?redirect=/przepisy/[id]`** - Logowanie z przekierowaniem
+- **`/signup?redirect=/recipes/[id]`** - Rejestracja z przekierowaniem
+- **`/login?redirect=/recipes/[id]`** - Logowanie z przekierowaniem
 
-### Parametry URL (dla `/przepisy`):
+### Parametry URL (dla `/recipes`):
 
 - `meal_types` (opcjonalny) - filtrowanie według typu posiłku (np. `?meal_types=breakfast,lunch`)
 - `limit` (opcjonalny, domyślnie 20) - liczba wyników na stronę
@@ -31,7 +31,7 @@ Kluczową funkcjonalnością jest **inteligentny modal rejestracji**: gdy niezal
 ## 3. Struktura komponentów
 
 ```
-app/przepisy/
+app/recipes/
 ├── page.tsx (RecipesBrowserPage - Server Component)
 ├── [id]/
 │   └── page.tsx (RecipeDetailPage - Server Component)
@@ -79,7 +79,7 @@ lib/react-query/
 
 ### 4.1. RecipesBrowserPage (Server Component)
 
-**Ścieżka:** `app/przepisy/page.tsx`
+**Ścieżka:** `app/recipes/page.tsx`
 
 #### Opis:
 
@@ -381,8 +381,8 @@ Modal wzywający do **rejestracji/logowania** gdy niezalogowany użytkownik pró
 - Heading: "Zaloguj się, aby zobaczyć przepis"
 - Opis wartości aplikacji (krótki pitch)
 - Przyciski:
-  - "Załóż konto" → redirect do `/signup?redirect=/przepisy/[redirectRecipeId]`
-  - "Zaloguj się" → redirect do `/login?redirect=/przepisy/[redirectRecipeId]`
+  - "Załóż konto" → redirect do `/signup?redirect=/recipes/[redirectRecipeId]`
+  - "Zaloguj się" → redirect do `/login?redirect=/recipes/[redirectRecipeId]`
   - "Zamknij" (X button)
 
 #### Obsługiwane zdarzenia:
@@ -414,7 +414,7 @@ interface AuthPromptModalProps {
 
 ### 4.9. RecipeDetailPage (Server Component)
 
-**Ścieżka:** `app/przepisy/[id]/page.tsx`
+**Ścieżka:** `app/recipes/[id]/page.tsx`
 
 #### Opis:
 
@@ -468,11 +468,11 @@ Wrapper client-side dla szczegółów przepisu. Umożliwia **interaktywne elemen
 - `IngredientsList` (składniki pogrupowane)
 - `InstructionsList` (kroki przygotowania)
 - CTA "Rozpocznij dietę" (dla niezalogowanych)
-- Przycisk "Powrót do listy" → navigate('/przepisy')
+- Przycisk "Powrót do listy" → navigate('/recipes')
 
 #### Obsługiwane zdarzenia:
 
-- Click "Powrót" → router.push('/przepisy')
+- Click "Powrót" → router.push('/recipes')
 - Click CTA → redirect do /signup
 
 #### Warunki walidacji:
@@ -1075,7 +1075,7 @@ export const useAuthPrompt = () => {
       const recipeId =
         state.redirectRecipeId || localStorage.getItem(REDIRECT_RECIPE_KEY)
       if (!recipeId) return baseUrl
-      return `${baseUrl}?redirect=/przepisy/${recipeId}`
+      return `${baseUrl}?redirect=/recipes/${recipeId}`
     },
     [state.redirectRecipeId]
   )
@@ -1255,7 +1255,7 @@ Błędy walidacji są zwracane jako `{ error: string }` w ActionResult.
 
 ## 8. Interakcje użytkownika
 
-### 8.1. Na stronie listy przepisów (`/przepisy`)
+### 8.1. Na stronie listy przepisów (`/recipes`)
 
 #### Interakcja 1: Filtrowanie według typu posiłku
 
@@ -1293,14 +1293,14 @@ Błędy walidacji są zwracane jako `{ error: string }` w ActionResult.
      - Otwiera `AuthPromptModal`
 3. **Użytkownik:** Klika "Załóż konto" w modalu
 4. **System:**
-   - Przekierowuje do `/signup?redirect=/przepisy/[recipeId]`
+   - Przekierowuje do `/signup?redirect=/recipes/[recipeId]`
 
 #### Interakcja 5: Kliknięcie na kartę przepisu (zalogowany)
 
 1. **Użytkownik:** Klika na `RecipeCard`
 2. **System:**
    - Sprawdza `isAuthenticated` → `true`
-   - Nawiguje do `/przepisy/[recipeId]` (router.push)
+   - Nawiguje do `/recipes/[recipeId]` (router.push)
 
 #### Interakcja 6: Keyboard navigation
 
@@ -1311,7 +1311,7 @@ Błędy walidacji są zwracane jako `{ error: string }` w ActionResult.
 
 ---
 
-### 8.2. Na stronie szczegółów przepisu (`/przepisy/[id]`)
+### 8.2. Na stronie szczegółów przepisu (`/recipes/[id]`)
 
 #### Interakcja 7: Przeglądanie szczegółów
 
@@ -1326,12 +1326,12 @@ Błędy walidacji są zwracane jako `{ error: string }` w ActionResult.
 #### Interakcja 8: Powrót do listy
 
 1. **Użytkownik:** Klika "Powrót do przepisów"
-2. **System:** Nawiguje do `/przepisy` (router.back() lub router.push)
+2. **System:** Nawiguje do `/recipes` (router.back() lub router.push)
 
 #### Interakcja 9: CTA "Rozpocznij dietę" (niezalogowany)
 
 1. **Użytkownik:** Klika sticky CTA button
-2. **System:** Przekierowuje do `/signup?redirect=/przepisy/[id]`
+2. **System:** Przekierowuje do `/signup?redirect=/recipes/[id]`
 
 ---
 
@@ -1347,16 +1347,16 @@ Błędy walidacji są zwracane jako `{ error: string }` w ActionResult.
 1. **Użytkownik:** Klika "Załóż konto"
 2. **System:**
    - Pobiera `redirectRecipeId` z localStorage
-   - Nawiguje do `/signup?redirect=/przepisy/[redirectRecipeId]`
+   - Nawiguje do `/signup?redirect=/recipes/[redirectRecipeId]`
 3. **Po rejestracji:**
    - Middleware sprawdza `?redirect` param
-   - Przekierowuje użytkownika do `/przepisy/[redirectRecipeId]`
+   - Przekierowuje użytkownika do `/recipes/[redirectRecipeId]`
 
 #### Interakcja 12: Logowanie z kontekstem
 
 1. **Użytkownik:** Klika "Zaloguj się"
 2. **System:** (analogicznie do Interakcji 11)
-   - Nawiguje do `/login?redirect=/przepisy/[redirectRecipeId]`
+   - Nawiguje do `/login?redirect=/recipes/[redirectRecipeId]`
 
 ---
 
@@ -1406,7 +1406,7 @@ const handleRecipeClick = (recipeId: number) => {
     openAuthPrompt(recipeId)
   } else {
     // Nawiguj do szczegółów
-    router.push(`/przepisy/${recipeId}`)
+    router.push(`/recipes/${recipeId}`)
   }
 }
 ```
@@ -1512,7 +1512,7 @@ if (result.error) {
 **Obsługa:**
 
 ```typescript
-// app/przepisy/[id]/page.tsx
+// app/recipes/[id]/page.tsx
 const result = await getRecipeById(Number(params.id))
 
 if (result.error) {
@@ -1557,7 +1557,7 @@ if (!validated.success) {
   return (
     <div>
       <p>Nieprawidłowe parametry zapytania</p>
-      <Link href="/przepisy">Wróć do listy przepisów</Link>
+      <Link href="/recipes">Wróć do listy przepisów</Link>
     </div>
   )
 }
@@ -1647,7 +1647,7 @@ const handleRecipeClick = (recipeId: number) => {
   if (!isAuthenticated) {
     openAuthPrompt(recipeId)
   } else {
-    router.push(`/przepisy/${recipeId}`)
+    router.push(`/recipes/${recipeId}`)
   }
 }
 ```
@@ -1657,7 +1657,7 @@ const handleRecipeClick = (recipeId: number) => {
 Każda główna strona powinna mieć **Error Boundary**:
 
 ```typescript
-// app/przepisy/error.tsx
+// app/recipes/error.tsx
 'use client'
 
 export default function RecipesError({
@@ -1686,7 +1686,7 @@ export default function RecipesError({
 1. **Utworzenie struktury folderów:**
 
    ```bash
-   mkdir -p app/przepisy/[id]
+   mkdir -p app/recipes/[id]
    mkdir -p components/recipes/detail
    mkdir -p lib/hooks
    mkdir -p lib/react-query/queries
@@ -1811,14 +1811,14 @@ export default function RecipesError({
 
 ### Faza 7: Server Components (2-3h)
 
-20. **Implementacja `app/przepisy/page.tsx` (RecipesBrowserPage):**
+20. **Implementacja `app/recipes/page.tsx` (RecipesBrowserPage):**
     - Pobieranie searchParams
     - Walidacja przez recipeQueryParamsSchema
     - Wywołanie getRecipes() dla SSR
     - Przekazanie initialData do RecipesBrowserClient
     - Metadata dla SEO
 
-21. **Implementacja `app/przepisy/[id]/page.tsx` (RecipeDetailPage):**
+21. **Implementacja `app/recipes/[id]/page.tsx` (RecipeDetailPage):**
     - Pobieranie params.id
     - Walidacja id (number > 0)
     - Wywołanie getRecipeById() dla SSR
@@ -1827,11 +1827,11 @@ export default function RecipesError({
     - Dynamic metadata (generateMetadata)
 
 22. **Implementacja Error Boundaries:**
-    - `app/przepisy/error.tsx`
-    - `app/przepisy/[id]/error.tsx`
+    - `app/recipes/error.tsx`
+    - `app/recipes/[id]/error.tsx`
 
 23. **Implementacja Not Found:**
-    - `app/przepisy/[id]/not-found.tsx`
+    - `app/recipes/[id]/not-found.tsx`
 
 ---
 

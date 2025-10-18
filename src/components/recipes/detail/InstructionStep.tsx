@@ -22,15 +22,15 @@ interface InstructionStepProps {
  */
 export function InstructionStep({ step, description }: InstructionStepProps) {
   return (
-    <div className='flex gap-4'>
-      {/* Numer kroku - duża wyróżniona cyfra */}
-      <div className='bg-primary text-primary-foreground flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-lg font-bold'>
+    <div className='flex items-start gap-3'>
+      {/* Numer kroku - żółte kółko */}
+      <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-semibold text-gray-900'>
         {step}
       </div>
 
       {/* Opis kroku */}
-      <div className='flex-1 pt-2'>
-        <p className='text-base leading-relaxed'>{description}</p>
+      <div className='flex-1 pt-1'>
+        <p className='text-sm leading-relaxed'>{description}</p>
       </div>
     </div>
   )

@@ -47,14 +47,14 @@ export function AuthPromptModal({
 
   const handleSignup = () => {
     const redirectUrl = redirectRecipeId
-      ? `/signup?redirect=/przepisy/${redirectRecipeId}`
+      ? `/signup?redirect=/recipes/${redirectRecipeId}`
       : '/signup'
     router.push(redirectUrl)
   }
 
   const handleLogin = () => {
     const redirectUrl = redirectRecipeId
-      ? `/login?redirect=/przepisy/${redirectRecipeId}`
+      ? `/login?redirect=/recipes/${redirectRecipeId}`
       : '/login'
     router.push(redirectUrl)
   }

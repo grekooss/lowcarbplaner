@@ -1,8 +1,7 @@
 /**
- * Komponent główny Dashboard (Client Component)
+ * DashboardClient (client component)
  *
- * Zarządza stanem wybranej daty, fetchingiem danych i koordynacją
- * między wszystkimi komponentami potomnymi.
+ * Manages selected date, data fetching and coordinates dashboard sub-components.
  */
 
 'use client'
@@ -30,36 +29,31 @@ interface DashboardClientProps {
   initialDate: string // YYYY-MM-DD
 }
 
-/**
- * Główny komponent kliencki Dashboard
- *
- * @example
- * ```tsx
- * <DashboardClient
- *   initialMeals={meals}
- *   targetMacros={profile}
- *   initialDate="2025-10-15"
- * />
- * ```
- */
 export function DashboardClient({
   initialMeals,
   targetMacros,
   initialDate,
 }: DashboardClientProps) {
-  // Stan z Zustand (wybrana data)
   const { selectedDate, setSelectedDate } = useDashboardStore()
 
-  // Inicjalizacja selectedDate z initialDate (tylko raz)
+  // Initialize the selected date once from server data
   useEffect(() => {
     const initial = new Date(initialDate)
     setSelectedDate(initial)
   }, [initialDate, setSelectedDate])
 
-  // Format daty do YYYY-MM-DD dla query
-  const selectedDateStr = selectedDate.toISOString().split('T')[0] ?? ''
+  // Normalize value coming from zustand persist (rehydrates as string)
+  const normalizedSelectedDate =
+    selectedDate instanceof Date
+      ? selectedDate
+      : selectedDate
+        ? new Date(selectedDate)
+        : new Date()
 
-  // Query dla posiłków (automatyczny re-fetch przy zmianie daty)
+  const selectedDateStr = !Number.isNaN(normalizedSelectedDate.getTime())
+    ? normalizedSelectedDate.toISOString().split('T')[0] || ''
+    : ''
+
   const {
     data: meals,
     isLoading,
@@ -67,29 +61,26 @@ export function DashboardClient({
     refetch,
   } = usePlannedMealsQuery(selectedDateStr, selectedDateStr)
 
-  // Use initial meals as fallback
   const displayMeals = meals ?? initialMeals
 
-  // Loading state
   if (isLoading && displayMeals.length === 0) {
     return <DashboardSkeleton />
   }
 
-  // Error state
   if (error) {
     return (
       <div className='container mx-auto space-y-6 px-4 py-8'>
         <Alert variant='destructive'>
           <AlertCircle className='h-4 w-4' />
-          <AlertTitle>Błąd ładowania danych</AlertTitle>
+          <AlertTitle>Blad ladowania danych</AlertTitle>
           <AlertDescription className='space-y-2'>
             <p>
               {error instanceof Error
                 ? error.message
-                : 'Nie udało się pobrać posiłków. Spróbuj ponownie.'}
+                : 'Nie udalo sie pobrac posilkow. Sprobuj ponownie.'}
             </p>
             <Button variant='outline' size='sm' onClick={() => refetch()}>
-              Spróbuj ponownie
+              Sprobuj ponownie
             </Button>
           </AlertDescription>
         </Alert>
@@ -99,25 +90,31 @@ export function DashboardClient({
 
   return (
     <div className='container mx-auto space-y-8 px-4 py-8'>
-      {/* Nagłówek */}
       <div className='space-y-2'>
-        <h1 className='text-3xl font-bold tracking-tight'>Twój Plan Dnia</h1>
+        <h1 className='text-3xl font-bold tracking-tight'>Twoj Plan Dnia</h1>
         <p className='text-muted-foreground'>
-          Śledź swoje posiłki i realizację celów żywieniowych
+          Sledz swoje posilki i realizacje celow zywieniowych
         </p>
       </div>
 
-      {/* Kalendarz */}
-      <CalendarStrip
-        selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-      />
+      <div className='grid gap-8 lg:grid-cols-[minmax(0,_2.75fr)_minmax(0,_1fr)]'>
+        {/* Column 1 - calendar and meals of the day */}
+        <div className='space-y-6'>
+          <CalendarStrip
+            selectedDate={normalizedSelectedDate}
+            onDateChange={setSelectedDate}
+          />
+          <MealsList meals={displayMeals} date={selectedDateStr} />
+        </div>
 
-      {/* Paski postępu makroskładników */}
-      <MacroProgressSection meals={displayMeals} targetMacros={targetMacros} />
-
-      {/* Lista posiłków */}
-      <MealsList meals={displayMeals} date={selectedDateStr} />
+        {/* Column 2 - calories / macros */}
+        <div className='space-y-6'>
+          <MacroProgressSection
+            meals={displayMeals}
+            targetMacros={targetMacros}
+          />
+        </div>
+      </div>
     </div>
   )
 }

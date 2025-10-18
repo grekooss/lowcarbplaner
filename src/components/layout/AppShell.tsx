@@ -22,7 +22,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Panel Dzienny', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Widok Tygodnia', href: '/meal-plan', icon: CalendarRange },
-  { label: 'Przepisy', href: '/przepisy', icon: Utensils },
+  { label: 'Przepisy', href: '/recipes', icon: Utensils },
   { label: 'Lista zakupow', href: '/shopping-list', icon: ShoppingBag },
 ]
 
@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className='flex min-h-screen justify-center bg-[var(--background)] px-3 py-6 text-slate-900 sm:px-6 lg:px-10'>
-        <div className='flex w-full max-w-[1280px] flex-col gap-0 lg:flex-row'>
+        <div className='flex w-full max-w-[1440px] flex-col gap-0 lg:flex-row'>
           <aside className='hidden w-60 flex-col bg-white px-5 py-8 lg:flex'>
             <Link
               href='/'

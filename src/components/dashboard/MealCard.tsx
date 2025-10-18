@@ -1,34 +1,25 @@
 /**
- * Komponent karty pojedynczego posiłku
+ * MealCard component
  *
- * Wyświetla szczegóły posiłku z checkboxem do oznaczania jako zjedzony.
- * Wzorowany na RecipeCard.tsx z dodatkową funkcjonalnością śledzenia.
+ * Vertical list style meal item with quick macro overview.
  */
 
 'use client'
 
 import Image from 'next/image'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Flame, UtensilsCrossed } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MEAL_TYPE_LABELS, formatMacro } from '@/types/recipes-view.types'
-import { useMealToggle } from '@/hooks/useMealToggle'
-import type { PlannedMealDTO } from '@/types/dto.types'
-import { UtensilsCrossed } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useMealToggle } from '@/hooks/useMealToggle'
+import { MEAL_TYPE_LABELS, formatMacro } from '@/types/recipes-view.types'
+import type { PlannedMealDTO } from '@/types/dto.types'
 
 interface MealCardProps {
   meal: PlannedMealDTO
 }
 
-/**
- * Komponent karty pojedynczego posiłku z funkcją oznaczania jako zjedzony
- *
- * @example
- * ```tsx
- * <MealCard meal={plannedMealDTO} />
- * ```
- */
 export function MealCard({ meal }: MealCardProps) {
   const { mutate: toggleMeal, isPending } = useMealToggle()
 
@@ -39,28 +30,41 @@ export function MealCard({ meal }: MealCardProps) {
     })
   }
 
+  const calories = meal.recipe.total_calories ?? 0
+  const protein = meal.recipe.total_protein_g ?? 0
+  const carbs = meal.recipe.total_carbs_g ?? 0
+  const fats = meal.recipe.total_fats_g ?? 0
+
   return (
-    <Card
+    <div
       className={cn(
-        'transition-all',
-        meal.is_eaten && 'border-green-500 bg-green-50/50',
-        isPending && 'opacity-50'
+        'border-border/60 flex flex-col gap-4 rounded-3xl border bg-white p-4 shadow-sm transition-all hover:shadow-md',
+        meal.is_eaten && 'border-[#a3d463] bg-[#f3f8e6]',
+        isPending && 'opacity-60'
       )}
     >
-      <CardHeader className='flex flex-row items-start justify-between space-y-0 pb-3'>
-        {/* Badge z typem posiłku */}
-        <Badge variant='secondary' className='text-sm'>
-          {MEAL_TYPE_LABELS[meal.meal_type]}
-        </Badge>
-
-        {/* Checkbox "Zjedzono" */}
-        <div className='flex items-center gap-2'>
-          <label
-            htmlFor={`meal-${meal.id}`}
-            className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+      <div className='flex items-start justify-between gap-3'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <Badge
+            variant='secondary'
+            className={cn(
+              'rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase',
+              meal.is_eaten
+                ? 'text-foreground bg-[#c9ea84]'
+                : 'bg-muted text-foreground'
+            )}
           >
-            Zjedzono
-          </label>
+            {MEAL_TYPE_LABELS[meal.meal_type]}
+          </Badge>
+
+          <div className='text-foreground flex items-center gap-1 rounded-full bg-[#f3f0eb] px-3 py-1 text-xs font-semibold'>
+            <Flame className='h-3.5 w-3.5 text-[#f5ac4b]' />
+            {Math.round(calories)} kcal
+          </div>
+        </div>
+
+        <label className='text-muted-foreground flex items-center gap-2 text-xs font-medium'>
+          Zjedzone
           <Checkbox
             id={`meal-${meal.id}`}
             checked={meal.is_eaten}
@@ -68,76 +72,56 @@ export function MealCard({ meal }: MealCardProps) {
             onCheckedChange={handleToggle}
             aria-label={`Oznacz ${meal.recipe.name} jako zjedzony`}
           />
-        </div>
-      </CardHeader>
+        </label>
+      </div>
 
-      <CardContent className='space-y-4'>
-        {/* Obraz przepisu */}
-        <div className='bg-muted relative aspect-video w-full overflow-hidden rounded-lg'>
+      <div className='flex items-start gap-4'>
+        <div className='bg-muted relative h-20 w-20 overflow-hidden rounded-2xl sm:h-24 sm:w-24'>
           {meal.recipe.image_url ? (
             <Image
               src={meal.recipe.image_url}
               alt={meal.recipe.name}
               fill
               className='object-cover'
-              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
-              onError={(e) => {
-                // Fallback na placeholder przy błędzie ładowania
-                e.currentTarget.style.display = 'none'
+              sizes='96px'
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
               }}
             />
           ) : (
-            <div className='text-muted-foreground flex h-full items-center justify-center'>
-              <UtensilsCrossed className='h-12 w-12' />
+            <div className='text-muted-foreground flex h-full w-full items-center justify-center'>
+              <UtensilsCrossed className='h-8 w-8' />
             </div>
           )}
         </div>
 
-        {/* Nazwa przepisu */}
-        <div>
-          <h3 className='line-clamp-2 text-lg leading-tight font-semibold'>
+        <div className='flex flex-1 flex-col gap-3'>
+          <h3 className='text-foreground text-base leading-tight font-semibold sm:text-lg'>
             {meal.recipe.name}
           </h3>
-        </div>
 
-        {/* Wartości odżywcze */}
-        <div className='border-border space-y-2 border-t pt-3'>
-          {/* Kalorie */}
-          <div className='flex items-center justify-between'>
-            <span className='text-muted-foreground text-sm'>Kalorie</span>
-            <span className='text-base font-semibold'>
-              {formatMacro(meal.recipe.total_calories, ' kcal')}
+          <div className='text-muted-foreground flex flex-wrap items-center gap-5 text-xs sm:text-sm'>
+            <span>
+              <span className='text-foreground font-semibold'>C</span>{' '}
+              {formatMacro(carbs, 'g')}
+            </span>
+            <span>
+              <span className='text-foreground font-semibold'>P</span>{' '}
+              {formatMacro(protein, 'g')}
+            </span>
+            <span>
+              <span className='text-foreground font-semibold'>F</span>{' '}
+              {formatMacro(fats, 'g')}
             </span>
           </div>
-
-          {/* Makroskładniki w linii */}
-          <div className='text-muted-foreground flex items-center justify-between text-xs'>
-            <div className='flex gap-3'>
-              <span>
-                <span className='text-foreground font-medium'>B:</span>{' '}
-                {formatMacro(meal.recipe.total_protein_g, 'g')}
-              </span>
-              <span>
-                <span className='text-foreground font-medium'>W:</span>{' '}
-                {formatMacro(meal.recipe.total_carbs_g, 'g')}
-              </span>
-              <span>
-                <span className='text-foreground font-medium'>T:</span>{' '}
-                {formatMacro(meal.recipe.total_fats_g, 'g')}
-              </span>
-            </div>
-          </div>
         </div>
+      </div>
 
-        {/* Oznaczenie modyfikacji składników (jeśli istnieją) */}
-        {meal.ingredient_overrides && (
-          <div className='text-xs text-amber-600'>
-            <span className='font-medium'>
-              ⚠️ Zmodyfikowane ilości składników
-            </span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {meal.ingredient_overrides && (
+        <div className='text-xs font-medium text-amber-600'>
+          Zmienione skladniki w tym posilku
+        </div>
+      )}
+    </div>
   )
 }

@@ -2,7 +2,7 @@
  * Strona szczegółów przepisu
  *
  * Server Component - SSR dla szczegółów przepisu.
- * Dynamic route: /przepisy/[id]
+ * Dynamic route: /recipes/[id]
  */
 
 import type { Metadata } from 'next'

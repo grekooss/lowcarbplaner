@@ -1,8 +1,8 @@
 /**
  * Hook: useCalendarDays
  *
- * Generuje tablicę 7 dni (dziś ± 3 dni) dla komponentu CalendarStrip.
- * Używa useMemo dla optymalizacji.
+ * Generuje tablice 7 dni (tydzien od poniedzialku do niedzieli)
+ * dla komponentu CalendarStrip.
  */
 
 import { useMemo } from 'react'
@@ -10,44 +10,37 @@ import type { CalendarDayViewModel } from '@/types/viewmodels'
 import { DAY_NAMES, MONTH_NAMES } from '@/types/viewmodels'
 
 /**
- * Generuje 7 dni kalendarza (dziś ± 3 dni)
+ * Generuje 7 dni kalendarza (tydzien od poniedzialku do niedzieli)
  *
  * @param selectedDate - Aktualnie wybrana data
  * @returns Tablica 7 dni z metadanymi dla UI
- *
- * @example
- * ```tsx
- * const days = useCalendarDays(new Date('2025-10-15'))
- * // Zwraca: [
- * //   { date: Date('2025-10-12'), dayName: 'Ndz', dayNumber: 12, ... },
- * //   { date: Date('2025-10-13'), dayName: 'Pon', dayNumber: 13, ... },
- * //   ...
- * //   { date: Date('2025-10-18'), dayName: 'Sob', dayNumber: 18, ... }
- * // ]
- * ```
  */
 export function useCalendarDays(selectedDate: Date): CalendarDayViewModel[] {
   return useMemo(() => {
+    const startOfWeek = new Date(selectedDate)
+    startOfWeek.setHours(0, 0, 0, 0)
+
+    const dayOfWeek = startOfWeek.getDay() || 7
+    startOfWeek.setDate(startOfWeek.getDate() - (dayOfWeek - 1))
+
+    const normalizedSelected = new Date(selectedDate)
+    normalizedSelected.setHours(0, 0, 0, 0)
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
     const days: CalendarDayViewModel[] = []
 
-    // Generuj 7 dni: dziś ± 3 dni
-    for (let i = -3; i <= 3; i++) {
-      const date = new Date(today)
-      date.setDate(today.getDate() + i)
-
-      // Normalizuj selectedDate do porównania (bez godzin)
-      const normalizedSelected = new Date(selectedDate)
-      normalizedSelected.setHours(0, 0, 0, 0)
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek)
+      date.setDate(startOfWeek.getDate() + i)
 
       days.push({
         date,
         dayName: DAY_NAMES[date.getDay()] ?? 'Ndz',
         dayNumber: date.getDate(),
         monthName: MONTH_NAMES[date.getMonth()] ?? 'Sty',
-        isToday: i === 0,
+        isToday: date.toDateString() === today.toDateString(),
         isSelected: date.toDateString() === normalizedSelected.toDateString(),
       })
     }

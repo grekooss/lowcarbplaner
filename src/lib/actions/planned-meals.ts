@@ -12,6 +12,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { getMockPlannedMeals } from '@/lib/mocks/plannedMealsMock'
 import type {
   PlannedMealDTO,
   IngredientOverrides,
@@ -34,6 +35,10 @@ import {
 type ActionResult<T> =
   | { data: T; error?: never }
   | { data?: never; error: string }
+
+const AUTH_DISABLED =
+  process.env.DISABLE_AUTH?.toLowerCase() === 'true' ||
+  (!process.env.DISABLE_AUTH && process.env.NODE_ENV !== 'production')
 
 /**
  * Transformuje raw recipe row z Supabase do RecipeDTO
@@ -190,6 +195,10 @@ export async function getPlannedMeals(
     }
 
     const { start_date, end_date } = validated.data
+
+    if (AUTH_DISABLED) {
+      return { data: getMockPlannedMeals(start_date, end_date) }
+    }
 
     // 2. Utworzenie Supabase client
     const supabase = await createServerClient()

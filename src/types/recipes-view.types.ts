@@ -1,7 +1,7 @@
 /**
  * ViewModel Types dla widoku Przeglądarki Przepisów
  *
- * Ten plik zawiera typy specyficzne dla widoku `/przepisy` i `/przepisy/[id]`.
+ * Ten plik zawiera typy specyficzne dla widoku `/recipes` i `/recipes/[id]`.
  * Typy DTO (RecipeDTO, IngredientDTO) importujemy z `dto.types.ts`.
  */
 

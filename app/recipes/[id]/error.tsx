@@ -1,7 +1,7 @@
 /**
  * Error Boundary dla widoku szczegółów przepisu
  *
- * Obsługuje błędy w /przepisy/[id] route.
+ * Obsługuje błędy w /recipes/[id] route.
  */
 
 'use client'
@@ -40,7 +40,7 @@ export default function RecipeDetailError({
           Spróbuj ponownie
         </Button>
         <Button variant='outline' size='lg' asChild>
-          <Link href='/przepisy' className='flex items-center gap-2'>
+          <Link href='/recipes' className='flex items-center gap-2'>
             <ArrowLeft className='h-4 w-4' />
             Wróć do przepisów
           </Link>

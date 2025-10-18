@@ -1,7 +1,7 @@
 /**
  * Client wrapper dla przeglądarki przepisów
  *
- * Główny komponent orchestrujący cały widok /przepisy.
+ * Główny komponent orchestrujący cały widok /recipes.
  * Zarządza stanem filtrów, paginacją, auth check i modalem rejestracji.
  */
 
@@ -63,7 +63,7 @@ export function RecipesBrowserClient({
   const {
     isOpen: isAuthModalOpen,
     redirectRecipeId,
-    openPrompt,
+    // openPrompt, // TYMCZASOWO WYŁĄCZONE
     closePrompt,
   } = useAuthPrompt()
 
@@ -107,17 +107,21 @@ export function RecipesBrowserClient({
   // Featured recipe - pierwszy przepis z listy (lub można losowy)
   const featuredRecipe = sortedRecipes[0] || initialData.results[0]
 
-  // Handle recipe click - sprawdź auth i pokaż modal lub navigate
+  // Handle recipe click - TYMCZASOWO WYŁĄCZONE - zawsze nawiguj
   const handleRecipeClick = (recipeId: number) => {
     if (authLoading) return // Nie pozwól na klik podczas ładowania
 
-    if (!isAuthenticated) {
-      // Niezalogowany - otwórz modal
-      openPrompt(recipeId)
-    } else {
-      // Zalogowany - nawiguj do szczegółów
-      router.push(`/przepisy/${recipeId}`)
-    }
+    // TYMCZASOWO WYŁĄCZONE - autoryzacja
+    // if (!isAuthenticated) {
+    //   // Niezalogowany - otwórz modal
+    //   openPrompt(recipeId)
+    // } else {
+    //   // Zalogowany - nawiguj do szczegółów
+    //   router.push(`/recipes/${recipeId}`)
+    // }
+
+    // Zawsze nawiguj do szczegółów (bez sprawdzania auth)
+    router.push(`/recipes/${recipeId}`)
   }
 
   // Handle Add to Meal Plan

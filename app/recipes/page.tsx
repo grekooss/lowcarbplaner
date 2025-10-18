@@ -69,7 +69,7 @@ export default async function RecipesBrowserPage({
         <h1 className='mb-4 text-2xl font-bold'>Wystąpił błąd</h1>
         <p className='text-muted-foreground mb-8'>{result.error}</p>
         <Link
-          href='/przepisy'
+          href='/recipes'
           className='text-primary underline hover:no-underline'
         >
           Spróbuj ponownie
@@ -89,7 +89,7 @@ export default async function RecipesBrowserPage({
           Nie udało się załadować przepisów
         </p>
         <Link
-          href='/przepisy'
+          href='/recipes'
           className='text-primary underline hover:no-underline'
         >
           Spróbuj ponownie

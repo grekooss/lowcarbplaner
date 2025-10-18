@@ -1,7 +1,7 @@
 /**
  * Error Boundary dla widoku przeglądarki przepisów
  *
- * Obsługuje błędy w /przepisy route.
+ * Obsługuje błędy w /recipes route.
  */
 
 'use client'

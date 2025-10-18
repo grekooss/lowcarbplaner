@@ -35,7 +35,7 @@ Dokładnie przeanalizowałem wszystkie trzy dokumenty.
 
 Na podstawie dokumentów i notatek, niezbędne widoki (lub główne stany interfejsu) to:
 
-1.  **Widok Publiczny / Przeglądarka Przepisów (`/przepisy`)** - Strona startowa dla niezalogowanych.
+1.  **Widok Publiczny / Przeglądarka Przepisów (`/recipes`)** - Strona startowa dla niezalogowanych.
 2.  **Widok Uwierzytelniania (`/auth`)** - Pojedynczy widok z zakładkami Logowanie/Rejestracja.
 3.  **Widok Resetowania Hasła (`/reset-hasla`)** - Wielostopniowy proces (podaj e-mail, sprawdź skrzynkę, ustaw nowe hasło).
 4.  **Kreator Onboardingu (`/onboarding`)** - Wielostopniowy, modalny lub pełnoekranowy proces po pierwszej rejestracji.
@@ -73,7 +73,7 @@ Na podstawie dokumentów i notatek, niezbędne widoki (lub główne stany interf
 
 ### Krok 6: Planowanie podróży użytkownika (główny przypadek użycia)
 
-1.  **Lądowanie:** Nowy użytkownik trafia na `Widok Publiczny / Przeglądarkę Przepisów` (`/przepisy`).
+1.  **Lądowanie:** Nowy użytkownik trafia na `Widok Publiczny / Przeglądarkę Przepisów` (`/recipes`).
 2.  **Inicjacja Rejestracji:** Klika przycisk "Zarejestruj się", co przenosi go do `Widoku Uwierzytelniania` (`/auth`) z aktywną zakładką rejestracji.
 3.  **Rejestracja:** Wypełnia formularz lub używa Google Auth. Po sukcesie jest automatycznie zalogowany.
 4.  **Onboarding:** Zostaje przekierowany do `Kreatora Onboardingu` (`/onboarding`).
@@ -96,7 +96,7 @@ Zgodnie z notatkami z sesji:
   1.  Panel Dzienny (ikona kalendarza, link do `/`)
   2.  Widok Tygodnia (ikona widoku tygodnia, link do `/tydzien`)
   3.  Lista Zakupów (ikona koszyka, link do `/lista-zakupow`)
-  4.  Wszystkie przepisy (ikona książki kucharskiej, link do `/przepisy`)
+  4.  Wszystkie przepisy (ikona książki kucharskiej, link do `/recipes`)
   5.  Profil (ikona użytkownika, link do `/profil`)
 - **Nawigacja dla niezalogowanego użytkownika:** Pasek jest widoczny. Link "Wszystkie przepisy" jest aktywny. Kliknięcie na inne linki (np. "Panel Dzienny") przekierowuje do `Widoku Uwierzytelniania` (`/auth`). W nagłówku znajdują się również jawne przyciski "Zaloguj się" i "Zarejestruj się".
 - **Routing:** Aplikacja wykorzystuje App Router z Next.js. Chronione ścieżki (`/`, `/tydzien`, `/lista-zakupow`, `/profil`) będą zabezpieczone middleware'em lub logiką w layoutach, która przekierowuje niezalogowanych użytkowników do `/auth`.
@@ -188,7 +188,7 @@ Nawigacja opiera się na stałym, pionowym pasku bocznym na urządzeniach deskto
 
 ### Widok: Przeglądarka Przepisów (Publiczny)
 
-- **Ścieżka widoku:** `/przepisy`
+- **Ścieżka widoku:** `/recipes`
 - **Główny cel:** Prezentacja wartości aplikacji potencjalnym użytkownikom i zachęta do rejestracji. Jest to strona docelowa dla niezalogowanych użytkowników.
 - **Kluczowe informacje do wyświetlenia:**
   - Losowy, wyróżniony przepis.
@@ -314,7 +314,7 @@ Układ aplikacji jest oparty na stałym panelu nawigacyjnym po lewej stronie dla
 - **Elementy Menu:**
   - **Panel Dzienny**: Link do `/dashboard`
   - **Widok Tygodnia**: Link do `/meal-plan`
-  - **Przepisy**: Link do `/przepisy`
+  - **Przepisy**: Link do `/recipes`
   - **Lista zakupów**: Link do `/shopping-list`
 - **Nawigacja dodatkowa:**
   - **Profil Użytkownika:** Dostęp do profilu, ustawień i wylogowania znajduje się w prawym górnym rogu ekranu, gdzie wyświetlane jest imię i awatar użytkownika.

@@ -9,7 +9,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+// import { createServerClient } from '@/lib/supabase/server' // TODO: Przywrócić po testach
 import { generateShoppingList } from '@/services/shopping-list'
 import {
   shoppingListQuerySchema,
@@ -71,23 +71,27 @@ export async function getShoppingList(
     const { start_date, end_date } = validated.data
 
     // 2. Autoryzacja - sprawdzenie czy użytkownik jest zalogowany
-    const supabase = await createServerClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    // TODO: Przywrócić autentykację po testach
+    // const supabase = await createServerClient()
+    // const {
+    //   data: { user },
+    //   error: authError,
+    // } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      return {
-        error: 'Brak autoryzacji. Wymagane logowanie.',
-        code: 'UNAUTHORIZED',
-      }
-    }
+    // if (authError || !user) {
+    //   return {
+    //     error: 'Brak autoryzacji. Wymagane logowanie.',
+    //     code: 'UNAUTHORIZED',
+    //   }
+    // }
+
+    // TEMPORARY: Hardcoded user ID dla testów
+    const userId = '00000000-0000-0000-0000-000000000000' // UUID placeholder
 
     // 3. Generowanie listy zakupów przez service layer
     const startTime = performance.now()
     const shoppingList = await generateShoppingList(
-      user.id,
+      userId,
       start_date,
       end_date
     )
@@ -95,7 +99,7 @@ export async function getShoppingList(
 
     // 4. Logowanie performance metrics
     console.log(
-      `Shopping list generated in ${Math.round(endTime - startTime)}ms for user ${user.id} (${start_date} to ${end_date})`
+      `Shopping list generated in ${Math.round(endTime - startTime)}ms for user ${userId} (${start_date} to ${end_date})`
     )
 
     // 5. Zwrócenie wyniku

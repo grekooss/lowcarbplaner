@@ -1,163 +1,141 @@
 /**
- * Komponent nawigacji kalendarzowej (7 dni)
+ * CalendarStrip
  *
- * Wyświetla 7 przycisków dni (dziś ± 3 dni) z scroll-snap CSS.
- * Fully keyboard accessible (Tab, Enter, Space, Arrow keys).
+ * Weekly calendar selector styled to match the dashboard hero mock.
+ * Displays current week (Mon-Sun) with day buttons and navigation arrows.
  */
 
 'use client'
 
+import type { KeyboardEvent } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 import { useCalendarDays } from '@/hooks/useCalendarDays'
 import { cn } from '@/lib/utils'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 interface CalendarStripProps {
   selectedDate: Date
   onDateChange: (date: Date) => void
 }
 
-/**
- * Komponent nawigacji kalendarzowej
- *
- * @example
- * ```tsx
- * <CalendarStrip
- *   selectedDate={selectedDate}
- *   onDateChange={(date) => setSelectedDate(date)}
- * />
- * ```
- */
 export function CalendarStrip({
   selectedDate,
   onDateChange,
 }: CalendarStripProps) {
   const days = useCalendarDays(selectedDate)
 
-  // Helper: Przejdź do poprzedniego dnia
   const handlePrevDay = () => {
-    const currentIndex = days.findIndex((d) => d.isSelected)
-    const prevDay = days[currentIndex - 1]
-    if (currentIndex > 0 && prevDay) {
-      onDateChange(prevDay.date)
-    }
+    const prev = new Date(selectedDate)
+    prev.setDate(prev.getDate() - 1)
+    onDateChange(prev)
   }
 
-  // Helper: Przejdź do następnego dnia
   const handleNextDay = () => {
-    const currentIndex = days.findIndex((d) => d.isSelected)
-    const nextDay = days[currentIndex + 1]
-    if (currentIndex < days.length - 1 && nextDay) {
-      onDateChange(nextDay.date)
-    }
+    const next = new Date(selectedDate)
+    next.setDate(next.getDate() + 1)
+    onDateChange(next)
   }
 
-  // Keyboard navigation dla przycisków dni
-  const handleKeyDown = (e: React.KeyboardEvent, date: Date) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
+  const handleKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    date: Date
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
       onDateChange(date)
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
       handlePrevDay()
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault()
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault()
       handleNextDay()
     }
   }
 
-  return (
-    <section className='space-y-4'>
-      {/* Nagłówek z nawigacją */}
-      <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-semibold'>
-          {selectedDate.toLocaleDateString('pl-PL', {
-            month: 'long',
-            year: 'numeric',
-          })}
-        </h2>
+  const monthLabelRaw = selectedDate.toLocaleDateString('pl-PL', {
+    month: 'long',
+  })
+  const monthLabel =
+    monthLabelRaw.charAt(0).toUpperCase() + monthLabelRaw.slice(1)
+  const yearLabel = selectedDate.getFullYear()
 
-        {/* Przyciski nawigacji (opcjonalne dla mobile) */}
-        <div className='flex gap-1'>
+  return (
+    <section className='card-soft rounded-3xl p-6 shadow-sm'>
+      <div className='flex items-center justify-between gap-3'>
+        <div className='flex items-baseline gap-2'>
+          <span className='text-lg font-semibold capitalize'>{monthLabel}</span>
+          <span className='text-muted-foreground text-sm font-medium'>
+            {yearLabel}
+          </span>
+        </div>
+
+        <div className='flex gap-2'>
           <Button
-            variant='outline'
+            type='button'
+            variant='ghost'
             size='icon'
             onClick={handlePrevDay}
-            disabled={days.findIndex((d) => d.isSelected) === 0}
-            aria-label='Poprzedni dzień'
+            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white'
+            aria-label='Poprzedni dzien'
           >
             <ChevronLeft className='h-4 w-4' />
           </Button>
           <Button
-            variant='outline'
+            type='button'
+            variant='ghost'
             size='icon'
             onClick={handleNextDay}
-            disabled={days.findIndex((d) => d.isSelected) === days.length - 1}
-            aria-label='Następny dzień'
+            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white'
+            aria-label='Nastepny dzien'
           >
             <ChevronRight className='h-4 w-4' />
           </Button>
         </div>
       </div>
 
-      {/* Scroll container z dniami */}
-      <div className='relative'>
-        <div
-          className='scrollbar-hide flex gap-2 overflow-x-auto pb-2'
-          style={{
-            scrollSnapType: 'x mandatory',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          {days.map((day) => (
+      <div className='mt-6 grid grid-cols-7 gap-2'>
+        {days.map((day) => {
+          const isSelected = day.isSelected
+          const isToday = day.isToday
+
+          return (
             <button
               key={day.date.toISOString()}
+              type='button'
               onClick={() => onDateChange(day.date)}
-              onKeyDown={(e) => handleKeyDown(e, day.date)}
+              onKeyDown={(event) => handleKeyDown(event, day.date)}
               className={cn(
-                'flex min-w-[80px] flex-col items-center gap-1 rounded-lg border-2 p-3 transition-all',
-                'scroll-snap-align-center',
-                'hover:bg-accent hover:shadow-md',
-                'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
-                day.isSelected &&
-                  'border-primary bg-primary text-primary-foreground shadow-md',
-                !day.isSelected && 'border-border bg-card',
-                day.isToday && !day.isSelected && 'border-primary'
+                'focus-visible:ring-primary flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-sm transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                'text-muted-foreground border border-transparent bg-white shadow-sm hover:shadow-md',
+                isSelected &&
+                  'bg-primary text-primary-foreground border-transparent shadow-md',
+                isToday && !isSelected && 'border-primary/30 text-foreground'
               )}
-              role='button'
-              tabIndex={0}
-              aria-label={`${day.dayName}, ${day.dayNumber} ${day.monthName}`}
-              aria-pressed={day.isSelected}
+              aria-pressed={isSelected}
+              aria-label={`${day.dayName} ${day.dayNumber} ${day.monthName}`}
             >
-              {/* Nazwa dnia */}
               <span
                 className={cn(
-                  'text-xs font-medium',
-                  day.isSelected
+                  'text-xs font-semibold uppercase',
+                  isSelected
                     ? 'text-primary-foreground'
                     : 'text-muted-foreground'
                 )}
               >
                 {day.dayName}
               </span>
-
-              {/* Numer dnia */}
               <span
                 className={cn(
-                  'text-2xl font-bold',
-                  day.isSelected && 'text-primary-foreground'
+                  'text-lg leading-none font-semibold',
+                  isSelected ? 'text-primary-foreground' : 'text-foreground'
                 )}
               >
                 {day.dayNumber}
               </span>
-
-              {/* Oznaczenie "Dziś" */}
-              {day.isToday && !day.isSelected && (
-                <span className='text-primary text-xs font-semibold'>Dziś</span>
-              )}
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </section>
   )

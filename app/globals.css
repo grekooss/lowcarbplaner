@@ -219,3 +219,7 @@ html {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+.card-soft {
+  background-color: #f8f4f1;
+}

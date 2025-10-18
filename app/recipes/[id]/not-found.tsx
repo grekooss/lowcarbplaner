@@ -18,7 +18,7 @@ export default function RecipeNotFound() {
       </p>
 
       <Button size='lg' asChild>
-        <Link href='/przepisy' className='flex items-center gap-2'>
+        <Link href='/recipes' className='flex items-center gap-2'>
           <ArrowLeft className='h-4 w-4' />
           Wróć do przepisów
         </Link>

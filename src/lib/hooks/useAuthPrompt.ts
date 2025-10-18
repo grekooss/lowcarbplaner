@@ -33,7 +33,7 @@ interface UseAuthPromptReturn extends AuthPromptState {
  *
  * // Pobierz URL do rejestracji z redirect
  * const signupUrl = getRedirectUrl('/signup')
- * // => '/signup?redirect=/przepisy/123'
+ * // => '/signup?redirect=/recipes/123'
  *
  * // Zamknij modal
  * closePrompt()
@@ -102,7 +102,7 @@ export function useAuthPrompt(): UseAuthPromptReturn {
 
       if (!recipeId) return baseUrl
 
-      return `${baseUrl}?redirect=/przepisy/${recipeId}`
+      return `${baseUrl}?redirect=/recipes/${recipeId}`
     },
     [state.redirectRecipeId]
   )
