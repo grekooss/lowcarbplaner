@@ -203,7 +203,7 @@ export async function getPlannedMeals(
     // 2. Utworzenie Supabase client
     const supabase = await createServerClient()
 
-    // 3. Pobranie user_id z sesji
+    // 3. Weryfikacja autentykacji
     const {
       data: { user },
       error: authError,
@@ -761,7 +761,7 @@ export async function getReplacementRecipes(
     // 2. Utworzenie Supabase client
     const supabase = await createServerClient()
 
-    // 3. Pobranie user_id z sesji
+    // 3. Weryfikacja autentykacji
     const {
       data: { user },
       error: authError,

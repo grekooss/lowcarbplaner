@@ -15,7 +15,7 @@ interface DayCardProps {
   onSwapClick: (mealId: number, mealType: string) => void
 }
 
-export const DayCard = ({ day, onMealClick, onSwapClick }: DayCardProps) => {
+export const DayCard = ({ day, onMealClick }: DayCardProps) => {
   return (
     <Card>
       <CardHeader className='pb-3'>
@@ -33,28 +33,31 @@ export const DayCard = ({ day, onMealClick, onSwapClick }: DayCardProps) => {
 
       <CardContent className='space-y-3'>
         {/* Śniadanie */}
-        <MealCard
-          meal={day.breakfast}
-          mealType='breakfast'
-          onMealClick={onMealClick}
-          onSwapClick={onSwapClick}
-        />
+        {day.breakfast && (
+          <MealCard
+            meal={day.breakfast}
+            mealType='breakfast'
+            onMealClick={onMealClick}
+          />
+        )}
 
         {/* Obiad */}
-        <MealCard
-          meal={day.lunch}
-          mealType='lunch'
-          onMealClick={onMealClick}
-          onSwapClick={onSwapClick}
-        />
+        {day.lunch && (
+          <MealCard
+            meal={day.lunch}
+            mealType='lunch'
+            onMealClick={onMealClick}
+          />
+        )}
 
         {/* Kolacja */}
-        <MealCard
-          meal={day.dinner}
-          mealType='dinner'
-          onMealClick={onMealClick}
-          onSwapClick={onSwapClick}
-        />
+        {day.dinner && (
+          <MealCard
+            meal={day.dinner}
+            mealType='dinner'
+            onMealClick={onMealClick}
+          />
+        )}
       </CardContent>
     </Card>
   )

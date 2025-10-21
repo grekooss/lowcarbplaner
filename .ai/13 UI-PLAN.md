@@ -286,7 +286,7 @@ Nawigacja opiera się na stałym, pionowym pasku bocznym na urządzeniach deskto
 
 **Scenariusz 1: Nowy Użytkownik**
 
-1.  **Odkrycie:** Użytkownik ląduje na `/healthy-menu`. Przegląda dania.
+1.  **Odkrycie:** Użytkownik ląduje na `/recipes`. Przegląda dania.
 2.  **Rejestracja:** Klika "Zarejestruj się", przechodzi do `/auth`, tworzy konto.
 3.  **Konfiguracja:** Zostaje przekierowany na `/onboarding`, gdzie podaje swoje dane.
 4.  **Generowanie Planu:** Aplikacja wyświetla stan ładowania podczas generowania planu.

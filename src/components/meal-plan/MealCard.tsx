@@ -1,110 +1,73 @@
 'use client'
 
-/**
- * MealCard - Karta posiłku w widoku mobile
- * Bardziej rozbudowana niż MealCell - więcej informacji i przestrzeni
- */
-
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
+import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { UtensilsCrossed } from 'lucide-react'
 import type { PlannedMealDTO } from '@/types/dto.types'
-import { MEAL_TYPE_LABELS } from '@/types/meal-plan-view.types'
+import Image from 'next/image'
 
 interface MealCardProps {
   meal: PlannedMealDTO | null
-  mealType: 'breakfast' | 'lunch' | 'dinner'
+  mealType: 'breakfast' | 'lunch' | 'snack' | 'dinner'
   onMealClick: (meal: PlannedMealDTO) => void
-  onSwapClick: (mealId: number, mealType: string) => void
 }
 
-export const MealCard = ({
-  meal,
-  mealType,
-  onMealClick,
-  onSwapClick,
-}: MealCardProps) => {
-  // Pusta karta gdy brak posiłku
+const mealTheme = {
+  breakfast: {
+    bg: 'bg-breakfast',
+    text: 'text-breakfast-foreground',
+  },
+  lunch: {
+    bg: 'bg-lunch',
+    text: 'text-lunch-foreground',
+  },
+  snack: {
+    bg: 'bg-snack',
+    text: 'text-snack-foreground',
+  },
+  dinner: {
+    bg: 'bg-dinner',
+    text: 'text-dinner-foreground',
+  },
+} as const
+
+export const MealCard = ({ meal, mealType, onMealClick }: MealCardProps) => {
+  const theme = mealTheme[mealType]
+
   if (!meal) {
-    return (
-      <Card className='bg-muted/30'>
-        <CardContent className='p-4'>
-          <div className='mb-2 flex items-center justify-between'>
-            <Badge variant='secondary'>{MEAL_TYPE_LABELS[mealType]}</Badge>
-          </div>
-          <div className='text-muted-foreground flex h-24 items-center justify-center'>
-            <span className='text-sm'>Brak posiłku</span>
-          </div>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (
-    <Card className='transition-shadow hover:shadow-md'>
-      <CardContent className='p-4'>
-        {/* Header z typem posiłku */}
-        <div className='mb-3 flex items-center justify-between'>
-          <Badge variant='default'>{MEAL_TYPE_LABELS[mealType]}</Badge>
-        </div>
-
-        <div className='flex gap-4'>
-          {/* Image */}
-          <div className='relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg'>
-            {meal.recipe.image_url ? (
-              <Image
-                src={meal.recipe.image_url}
-                alt={meal.recipe.name}
-                fill
-                className='object-cover'
-                sizes='100px'
-              />
-            ) : (
-              <div className='bg-muted flex h-full w-full items-center justify-center'>
-                <UtensilsCrossed className='text-muted-foreground h-8 w-8' />
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className='min-w-0 flex-1'>
-            <h4 className='mb-2 line-clamp-2 text-sm font-semibold'>
-              {meal.recipe.name}
-            </h4>
-
-            {/* Makro summary */}
-            <div className='text-muted-foreground mb-3 flex flex-wrap gap-x-3 gap-y-1 text-xs'>
-              <span className='font-medium'>
-                {meal.recipe.total_calories || 0} kcal
-              </span>
-              <span>B: {meal.recipe.total_protein_g || 0}g</span>
-              <span>W: {meal.recipe.total_carbs_g || 0}g</span>
-              <span>T: {meal.recipe.total_fats_g || 0}g</span>
+    <Card
+      className={cn(
+        'cursor-pointer overflow-hidden border-0 p-0 transition-transform hover:scale-105 hover:shadow-lg',
+        theme.bg
+      )}
+      onClick={() => onMealClick(meal)}
+    >
+      <div className='flex h-full items-stretch'>
+        <div className='relative w-24 flex-shrink-0 overflow-hidden rounded-r-xl bg-white'>
+          {meal.recipe.image_url ? (
+            <Image
+              src={meal.recipe.image_url}
+              alt={meal.recipe.name}
+              fill
+              className='object-cover'
+              sizes='96px'
+            />
+          ) : (
+            <div className='flex h-full w-full items-center justify-center'>
+              <UtensilsCrossed className='text-muted-foreground h-8 w-8' />
             </div>
-
-            {/* Actions */}
-            <div className='flex gap-2'>
-              <Button
-                size='sm'
-                variant='outline'
-                onClick={() => onMealClick(meal)}
-                className='flex-1'
-              >
-                Zobacz przepis
-              </Button>
-              <Button
-                size='sm'
-                variant='ghost'
-                onClick={() => onSwapClick(meal.id, meal.meal_type)}
-              >
-                Zmień
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
-      </CardContent>
+        <div className='flex flex-1 items-center p-4'>
+          <h3 className={cn('text-base font-medium', theme.text)}>
+            {meal.recipe.name}
+          </h3>
+        </div>
+      </div>
     </Card>
   )
 }

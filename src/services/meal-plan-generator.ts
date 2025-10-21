@@ -120,14 +120,18 @@ async function fetchRecipesForMeal(
 ): Promise<Recipe[]> {
   const supabase = createAdminClient()
 
+  // Zaokrąglij kalorie do integer (kolumna total_calories w bazie to integer)
+  const minCal = Math.floor(minCalories)
+  const maxCal = Math.ceil(maxCalories)
+
   const { data, error } = await supabase
     .from('recipes')
     .select(
       'id, name, meal_types, total_calories, total_protein_g, total_carbs_g, total_fats_g'
     )
     .contains('meal_types', [mealType])
-    .gte('total_calories', minCalories)
-    .lte('total_calories', maxCalories)
+    .gte('total_calories', minCal)
+    .lte('total_calories', maxCal)
     .not('total_calories', 'is', null) // Tylko przepisy z obliczonymi kaloriami
 
   if (error) {

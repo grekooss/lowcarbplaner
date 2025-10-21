@@ -26,7 +26,6 @@ import {
   type CreateProfileInput,
   type UpdateProfileInput,
 } from '@/lib/validation/profile'
-import type { Tables } from '@/types/database.types'
 
 /**
  * Standardowy typ wyniku Server Action (Discriminated Union)
@@ -74,6 +73,7 @@ export async function createProfile(
   try {
     // 1. Weryfikacja autentykacji
     const supabase = await createServerClient()
+
     const {
       data: { user },
       error: authError,
@@ -100,29 +100,7 @@ export async function createProfile(
 
     const command: CreateProfileCommand = validated.data
 
-    // 3. Sprawdzenie czy profil już istnieje
-    const { data: existingProfile, error: checkError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    if (checkError) {
-      console.error('Błąd podczas sprawdzania istnienia profilu:', checkError)
-      return {
-        error: `Błąd bazy danych: ${checkError.message}`,
-        code: 'DATABASE_ERROR',
-      }
-    }
-
-    if (existingProfile) {
-      return {
-        error: 'Profil użytkownika już istnieje',
-        code: 'PROFILE_ALREADY_EXISTS',
-      }
-    }
-
-    // 4. Obliczenie celów żywieniowych (BMR, TDEE, makro)
+    // 3. Obliczenie celów żywieniowych (BMR, TDEE, makro)
     let nutritionTargets
     try {
       nutritionTargets = calculateNutritionTargets({
@@ -148,8 +126,8 @@ export async function createProfile(
       }
     }
 
-    // 5. Przygotowanie danych do zapisu
-    const profileData: Tables<'profiles'> = {
+    // 5. Przygotowanie danych do zapisu (bez created_at - zachowaj oryginalny)
+    const profileData = {
       id: user.id,
       email: user.email!,
       gender: command.gender,
@@ -164,21 +142,22 @@ export async function createProfile(
       target_carbs_g: nutritionTargets.target_carbs_g,
       target_protein_g: nutritionTargets.target_protein_g,
       target_fats_g: nutritionTargets.target_fats_g,
-      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
 
-    // 6. Zapis profilu do bazy danych
-    const { data: createdProfile, error: insertError } = await supabase
+    // 6. Zapis profilu do bazy danych (upsert - update lub insert)
+    const { data: createdProfile, error: upsertError } = await supabase
       .from('profiles')
-      .insert(profileData)
+      .upsert(profileData, {
+        onConflict: 'id',
+      })
       .select()
       .single()
 
-    if (insertError) {
-      console.error('Błąd podczas tworzenia profilu:', insertError)
+    if (upsertError) {
+      console.error('Błąd podczas zapisywania profilu:', upsertError)
       return {
-        error: `Błąd bazy danych: ${insertError.message}`,
+        error: `Błąd bazy danych: ${upsertError.message}`,
         code: 'DATABASE_ERROR',
       }
     }
@@ -238,6 +217,7 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
   try {
     // 1. Weryfikacja autentykacji
     const supabase = await createServerClient()
+
     const {
       data: { user },
       error: authError,
@@ -333,6 +313,7 @@ export async function updateMyProfile(
   try {
     // 1. Weryfikacja autentykacji
     const supabase = await createServerClient()
+
     const {
       data: { user },
       error: authError,
@@ -493,6 +474,7 @@ export async function generateMealPlan(): Promise<
   try {
     // 1. Weryfikacja autentykacji
     const supabase = await createServerClient()
+
     const {
       data: { user },
       error: authError,
@@ -539,23 +521,23 @@ export async function generateMealPlan(): Promise<
       .toISOString()
       .split('T')[0]!
 
-    const existingMealsCount = await checkExistingPlan(
-      user.id,
-      startDate,
-      endDate
-    )
-
-    // Jeśli istnieje kompletny plan (21 posiłków = 7 dni × 3 posiłki), zwróć konflikt
-    if (existingMealsCount >= 21) {
-      return {
-        error: 'Plan posiłków na następne 7 dni już istnieje i jest kompletny',
-        code: 'MEAL_PLAN_EXISTS',
-      }
-    }
-
-    // 4. Generowanie planu posiłków (7 dni × 3 posiłki = 21 wpisów)
+    // 4. Sprawdzenie istniejącego planu i generowanie nowego
+    let existingMealsCount
     let plannedMeals
+
     try {
+      existingMealsCount = await checkExistingPlan(user.id, startDate, endDate)
+
+      // Jeśli istnieje kompletny plan (21 posiłków = 7 dni × 3 posiłki), zwróć konflikt
+      if (existingMealsCount >= 21) {
+        return {
+          error:
+            'Plan posiłków na następne 7 dni już istnieje i jest kompletny',
+          code: 'MEAL_PLAN_EXISTS',
+        }
+      }
+
+      // Generowanie planu posiłków (7 dni × 3 posiłki = 21 wpisów)
       plannedMeals = await generateWeeklyPlan(profile, today)
     } catch (generatorError) {
       console.error('Błąd generatora planu:', generatorError)

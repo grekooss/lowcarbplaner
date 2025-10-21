@@ -20,6 +20,7 @@ import {
   recipeQueryParamsSchema,
   type RecipeQueryParamsInput,
 } from '@/lib/validation/recipes'
+import { getRecipeImageUrl } from '@/lib/utils/supabase-storage'
 
 /**
  * Typ odpowiedzi dla listy przepisów (zgodny z planem API)
@@ -195,13 +196,17 @@ function transformRecipeToDTO(recipe: {
     })
   )
 
+  // Generuj poprawny URL dla zdjęcia z Supabase Storage
+  // Obsługuje zarówno pełne URL-e jak i relatywne ścieżki
+  const cleanImageUrl = getRecipeImageUrl(recipe.image_url)
+
   return {
     id: recipe.id,
     name: recipe.name,
     instructions: normalizeInstructions(recipe.instructions),
     meal_types: recipe.meal_types as RecipeDTO['meal_types'],
     tags: recipe.tags,
-    image_url: recipe.image_url,
+    image_url: cleanImageUrl,
     difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
     average_rating: recipe.average_rating,
     reviews_count: recipe.reviews_count,

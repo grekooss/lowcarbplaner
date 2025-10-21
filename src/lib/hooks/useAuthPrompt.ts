@@ -15,7 +15,7 @@ const REDIRECT_RECIPE_KEY = 'auth_redirect_recipe_id'
 interface UseAuthPromptReturn extends AuthPromptState {
   openPrompt: (recipeId: number) => void
   closePrompt: () => void
-  getRedirectUrl: (baseUrl: '/signup' | '/login') => string
+  getRedirectUrl: (mode?: 'login' | 'register') => string
   clearRedirect: () => void
 }
 
@@ -32,8 +32,8 @@ interface UseAuthPromptReturn extends AuthPromptState {
  * openPrompt(123)
  *
  * // Pobierz URL do rejestracji z redirect
- * const signupUrl = getRedirectUrl('/signup')
- * // => '/signup?redirect=/recipes/123'
+ * const signupUrl = getRedirectUrl('register')
+ * // => '/auth?tab=register&redirect=/recipes/123'
  *
  * // Zamknij modal
  * closePrompt()
@@ -86,13 +86,13 @@ export function useAuthPrompt(): UseAuthPromptReturn {
   }, [])
 
   /**
-   * Generuje URL do rejestracji/logowania z redirect query param
+   * Generuje URL do logowania/rejestracji z redirect query param
    *
-   * @param baseUrl - Base URL (/signup lub /login)
+   * @param mode - Auth mode ('login' lub 'register')
    * @returns URL z redirect param jeśli jest recipeId, inaczej base URL
    */
   const getRedirectUrl = useCallback(
-    (baseUrl: '/signup' | '/login'): string => {
+    (mode: 'login' | 'register' = 'login'): string => {
       // Sprawdź stan lub localStorage (fallback)
       const recipeId =
         state.redirectRecipeId ||
@@ -100,9 +100,13 @@ export function useAuthPrompt(): UseAuthPromptReturn {
           ? localStorage.getItem(REDIRECT_RECIPE_KEY)
           : null)
 
-      if (!recipeId) return baseUrl
+      const baseUrl = '/auth'
+      const tabParam = mode === 'register' ? '?tab=register' : ''
 
-      return `${baseUrl}?redirect=/recipes/${recipeId}`
+      if (!recipeId) return `${baseUrl}${tabParam}`
+
+      const separator = tabParam ? '&' : '?'
+      return `${baseUrl}${tabParam}${separator}redirect=/recipes/${recipeId}`
     },
     [state.redirectRecipeId]
   )

@@ -58,6 +58,7 @@ export async function createFeedback(
   try {
     // 1. Weryfikacja autentykacji
     const supabase = await createServerClient()
+
     const {
       data: { user },
       error: authError,
