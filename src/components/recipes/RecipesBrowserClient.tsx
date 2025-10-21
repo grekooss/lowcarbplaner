@@ -132,7 +132,14 @@ export function RecipesBrowserClient({
 
   return (
     <>
-      <div className='mx-auto w-full space-y-8'>
+      <main className='container mx-auto space-y-8 px-4 py-8'>
+        <div className='space-y-2'>
+          <h1 className='text-3xl font-bold tracking-tight'>Przepisy</h1>
+          <p className='text-muted-foreground'>
+            Przeglądaj i odkrywaj pyszne przepisy niskowęglowodanowe
+          </p>
+        </div>
+
         {/* Featured Recipe */}
         {featuredRecipe && (
           <section className='w-full space-y-4'>
@@ -221,7 +228,7 @@ export function RecipesBrowserClient({
             </>
           )}
         </section>
-      </div>
+      </main>
 
       {/* Auth Prompt Modal */}
       <AuthPromptModal

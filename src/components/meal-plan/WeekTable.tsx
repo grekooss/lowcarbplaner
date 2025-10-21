@@ -51,6 +51,22 @@ const DayRow = ({ day, date, meals, onMealClick }: DayRowProps) => {
 export function WeekTable({ weekPlan, onMealClick }: WeekTableProps) {
   return (
     <div className='space-y-4'>
+      {/* Nagłówki kolumn posiłków */}
+      <div className='mb-4 grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr]'>
+        <div className='hidden md:block' /> {/* Pusty slot dla daty */}
+        <div className='hidden grid-cols-3 gap-4 md:grid'>
+          <div className='text-center'>
+            <h3 className='text-lg font-semibold text-slate-700'>Śniadanie</h3>
+          </div>
+          <div className='text-center'>
+            <h3 className='text-lg font-semibold text-slate-700'>Obiad</h3>
+          </div>
+          <div className='text-center'>
+            <h3 className='text-lg font-semibold text-slate-700'>Kolacja</h3>
+          </div>
+        </div>
+      </div>
+
       {weekPlan.days.map((day) => {
         const meals = [
           { meal: day.breakfast, mealType: 'breakfast' as const },

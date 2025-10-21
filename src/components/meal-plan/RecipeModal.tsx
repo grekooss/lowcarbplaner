@@ -2,19 +2,11 @@
 
 /**
  * RecipeModal - Modal ze szczegółowym podglądem przepisu
- * Reużywa komponenty z RecipeDetailClient
+ * Używa tego samego layoutu co RecipeDetailClient
  */
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { RecipeHeader } from '@/components/recipes/detail/RecipeHeader'
-import { MacroSummary } from '@/components/recipes/detail/MacroSummary'
-import { IngredientsList } from '@/components/recipes/detail/IngredientsList'
-import { InstructionsList } from '@/components/recipes/detail/InstructionsList'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { RecipeDetailClient } from '@/components/recipes/detail/RecipeDetailClient'
 import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipeModalProps {
@@ -36,34 +28,8 @@ export const RecipeModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] max-w-3xl overflow-y-auto'>
-        <DialogHeader>
-          <DialogTitle>Szczegóły przepisu</DialogTitle>
-        </DialogHeader>
-
-        <div className='space-y-6'>
-          {/* Header z obrazem i nazwą */}
-          <RecipeHeader
-            name={recipe.name}
-            imageUrl={recipe.image_url}
-            tags={recipe.tags}
-            mealTypes={recipe.meal_types}
-          />
-
-          {/* Makro summary */}
-          <MacroSummary
-            calories={recipe.total_calories}
-            protein_g={recipe.total_protein_g}
-            carbs_g={recipe.total_carbs_g}
-            fats_g={recipe.total_fats_g}
-          />
-
-          {/* Lista składników */}
-          <IngredientsList ingredients={recipe.ingredients} />
-
-          {/* Instrukcje przygotowania */}
-          <InstructionsList instructions={recipe.instructions} />
-        </div>
+      <DialogContent className='max-h-[90vh] max-w-[95vw] overflow-y-auto p-0 lg:max-w-[1400px]'>
+        <RecipeDetailClient recipe={recipe} showBackButton={false} />
       </DialogContent>
     </Dialog>
   )

@@ -156,8 +156,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
           </aside>
 
-          <div className='flex flex-1 flex-col overflow-hidden bg-white'>
-            <header className='flex items-center justify-between border-b border-black/5 bg-[var(--bg-card)] px-5 py-4 lg:px-8'>
+          <div className='relative flex flex-1 flex-col overflow-hidden bg-white'>
+            {/* User Menu - Floating in top right */}
+            <div className='absolute top-5 right-5 z-50 flex items-center gap-3 lg:top-8 lg:right-8'>
               <button
                 type='button'
                 className='inline-flex items-center justify-center rounded-xl bg-white p-2 text-slate-700 shadow-sm lg:hidden'
@@ -167,11 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Menu className='h-5 w-5' />
               </button>
 
-              <div className='hidden text-sm font-semibold text-slate-500 lg:block'>
-                {new Date().toLocaleDateString('pl-PL', { weekday: 'long' })}
-              </div>
-
-              <div className='relative ml-auto lg:ml-0' ref={headerMenuRef}>
+              <div className='relative' ref={headerMenuRef}>
                 <button
                   onClick={() => user && setHeaderMenuOpen(!headerMenuOpen)}
                   className='flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-sm transition-colors hover:bg-slate-50'
@@ -201,7 +198,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 </button>
 
-                {/* Dropdown Menu - Header */}
+                {/* Dropdown Menu */}
                 {user && headerMenuOpen && (
                   <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg'>
                     <Link
@@ -222,7 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
                 )}
               </div>
-            </header>
+            </div>
 
             <main className='flex-1 bg-white'>{children}</main>
           </div>

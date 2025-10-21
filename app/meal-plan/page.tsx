@@ -30,7 +30,7 @@ export default async function MealPlanPage() {
   //   redirect('/login')
   // }
 
-  // Oblicz zakres dat (dziś + 6 dni)
+  // Oblicz zakres dat (dziś + 6 dni = łącznie 7 dni)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -53,7 +53,7 @@ export default async function MealPlanPage() {
       <div className='mb-6'>
         <h1 className='text-3xl font-bold tracking-tight'>Plan Posiłków</h1>
         <p className='text-muted-foreground mt-2'>
-          Twój plan na najbliższe 7 dni
+          Twój plan na najbliższych 7 dni
         </p>
       </div>
 
