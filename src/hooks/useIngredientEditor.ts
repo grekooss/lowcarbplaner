@@ -37,11 +37,17 @@ export function useIngredientEditor({
 
   // Check if there are any changes from initial state
   const hasChanges = useMemo(() => {
-    if (!initialOverrides && overrides.length === 0) return false
-    if (!initialOverrides && overrides.length > 0) return true
-    if (initialOverrides && overrides.length === 0) return true
+    // Normalize to arrays for comparison
+    const initial = initialOverrides || []
+    const current = overrides || []
 
-    return JSON.stringify(overrides) !== JSON.stringify(initialOverrides)
+    // Compare by sorting and stringifying
+    const sortById = (arr: IngredientOverrides) =>
+      [...arr].sort((a, b) => a.ingredient_id - b.ingredient_id)
+
+    return (
+      JSON.stringify(sortById(current)) !== JSON.stringify(sortById(initial))
+    )
   }, [overrides, initialOverrides])
 
   // Calculate adjusted nutrition based on current overrides
