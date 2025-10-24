@@ -32,13 +32,13 @@
 
   /* Meal Category Colors */
   --breakfast: #e8f5d8;
-  --breakfast-foreground: #5d8a3a;
+  --breakfast-foreground: #101010;
   --lunch: #fff4d6;
-  --lunch-foreground: #b8860b;
+  --lunch-foreground: #101010;
   --snack: #ffe5d9;
-  --snack-foreground: #cc7a52;
+  --snack-foreground: #101010;
   --dinner: #f0f0f0;
-  --dinner-foreground: #666666;
+  --dinner-foreground: #101010;
 
   /* Day Card Color */
   --dayCard: #faefe3;

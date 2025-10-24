@@ -40,13 +40,13 @@ type ActionResult<T> =
   | { data?: never; error: string }
 
 /**
- * Transformuje raw recipe row z Supabase do RecipeDTO
+ * Transformuje raw recipe row z Supabase do RecipeInstructions
  *
  * @param recipe - Raw row z tabeli content.recipes + joins
- * @returns RecipeDTO - Typowany obiekt zgodny z DTO
+ * @returns RecipeInstructions - Tablica kroków
  */
 function normalizeInstructions(raw: unknown): RecipeInstructions {
-  const parseSteps = (input: unknown): RecipeInstructions['steps'] => {
+  const parseSteps = (input: unknown): RecipeInstructions => {
     if (!Array.isArray(input)) {
       return []
     }
@@ -84,7 +84,8 @@ function normalizeInstructions(raw: unknown): RecipeInstructions {
         return null
       })
       .filter(
-        (value): value is RecipeInstructions['steps'][number] => value !== null
+        (value): value is { step: number; description: string } =>
+          value !== null
       )
   }
 
@@ -105,29 +106,11 @@ function normalizeInstructions(raw: unknown): RecipeInstructions {
       steps = parseSteps(numericKeys)
     }
 
-    const prepRaw = value.prep_time_minutes
-    const cookRaw = value.cook_time_minutes
-
-    const normalizeTime = (input: unknown): number | undefined => {
-      if (typeof input === 'number' && Number.isFinite(input)) {
-        return input
-      }
-      if (typeof input === 'string') {
-        const parsed = Number.parseInt(input, 10)
-        return Number.isFinite(parsed) ? parsed : undefined
-      }
-      return undefined
-    }
-
-    return {
-      steps,
-      prep_time_minutes: normalizeTime(prepRaw),
-      cook_time_minutes: normalizeTime(cookRaw),
-    }
+    return steps
   }
 
   if (raw === null || raw === undefined) {
-    return { steps: [] }
+    return []
   }
 
   if (typeof raw === 'string') {
@@ -135,19 +118,19 @@ function normalizeInstructions(raw: unknown): RecipeInstructions {
       const parsed = JSON.parse(raw)
       return normalizeInstructions(parsed)
     } catch {
-      return { steps: [] }
+      return []
     }
   }
 
   if (Array.isArray(raw)) {
-    return { steps: parseSteps(raw) }
+    return parseSteps(raw)
   }
 
   if (typeof raw === 'object') {
     return handleObject(raw as Record<string, unknown>)
   }
 
-  return { steps: [] }
+  return []
 }
 
 function transformRecipeToDTO(recipe: {

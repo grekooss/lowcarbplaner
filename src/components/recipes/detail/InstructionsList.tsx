@@ -26,8 +26,8 @@ interface InstructionsListProps {
  * ```
  */
 export function InstructionsList({ instructions }: InstructionsListProps) {
-  // Wyciągnij kroki z nowej struktury
-  const steps = instructions.steps || []
+  // instructions jest teraz bezpośrednio tablicą kroków
+  const steps = Array.isArray(instructions) ? instructions : []
 
   // Sortuj kroki według numeru (ascending)
   const sortedSteps = [...steps].sort((a, b) => a.step - b.step)

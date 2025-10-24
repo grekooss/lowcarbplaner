@@ -46,5 +46,6 @@ export function usePlannedMealsQuery(startDate: string, endDate: string) {
     staleTime: 60 * 1000, // 1 minuta - dane uznawane za "świeże"
     refetchOnWindowFocus: true, // Refetch po powrocie do okna
     retry: 2, // Retry 2 razy przy błędzie
+    placeholderData: (previousData) => previousData, // Zachowaj poprzednie dane podczas ładowania
   })
 }

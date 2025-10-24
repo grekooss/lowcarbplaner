@@ -5,11 +5,11 @@
  * Server Component odpowiedzialny za initial data fetching.
  */
 
-// TYMCZASOWO WYŁĄCZONE - Autoryzacja
-// import { redirect } from 'next/navigation'
-// import { createServerClient } from '@/lib/supabase/server'
 import { getPlannedMeals } from '@/lib/actions/planned-meals'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
+
+// Force dynamic rendering because of Supabase auth (cookies)
+export const dynamic = 'force-dynamic'
 
 /**
  * Dashboard - route "/dashboard"
@@ -60,7 +60,18 @@ export default async function DashboardPage() {
   }
 
   // 4. Pobranie posiłków na dziś (initial data)
-  const today = new Date().toISOString().split('T')[0] ?? ''
+  // Format daty lokalnie (bez konwersji do UTC)
+  const todayDate = new Date()
+  todayDate.setHours(0, 0, 0, 0)
+
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const today = formatLocalDate(todayDate)
   const mealsResult = await getPlannedMeals({
     start_date: today,
     end_date: today,

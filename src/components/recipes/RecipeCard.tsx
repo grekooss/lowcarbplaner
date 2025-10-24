@@ -17,6 +17,7 @@ import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlacehol
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
 import { MacroSummaryRow } from './MacroSummaryRow'
+import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
 interface RecipeCardProps {
   recipe: RecipeDTO
@@ -70,7 +71,7 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
 
   return (
     <Card
-      className='flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-3xl border-0 bg-[var(--bg-card)] transition-none'
+      className='focus-visible:ring-primary/40 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-3xl border-0 bg-[var(--bg-card)] transition-transform duration-200 ease-out hover:scale-[1.02] hover:shadow-[0_12px_28px_rgba(36,25,15,0.1)] focus-visible:ring-2 focus-visible:outline-none'
       role='button'
       tabIndex={0}
       aria-label={`Zobacz przepis ${recipe.name}`}
@@ -99,7 +100,7 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
       <CardContent className='flex flex-1 flex-col gap-3.5 px-4 pt-3 pb-4'>
         <div className='flex flex-wrap items-center gap-1.5'>
           {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
-            <Badge className='bg-breakfast-bg text-breakfast-text rounded-full px-3 py-1 text-xs font-semibold shadow-sm'>
+            <Badge className={getMealTypeBadgeClasses(recipe.meal_types[0])}>
               {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
             </Badge>
           )}

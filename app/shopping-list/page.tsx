@@ -1,6 +1,9 @@
 import { getShoppingList } from '@/lib/actions/shopping-list'
 import { ShoppingListClient } from '@/components/shopping-list/ShoppingListClient'
 
+// Force dynamic rendering because of Supabase auth (cookies)
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Lista Zakupów - LowCarbPlaner',
   description: 'Twoja zagregowana lista zakupów na nadchodzący tydzień',

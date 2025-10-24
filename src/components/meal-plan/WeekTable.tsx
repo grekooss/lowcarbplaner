@@ -9,15 +9,19 @@ import type { WeekPlanViewModel } from '@/types/meal-plan-view.types'
 import type { PlannedMealDTO } from '@/types/dto.types'
 import { MealCard } from './MealCard'
 
+type MonthHeader = { primary: string; secondary?: string } | null
+
 interface WeekTableProps {
   weekPlan: WeekPlanViewModel
   onMealClick: (meal: PlannedMealDTO) => void
   onSwapClick: (mealId: number, mealType: string) => void
+  monthHeader?: MonthHeader
 }
 
 interface DayRowProps {
   day: string
   date: string
+  dateStr: string // YYYY-MM-DD format
   meals: {
     meal: PlannedMealDTO | null
     mealType: 'breakfast' | 'lunch' | 'dinner'
@@ -25,21 +29,31 @@ interface DayRowProps {
   onMealClick: (meal: PlannedMealDTO) => void
 }
 
-const DayRow = ({ day, date, meals, onMealClick }: DayRowProps) => {
+const DayRow = ({ day, date, dateStr, meals, onMealClick }: DayRowProps) => {
+  // Hide the swap button for past days
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const dayDate = new Date(dateStr)
+  dayDate.setHours(0, 0, 0, 0)
+  const isFutureDate = dayDate > today
+
   return (
     <div className='mb-4 grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr]'>
-      <div className='bg-dayCard flex flex-col justify-center rounded-2xl p-4'>
-        <h2 className='text-foreground mb-1 text-xl font-semibold'>{day}</h2>
-        <p className='text-muted-foreground text-sm'>{date}</p>
+      <div className='flex flex-col justify-center rounded-md border-none bg-[#F5EFE7] p-4'>
+        <h2 className='text-foreground text-sm font-semibold tracking-wide uppercase'>
+          {day}
+        </h2>
+        <p className='text-foreground text-2xl font-semibold'>{date}</p>
       </div>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
         {meals.map((item, index) =>
           item.meal ? (
             <MealCard
-              key={index}
+              key={`${dateStr}-${item.mealType}-${index}`}
               meal={item.meal}
               mealType={item.mealType}
               onMealClick={onMealClick}
+              showSwapButton={isFutureDate}
             />
           ) : null
         )}
@@ -48,21 +62,31 @@ const DayRow = ({ day, date, meals, onMealClick }: DayRowProps) => {
   )
 }
 
-export function WeekTable({ weekPlan, onMealClick }: WeekTableProps) {
+export function WeekTable({
+  weekPlan,
+  monthHeader,
+  onMealClick,
+}: WeekTableProps) {
   return (
     <div className='space-y-4'>
-      {/* Nagłówki kolumn posiłków */}
-      <div className='mb-4 grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr]'>
-        <div className='hidden md:block' /> {/* Pusty slot dla daty */}
+      {/* Column headings for the meal categories */}
+      <div className='mb-4 grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr] md:items-center'>
+        <div className='hidden flex-col justify-center rounded-md bg-[#F5EFE7] px-5 py-4 text-slate-900 md:flex'>
+          {monthHeader ? (
+            <span className='text-lg leading-tight font-semibold'>
+              {monthHeader.primary}
+            </span>
+          ) : null}
+        </div>
         <div className='hidden grid-cols-3 gap-4 md:grid'>
-          <div className='text-center'>
-            <h3 className='text-lg font-semibold text-slate-700'>Śniadanie</h3>
+          <div className='flex items-center justify-center rounded-md bg-[#C8E6C9] px-6 py-3 text-base font-semibold text-slate-900'>
+            Sniadanie
           </div>
-          <div className='text-center'>
-            <h3 className='text-lg font-semibold text-slate-700'>Obiad</h3>
+          <div className='flex items-center justify-center rounded-md bg-[#FFE082] px-6 py-3 text-base font-semibold text-slate-900'>
+            Obiad
           </div>
-          <div className='text-center'>
-            <h3 className='text-lg font-semibold text-slate-700'>Kolacja</h3>
+          <div className='flex items-center justify-center rounded-md bg-[#FFAB91] px-6 py-3 text-base font-semibold text-slate-900'>
+            Kolacja
           </div>
         </div>
       </div>
@@ -74,13 +98,12 @@ export function WeekTable({ weekPlan, onMealClick }: WeekTableProps) {
           { meal: day.dinner, mealType: 'dinner' as const },
         ]
 
-        const dateStr = `${day.dayNumber} ${day.monthName}`
-
         return (
           <DayRow
             key={day.date}
             day={day.dayName}
-            date={dateStr}
+            date={String(day.dayNumber)}
+            dateStr={day.date}
             meals={meals}
             onMealClick={onMealClick}
           />

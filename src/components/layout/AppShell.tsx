@@ -142,7 +142,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className='flex min-h-screen justify-center bg-[var(--background)] px-3 py-6 text-slate-900 sm:px-6 lg:px-10'>
+      <div className='flex min-h-screen justify-center bg-[var(--background)] px-3 py-2 text-slate-900 sm:px-6 lg:px-10'>
         <div className='flex w-full max-w-[1440px] flex-col gap-0 lg:flex-row'>
           <aside className='hidden w-60 flex-col bg-white px-5 py-8 lg:flex'>
             <Link
@@ -158,7 +158,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className='relative flex flex-1 flex-col overflow-hidden bg-white'>
             {/* User Menu - Floating in top right */}
-            <div className='absolute top-5 right-5 z-50 flex items-center gap-3 lg:top-8 lg:right-8'>
+            <div className='absolute top-4 right-5 z-50 flex items-center gap-3 lg:top-7 lg:right-8'>
               <button
                 type='button'
                 className='inline-flex items-center justify-center rounded-xl bg-white p-2 text-slate-700 shadow-sm lg:hidden'

@@ -202,7 +202,7 @@ async function selectRecipeForMeal(
  * @returns Lista 3 zaplanowanych posiłków (breakfast, lunch, dinner)
  * @throws Error jeśli nie udało się znaleźć przepisów
  */
-async function generateDayPlan(
+export async function generateDayPlan(
   userId: string,
   date: string,
   dailyCalories: number
@@ -356,4 +356,101 @@ export async function checkExistingPlan(
   }
 
   return count || 0
+}
+
+/**
+ * Znajduje dni, które nie mają jeszcze kompletnego planu (3 posiłków)
+ *
+ * @param userId - ID użytkownika
+ * @param dates - Lista dat do sprawdzenia (YYYY-MM-DD)
+ * @returns Lista dat bez kompletnego planu
+ */
+export async function findMissingDays(
+  userId: string,
+  dates: string[]
+): Promise<string[]> {
+  const supabase = createAdminClient()
+
+  // Pobierz wszystkie posiłki dla tych dat
+  const { data: existingMeals, error } = await supabase
+    .from('planned_meals')
+    .select('meal_date, meal_type')
+    .eq('user_id', userId)
+    .in('meal_date', dates)
+
+  if (error) {
+    console.error('Błąd podczas sprawdzania istniejących dni:', error)
+    throw new Error(
+      `Nie udało się sprawdzić istniejących dni: ${error.message}`
+    )
+  }
+
+  // Grupuj posiłki według dnia
+  const mealsByDate = new Map<string, Set<string>>()
+  for (const meal of existingMeals || []) {
+    if (!mealsByDate.has(meal.meal_date)) {
+      mealsByDate.set(meal.meal_date, new Set())
+    }
+    mealsByDate.get(meal.meal_date)!.add(meal.meal_type)
+  }
+
+  // Znajdź dni, które nie mają wszystkich 3 posiłków
+  const missingDays: string[] = []
+  for (const date of dates) {
+    const mealsForDay = mealsByDate.get(date)
+    const hasAllMeals = mealsForDay?.size === 3
+    if (!hasAllMeals) {
+      missingDays.push(date)
+    }
+  }
+
+  return missingDays
+}
+
+/**
+ * Usuwa stare plany posiłków (dni przed dzisiejszym)
+ *
+ * Zachowuje tylko plany na obecny tydzień (od dzisiaj + 6 dni naprzód).
+ * Wszystkie starsze plany są usuwane z bazy danych.
+ *
+ * @param userId - ID użytkownika
+ * @returns Liczba usuniętych rekordów
+ */
+export async function cleanupOldMealPlans(userId: string): Promise<number> {
+  const supabase = createAdminClient()
+
+  // Format daty lokalnie (bez konwersji do UTC)
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  // Dzisiejsza data (początek dnia)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayStr = formatLocalDate(today)
+
+  console.log(`🧹 Czyszczenie starych planów przed datą: ${todayStr}`)
+
+  // Usuń wszystkie plany starsze niż dzisiaj
+  const { data, error } = await supabase
+    .from('planned_meals')
+    .delete()
+    .eq('user_id', userId)
+    .lt('meal_date', todayStr)
+    .select('id')
+
+  if (error) {
+    console.error('Błąd podczas czyszczenia starych planów:', error)
+    throw new Error(`Nie udało się usunąć starych planów: ${error.message}`)
+  }
+
+  const deletedCount = data?.length || 0
+  if (deletedCount > 0) {
+    console.log(`✅ Usunięto ${deletedCount} starych posiłków`)
+  }
+
+  return deletedCount
 }

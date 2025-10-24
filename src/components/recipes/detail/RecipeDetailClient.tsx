@@ -21,12 +21,34 @@ import {
 import { InstructionsList } from './InstructionsList'
 import { MacroCard } from './MacroCard'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipeDetailClientProps {
   recipe: RecipeDTO
   showBackButton?: boolean
+  // Ingredient editing props (optional - only for Dashboard)
+  enableIngredientEditing?: boolean
+  getIngredientAmount?: (ingredientId: number) => number
+  updateIngredientAmount?: (
+    ingredientId: number,
+    newAmount: number
+  ) => { success: boolean; error?: string }
+  incrementAmount?: (ingredientId: number) => {
+    success: boolean
+    error?: string
+  }
+  decrementAmount?: (ingredientId: number) => {
+    success: boolean
+    error?: string
+  }
+  adjustedNutrition?: {
+    calories: number
+    protein_g: number
+    carbs_g: number
+    fats_g: number
+  }
 }
 
 /**
@@ -35,6 +57,12 @@ interface RecipeDetailClientProps {
 export function RecipeDetailClient({
   recipe,
   showBackButton = true,
+  enableIngredientEditing = false,
+  getIngredientAmount,
+  updateIngredientAmount,
+  incrementAmount,
+  decrementAmount,
+  adjustedNutrition,
 }: RecipeDetailClientProps) {
   const router = useRouter()
 
@@ -43,9 +71,12 @@ export function RecipeDetailClient({
   }
 
   // Oblicz total steps z instrukcji
-  const totalSteps = recipe.instructions.steps?.length || 0
-  const prepTime = recipe.instructions.prep_time_minutes || 0
-  const cookTime = recipe.instructions.cook_time_minutes || 0
+  const totalSteps = Array.isArray(recipe.instructions)
+    ? recipe.instructions.length
+    : 0
+  // Prep time i cook time są obecnie niedostępne w nowym formacie
+  const prepTime = 0
+  const cookTime = 0
 
   return (
     <div className='mx-auto max-w-[1440px] space-y-6 px-4 py-6 md:px-6 lg:px-8'>
@@ -197,17 +228,54 @@ export function RecipeDetailClient({
           {/* Ingredients */}
           <div className='space-y-3'>
             <h3 className='font-semibold'>Składniki</h3>
+            {enableIngredientEditing && (
+              <p className='text-muted-foreground text-xs'>
+                Dostosuj gramatury składników (±10%)
+              </p>
+            )}
             <div className='space-y-2'>
-              {recipe.ingredients.map((ingredient, idx) => (
-                <div key={ingredient.id} className='flex items-start gap-3'>
-                  <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium'>
-                    {idx + 1}
-                  </div>
-                  <p className='pt-0.5 text-sm'>
-                    {ingredient.amount} {ingredient.unit} {ingredient.name}
-                  </p>
-                </div>
-              ))}
+              {enableIngredientEditing &&
+              getIngredientAmount &&
+              updateIngredientAmount &&
+              incrementAmount &&
+              decrementAmount ? (
+                // Editable mode - Dashboard
+                recipe.ingredients.map((ingredient, idx) => (
+                  <EditableIngredientRow
+                    key={ingredient.id}
+                    ingredient={ingredient}
+                    currentAmount={getIngredientAmount(ingredient.id)}
+                    onAmountChange={updateIngredientAmount}
+                    onIncrement={incrementAmount}
+                    onDecrement={decrementAmount}
+                    index={idx}
+                  />
+                ))
+              ) : (
+                // Read-only mode - MealPlan / Recipes
+                <>
+                  {recipe.ingredients.map((ingredient, idx) => {
+                    // Show adjusted amount if available, otherwise original
+                    const displayAmount = getIngredientAmount
+                      ? getIngredientAmount(ingredient.id)
+                      : ingredient.amount
+
+                    return (
+                      <div
+                        key={ingredient.id}
+                        className='flex items-start gap-3'
+                      >
+                        <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium'>
+                          {idx + 1}
+                        </div>
+                        <p className='pt-0.5 text-sm'>
+                          {displayAmount} {ingredient.unit} {ingredient.name}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </>
+              )}
             </div>
           </div>
 
@@ -215,28 +283,28 @@ export function RecipeDetailClient({
           <div className='grid grid-cols-2 gap-3'>
             <MacroCard
               label='Calories'
-              value={recipe.total_calories}
+              value={adjustedNutrition?.calories ?? recipe.total_calories}
               unit='kcal'
               variant='calories'
               size='compact'
             />
             <MacroCard
               label='Fats'
-              value={recipe.total_fats_g}
+              value={adjustedNutrition?.fats_g ?? recipe.total_fats_g}
               unit='gr'
               variant='fat'
               size='compact'
             />
             <MacroCard
               label='Carbs'
-              value={recipe.total_carbs_g}
+              value={adjustedNutrition?.carbs_g ?? recipe.total_carbs_g}
               unit='gr'
               variant='carbs'
               size='compact'
             />
             <MacroCard
               label='Protein'
-              value={recipe.total_protein_g}
+              value={adjustedNutrition?.protein_g ?? recipe.total_protein_g}
               unit='gr'
               variant='protein'
               size='compact'

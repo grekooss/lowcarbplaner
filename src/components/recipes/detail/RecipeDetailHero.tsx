@@ -18,6 +18,7 @@ import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlacehol
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import { Star, BarChart3, Clock, Timer, ListOrdered } from 'lucide-react'
 import type { RecipeDTO } from '@/types/dto.types'
+import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
 interface RecipeDetailHeroProps {
   recipe: RecipeDTO
@@ -43,11 +44,13 @@ export function RecipeDetailHero({
   isAuthenticated,
 }: RecipeDetailHeroProps) {
   // Oblicz total steps z instrukcji
-  const totalSteps = recipe.instructions.steps?.length || 0
+  const totalSteps = Array.isArray(recipe.instructions)
+    ? recipe.instructions.length
+    : 0
 
-  // Czasy przygotowania i gotowania
-  const prepTime = recipe.instructions.prep_time_minutes || 0
-  const cookTime = recipe.instructions.cook_time_minutes || 0
+  // Czasy przygotowania i gotowania są obecnie niedostępne w nowym formacie
+  const prepTime = 0
+  const cookTime = 0
 
   return (
     <div className='grid gap-6 rounded-3xl bg-[var(--bg-card)] p-6 lg:grid-cols-5'>
@@ -83,8 +86,7 @@ export function RecipeDetailHero({
             <div className='flex flex-wrap items-center gap-3'>
               {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
                 <Badge
-                  variant='secondary'
-                  className='rounded-full bg-yellow-400 px-4 py-1.5 text-sm font-medium text-gray-900 hover:bg-yellow-500'
+                  className={getMealTypeBadgeClasses(recipe.meal_types[0])}
                 >
                   {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
                 </Badge>

@@ -8,11 +8,11 @@ import Image from 'next/image'
 import { Flame, Wheat, Beef, Droplet, BarChart3 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
 import { MacroSummaryRow } from './MacroSummaryRow'
+import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
 interface RecipeListItemProps {
   recipe: RecipeDTO
@@ -27,18 +27,8 @@ const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
   hard: 'Trudny',
 }
 
-export function RecipeListItem({
-  recipe,
-  onClick,
-  onAddToMealPlan,
-  isAuthenticated,
-}: RecipeListItemProps) {
+export function RecipeListItem({ recipe, onClick }: RecipeListItemProps) {
   const handleClick = () => onClick(recipe.id)
-
-  const handleAddClick = (event: React.MouseEvent) => {
-    event.stopPropagation()
-    onAddToMealPlan?.(recipe.id)
-  }
 
   const calories =
     recipe.total_calories !== null && recipe.total_calories !== undefined
@@ -78,7 +68,7 @@ export function RecipeListItem({
 
   return (
     <Card
-      className='w-full cursor-pointer rounded-3xl border-0 bg-[var(--bg-card)] p-0 transition-none'
+      className='focus-visible:ring-primary/40 w-full cursor-pointer rounded-3xl border-0 bg-[var(--bg-card)] p-0 transition-transform duration-200 ease-out hover:scale-[1.02] hover:shadow-[0_12px_28px_rgba(36,25,15,0.1)] focus-visible:ring-2 focus-visible:outline-none'
       onClick={handleClick}
       role='button'
       tabIndex={0}
@@ -102,17 +92,28 @@ export function RecipeListItem({
         </div>
 
         <div className='flex flex-1 flex-col gap-3.5'>
-          <div className='flex flex-wrap items-center gap-1.5'>
-            {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
-              <Badge className='bg-breakfast-bg text-breakfast-text rounded-full px-3 py-1 text-xs font-semibold shadow-sm'>
-                {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
-              </Badge>
-            )}
+          <div className='flex flex-wrap items-center gap-2 sm:gap-3'>
+            <div className='flex items-center gap-2'>
+              {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
+                <Badge
+                  className={getMealTypeBadgeClasses(recipe.meal_types[0])}
+                >
+                  {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
+                </Badge>
+              )}
 
-            <div className='flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600'>
-              <BarChart3 className='h-4 w-4 text-slate-600' />
-              {difficultyLabel[recipe.difficulty_level]}
+              <div className='flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600'>
+                <BarChart3 className='h-4 w-4 text-slate-600' />
+                {difficultyLabel[recipe.difficulty_level]}
+              </div>
             </div>
+
+            {macroItems[0] && (
+              <MacroSummaryRow
+                items={[macroItems[0]]}
+                className='bg-white px-3 py-1 text-xs font-semibold text-slate-700'
+              />
+            )}
           </div>
 
           <h3 className='text-lg leading-tight font-semibold text-slate-900 sm:text-xl'>
@@ -120,31 +121,10 @@ export function RecipeListItem({
           </h3>
 
           <div className='flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center'>
-            <MacroSummaryRow items={macroItems} />
-
-            <div className='ml-auto flex flex-wrap items-center gap-2'>
-              <Button
-                size='sm'
-                className='bg-primary text-text-main hover:bg-primary-hover rounded-full px-6 text-sm font-semibold'
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onClick(recipe.id)
-                }}
-              >
-                Zobacz przepis
-              </Button>
-
-              {isAuthenticated && onAddToMealPlan && (
-                <Button
-                  size='sm'
-                  variant='secondary'
-                  className='rounded-full px-5'
-                  onClick={handleAddClick}
-                >
-                  Dodaj
-                </Button>
-              )}
-            </div>
+            <MacroSummaryRow
+              items={macroItems.slice(1)}
+              className='bg-white px-3 py-1 text-slate-700'
+            />
           </div>
         </div>
       </CardContent>

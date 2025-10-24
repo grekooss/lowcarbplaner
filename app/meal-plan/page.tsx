@@ -3,11 +3,12 @@
  * Server Component odpowiedzialny za initial data fetching
  */
 
-// import { createServerClient } from '@/lib/supabase/server'
 import { getPlannedMeals } from '@/lib/actions/planned-meals'
 import { MealPlanClient } from '@/components/meal-plan/MealPlanClient'
-// import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
+
+// Force dynamic rendering because of Supabase auth (cookies)
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Plan Posiłków - LowCarbPlaner',
@@ -37,8 +38,16 @@ export default async function MealPlanPage() {
   const endDate = new Date(today)
   endDate.setDate(today.getDate() + 6)
 
-  const startDateStr = today.toISOString().split('T')[0] || ''
-  const endDateStr = endDate.toISOString().split('T')[0] || ''
+  // Format daty lokalnie (bez konwersji do UTC, która powoduje przesunięcie o 1 dzień)
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const startDateStr = formatLocalDate(today)
+  const endDateStr = formatLocalDate(endDate)
 
   // Pobierz posiłki na 7 dni
   const mealsResult = await getPlannedMeals({
@@ -48,9 +57,17 @@ export default async function MealPlanPage() {
 
   const meals = mealsResult.error ? [] : mealsResult.data || []
 
+  // Debug: log meal count
+  console.log('📅 MealPlanPage fetched meals:', {
+    startDate: startDateStr,
+    endDate: endDateStr,
+    mealsCount: meals.length,
+    expectedMeals: 21, // 7 days × 3 meals
+  })
+
   return (
-    <main className='container mx-auto px-4 py-8'>
-      <div className='mb-6'>
+    <main className='container mx-auto px-4 py-6'>
+      <div className='mb-4'>
         <h1 className='text-3xl font-bold tracking-tight'>Plan Posiłków</h1>
         <p className='text-muted-foreground mt-2'>
           Twój plan na najbliższych 7 dni

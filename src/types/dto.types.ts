@@ -18,15 +18,12 @@ import type {
 
 /**
  * Typ dla instrukcji przepisu (parsowany z JSON)
+ * Format w bazie: Array of steps [{"step": 1, "description": "..."}, ...]
  */
 export type RecipeInstructions = {
-  steps: {
-    step: number
-    description: string
-  }[]
-  prep_time_minutes?: number
-  cook_time_minutes?: number
-}
+  step: number
+  description: string
+}[]
 
 /**
  * Typ dla nadpisań składników (parsowany z JSON w planned_meals.ingredient_overrides)

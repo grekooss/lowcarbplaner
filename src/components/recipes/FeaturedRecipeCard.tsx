@@ -40,9 +40,12 @@ export function FeaturedRecipeCard({
     onClick(recipe.id)
   }
 
-  const prepTime = recipe.instructions?.prep_time_minutes || 0
-  const cookTime = recipe.instructions?.cook_time_minutes || 0
-  const totalSteps = recipe.instructions?.steps?.length ?? 0
+  // Czasy przygotowania i gotowania są obecnie niedostępne w nowym formacie
+  const prepTime = 0
+  const cookTime = 0
+  const totalSteps = Array.isArray(recipe.instructions)
+    ? recipe.instructions.length
+    : 0
   const primaryMealType = recipe.meal_types[0]
   const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
     easy: 'Łatwy',

@@ -13,14 +13,48 @@ import type { PlannedMealDTO } from '@/types/dto.types'
 interface MealsListProps {
   meals: PlannedMealDTO[]
   date: string // YYYY-MM-DD
+  onRecipePreview: (meal: PlannedMealDTO) => void
 }
 
-export function MealsList({ meals, date }: MealsListProps) {
+export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   const mealsForDate = meals.filter((meal) => meal.meal_date === date)
+
+  // Sprawdź czy wybrany dzień jest od jutra (nie dzisiaj)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const selectedDate = new Date(date)
+  selectedDate.setHours(0, 0, 0, 0)
+  const isFutureDate = selectedDate > today
 
   const breakfast = mealsForDate.find((meal) => meal.meal_type === 'breakfast')
   const lunch = mealsForDate.find((meal) => meal.meal_type === 'lunch')
   const dinner = mealsForDate.find((meal) => meal.meal_type === 'dinner')
+
+  // Jeśli nie ma posiłków dla wybranej daty, ale są jakieś posiłki w tablicy,
+  // to znaczy że ładujemy nowe dane - pokaż poprzednie posiłki
+  const hasAnyMeals = meals.length > 0
+  const hasMealsForOtherDates = hasAnyMeals && mealsForDate.length === 0
+
+  if (hasMealsForOtherDates) {
+    // Pokazujemy ostatnie dostępne posiłki zamiast pustego stanu
+    const fallbackMeals = meals.slice(0, 3)
+    return (
+      <section className='space-y-6 opacity-50 transition-opacity'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-xl font-semibold'>Posilki</h2>
+        </div>
+        <div className='space-y-4'>
+          {fallbackMeals.map((meal) => (
+            <MealCard
+              key={meal.id}
+              meal={meal}
+              onRecipePreview={onRecipePreview}
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   if (mealsForDate.length === 0) {
     return <EmptyState date={date} />
@@ -42,7 +76,12 @@ export function MealsList({ meals, date }: MealsListProps) {
 
       <div className='space-y-4'>
         {orderedMeals.map((meal) => (
-          <MealCard key={meal.id} meal={meal} />
+          <MealCard
+            key={meal.id}
+            meal={meal}
+            showSwapButton={isFutureDate}
+            onRecipePreview={onRecipePreview}
+          />
         ))}
       </div>
 

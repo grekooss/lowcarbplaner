@@ -487,13 +487,15 @@ export async function generateMealPlan(): Promise<
       }
     }
 
+    const userId = user.id
+
     // 2. Pobranie profilu użytkownika
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
         'id, target_calories, target_carbs_g, target_protein_g, target_fats_g'
       )
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (profileError) {
@@ -510,26 +512,50 @@ export async function generateMealPlan(): Promise<
       }
     }
 
-    // 3. Sprawdzenie czy plan już istnieje (7 dni od dzisiaj)
-    const { generateWeeklyPlan, checkExistingPlan } = await import(
+    // 3. Sprawdzenie które dni wymagają wygenerowania planu
+    // 3a. Wyczyść stare plany posiłków (dni przed dzisiejszym)
+    const { cleanupOldMealPlans } = await import(
       '@/services/meal-plan-generator'
     )
+    try {
+      await cleanupOldMealPlans(userId)
+    } catch (cleanupError) {
+      console.warn(
+        'Błąd czyszczenia starych planów (nie krytyczny):',
+        cleanupError
+      )
+    }
+
+    const { findMissingDays } = await import('@/services/meal-plan-generator')
+
+    // Format daty lokalnie (bez konwersji do UTC)
+    const formatLocalDate = (date: Date): string => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
 
     const today = new Date()
-    const startDate = today.toISOString().split('T')[0]!
-    const endDate = new Date(today.getTime() + 6 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0]!
+    today.setHours(0, 0, 0, 0)
 
-    // 4. Sprawdzenie istniejącego planu i generowanie nowego
-    let existingMealsCount
+    // Wygeneruj listę dat dla następnych 7 dni
+    const dates: string[] = []
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      dates.push(formatLocalDate(date))
+    }
+
+    // 4. Znajdź dni bez kompletnego planu
+    let missingDays: string[]
     let plannedMeals
 
     try {
-      existingMealsCount = await checkExistingPlan(user.id, startDate, endDate)
+      missingDays = await findMissingDays(userId, dates)
 
-      // Jeśli istnieje kompletny plan (21 posiłków = 7 dni × 3 posiłki), zwróć konflikt
-      if (existingMealsCount >= 21) {
+      // Jeśli wszystkie dni mają kompletny plan, zwróć konflikt
+      if (missingDays.length === 0) {
         return {
           error:
             'Plan posiłków na następne 7 dni już istnieje i jest kompletny',
@@ -537,8 +563,27 @@ export async function generateMealPlan(): Promise<
         }
       }
 
-      // Generowanie planu posiłków (7 dni × 3 posiłki = 21 wpisów)
-      plannedMeals = await generateWeeklyPlan(profile, today)
+      console.log(
+        `🤖 Generowanie planu dla ${missingDays.length} brakujących dni:`,
+        missingDays
+      )
+
+      // Generuj plan tylko dla brakujących dni
+      const { generateDayPlan } = await import('@/services/meal-plan-generator')
+      plannedMeals = []
+
+      for (const date of missingDays) {
+        const dayPlan = await generateDayPlan(
+          userId,
+          date,
+          profile.target_calories
+        )
+        plannedMeals.push(...dayPlan)
+      }
+
+      console.log(
+        `✅ Wygenerowano ${plannedMeals.length} posiłków dla ${missingDays.length} dni`
+      )
     } catch (generatorError) {
       console.error('Błąd generatora planu:', generatorError)
       return {
@@ -564,11 +609,12 @@ export async function generateMealPlan(): Promise<
     }
 
     // 6. Zwrot statusu sukcesu
+    const generatedDays = missingDays.length
     return {
       data: {
         status: 'success',
-        message: 'Plan posiłków na 7 dni został pomyślnie wygenerowany',
-        generated_days: 7,
+        message: `Plan posiłków na ${generatedDays} ${generatedDays === 1 ? 'dzień' : 'dni'} został pomyślnie wygenerowany`,
+        generated_days: generatedDays,
       },
     }
   } catch (err) {

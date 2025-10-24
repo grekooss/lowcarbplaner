@@ -3,11 +3,15 @@
  *
  * Oblicza zagregowane wartości makroskładników z posiłków oznaczonych jako zjedzonych.
  * Używa useMemo dla optymalizacji wydajności.
+ *
+ * IMPORTANT: Uwzględnia ingredient_overrides - dostosowane gramatury składników
+ * w zaplanowanych posiłkach, co zapewnia dokładne obliczanie spożytych kalorii i makroskładników.
  */
 
 import { useMemo } from 'react'
 import type { PlannedMealDTO } from '@/types/dto.types'
 import type { DailyMacrosViewModel } from '@/types/viewmodels'
+import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
 
 interface UseDailyMacrosParams {
   meals: PlannedMealDTO[]
@@ -46,15 +50,25 @@ export function useDailyMacros({
 }: UseDailyMacrosParams): DailyMacrosViewModel {
   return useMemo(() => {
     // Oblicz consumed z posiłków oznaczonych jako zjedzonych
+    // WAŻNE: Używamy calculateRecipeNutritionWithOverrides aby uwzględnić
+    // zmienione gramatury składników (ingredient_overrides)
     const consumed = meals
       .filter((meal) => meal.is_eaten)
       .reduce(
-        (acc, meal) => ({
-          calories: acc.calories + (meal.recipe.total_calories || 0),
-          protein_g: acc.protein_g + (meal.recipe.total_protein_g || 0),
-          carbs_g: acc.carbs_g + (meal.recipe.total_carbs_g || 0),
-          fats_g: acc.fats_g + (meal.recipe.total_fats_g || 0),
-        }),
+        (acc, meal) => {
+          // Przelicz wartości odżywcze z uwzględnieniem ingredient_overrides
+          const adjustedNutrition = calculateRecipeNutritionWithOverrides(
+            meal.recipe,
+            meal.ingredient_overrides
+          )
+
+          return {
+            calories: acc.calories + adjustedNutrition.calories,
+            protein_g: acc.protein_g + adjustedNutrition.protein_g,
+            carbs_g: acc.carbs_g + adjustedNutrition.carbs_g,
+            fats_g: acc.fats_g + adjustedNutrition.fats_g,
+          }
+        },
         { calories: 0, protein_g: 0, carbs_g: 0, fats_g: 0 }
       )
 

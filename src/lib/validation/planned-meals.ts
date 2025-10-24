@@ -8,6 +8,27 @@
 import { z } from 'zod'
 
 /**
+ * Pomocniczy schema dla ID (obsługuje number, bigint, string z float)
+ * Konwertuje wszystkie typy na integer używając parseInt
+ */
+const integerIdSchema = z
+  .union([z.number(), z.bigint(), z.string()])
+  .transform((val) => {
+    if (typeof val === 'bigint') {
+      return Number(val)
+    }
+    if (typeof val === 'string') {
+      const parsed = parseInt(val, 10)
+      if (Number.isNaN(parsed)) {
+        throw new Error(`Nieprawidłowe ID: ${val}`)
+      }
+      return parsed
+    }
+    return Math.round(val)
+  })
+  .pipe(z.number().int().positive())
+
+/**
  * Schema dla parametrów zapytania GET /planned-meals
  *
  * Wymagane parametry:
@@ -90,10 +111,7 @@ export const updatePlannedMealBodySchema = z.discriminatedUnion('action', [
   // Wariant 2: Wymiana przepisu
   z.object({
     action: z.literal('swap_recipe'),
-    recipe_id: z
-      .number()
-      .int('recipe_id musi być liczbą całkowitą')
-      .positive('recipe_id musi być liczbą dodatnią'),
+    recipe_id: integerIdSchema,
   }),
 
   // Wariant 3: Modyfikacja składników
@@ -102,10 +120,7 @@ export const updatePlannedMealBodySchema = z.discriminatedUnion('action', [
     ingredient_overrides: z
       .array(
         z.object({
-          ingredient_id: z
-            .number()
-            .int('ingredient_id musi być liczbą całkowitą')
-            .positive('ingredient_id musi być liczbą dodatnią'),
+          ingredient_id: integerIdSchema,
           new_amount: z
             .number()
             .positive('new_amount musi być liczbą dodatnią'),
@@ -129,15 +144,9 @@ export type UpdatePlannedMealBodyInput = z.input<
 
 /**
  * Schema dla parametru path {id}
- *
- * Walidacja:
- * - Musi być liczbą całkowitą dodatnią
- * - Automatyczna konwersja string -> number (z.coerce)
+ * Używa wspólnego integerIdSchema dla spójności
  */
-export const mealIdSchema = z.coerce
-  .number()
-  .int('ID posiłku musi być liczbą całkowitą')
-  .positive('ID posiłku musi być liczbą dodatnią')
+export const mealIdSchema = integerIdSchema
 
 /**
  * Typ dla ID posiłku
