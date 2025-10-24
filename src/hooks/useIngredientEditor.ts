@@ -2,7 +2,7 @@
  * Hook: useIngredientEditor
  *
  * Manages ingredient quantity editing state and validation.
- * Provides functionality to adjust ingredient amounts within ±10% of original.
+ * Allows flexible ingredient quantity adjustments with warning at >±15% change.
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
@@ -64,13 +64,13 @@ export function useIngredientEditor({
   )
 
   /**
-   * Validate if new amount is within ±10% of original
+   * Validate ingredient amount and return warning if change > ±15%
    */
   const validateAmount = useCallback(
     (
       ingredientId: number,
       newAmount: number
-    ): { valid: boolean; error?: string } => {
+    ): { valid: boolean; error?: string; warning?: string } => {
       const ingredient = ingredients.find((i) => i.id === ingredientId)
       if (!ingredient) {
         return { valid: false, error: 'Składnik nie znaleziony' }
@@ -80,14 +80,19 @@ export function useIngredientEditor({
         return { valid: false, error: 'Ten składnik nie może być skalowany' }
       }
 
+      if (newAmount <= 0) {
+        return { valid: false, error: 'Ilość musi być większa od 0' }
+      }
+
       const originalAmount = ingredient.amount
       const diffPercent =
         Math.abs((newAmount - originalAmount) / originalAmount) * 100
 
-      if (diffPercent > 10) {
+      // Show warning if change > ±15%
+      if (diffPercent > 15) {
         return {
-          valid: false,
-          error: `Zmiana (${diffPercent.toFixed(1)}%) przekracza dozwolone ±10%`,
+          valid: true,
+          warning: `⚠️ Duża zmiana (${diffPercent.toFixed(1)}%) - może to zaburzyć proporcje przepisu`,
         }
       }
 
@@ -103,7 +108,7 @@ export function useIngredientEditor({
     (
       ingredientId: number,
       newAmount: number
-    ): { success: boolean; error?: string } => {
+    ): { success: boolean; error?: string; warning?: string } => {
       const validation = validateAmount(ingredientId, newAmount)
       if (!validation.valid) {
         return { success: false, error: validation.error }
@@ -130,7 +135,7 @@ export function useIngredientEditor({
         })
       }
 
-      return { success: true }
+      return { success: true, warning: validation.warning }
     },
     [ingredients, validateAmount]
   )

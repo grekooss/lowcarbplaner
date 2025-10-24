@@ -20,9 +20,17 @@ interface EditableIngredientRowProps {
   onAmountChange: (
     ingredientId: number,
     newAmount: number
-  ) => { success: boolean; error?: string }
-  onIncrement: (ingredientId: number) => { success: boolean; error?: string }
-  onDecrement: (ingredientId: number) => { success: boolean; error?: string }
+  ) => { success: boolean; error?: string; warning?: string }
+  onIncrement: (ingredientId: number) => {
+    success: boolean
+    error?: string
+    warning?: string
+  }
+  onDecrement: (ingredientId: number) => {
+    success: boolean
+    error?: string
+    warning?: string
+  }
   index: number
 }
 
@@ -36,6 +44,7 @@ export function EditableIngredientRow({
 }: EditableIngredientRowProps) {
   const [localValue, setLocalValue] = useState(currentAmount.toString())
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   // Sync local value when currentAmount changes externally
   useEffect(() => {
@@ -46,6 +55,7 @@ export function EditableIngredientRow({
     const value = e.target.value
     setLocalValue(value)
     setError(null)
+    setWarning(null)
 
     // Parse and validate
     const numValue = parseFloat(value)
@@ -56,24 +66,30 @@ export function EditableIngredientRow({
     const result = onAmountChange(ingredient.id, numValue)
     if (!result.success && result.error) {
       setError(result.error)
+    } else if (result.warning) {
+      setWarning(result.warning)
     }
   }
 
   const handleIncrement = () => {
     const result = onIncrement(ingredient.id)
+    setError(null)
+    setWarning(null)
     if (!result.success && result.error) {
       setError(result.error)
-    } else {
-      setError(null)
+    } else if (result.warning) {
+      setWarning(result.warning)
     }
   }
 
   const handleDecrement = () => {
     const result = onDecrement(ingredient.id)
+    setError(null)
+    setWarning(null)
     if (!result.success && result.error) {
       setError(result.error)
-    } else {
-      setError(null)
+    } else if (result.warning) {
+      setWarning(result.warning)
     }
   }
 
@@ -152,6 +168,9 @@ export function EditableIngredientRow({
 
       {/* Error message */}
       {error && <p className='pl-10 text-xs text-red-500'>{error}</p>}
+
+      {/* Warning message */}
+      {warning && <p className='pl-10 text-xs text-amber-600'>{warning}</p>}
     </div>
   )
 }

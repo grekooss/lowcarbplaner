@@ -230,7 +230,7 @@ export function RecipeDetailClient({
             <h3 className='font-semibold'>Składniki</h3>
             {enableIngredientEditing && (
               <p className='text-muted-foreground text-xs'>
-                Dostosuj gramatury składników (±10%)
+                Dostosuj gramatury składników (ostrzeżenie przy &gt;15%)
               </p>
             )}
             <div className='space-y-2'>

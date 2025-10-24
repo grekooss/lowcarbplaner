@@ -652,16 +652,15 @@ async function modifyMealIngredients(
       }
     }
 
-    // Walidacja zakresu ±10%
-    const originalAmount = ingredient.base_amount
-    const diffPercent =
-      Math.abs((override.new_amount - originalAmount) / originalAmount) * 100
-
-    if (diffPercent > 10) {
+    // Walidacja podstawowa (ilość > 0)
+    if (override.new_amount <= 0) {
       return {
-        error: `Zmiana ilości składnika o ID ${override.ingredient_id} (${diffPercent.toFixed(1)}%) przekracza dozwolone ±10%`,
+        error: `Ilość składnika o ID ${override.ingredient_id} musi być większa od 0`,
       }
     }
+
+    // Note: Backend accepts any positive value
+    // Frontend shows warning at ±15% but allows changes
   }
 
   // 3. Update
