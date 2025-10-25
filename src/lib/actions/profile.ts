@@ -573,11 +573,12 @@ export async function generateMealPlan(): Promise<
       plannedMeals = []
 
       for (const date of missingDays) {
-        const dayPlan = await generateDayPlan(
-          userId,
-          date,
-          profile.target_calories
-        )
+        const dayPlan = await generateDayPlan(userId, date, {
+          target_calories: profile.target_calories,
+          target_protein_g: profile.target_protein_g,
+          target_carbs_g: profile.target_carbs_g,
+          target_fats_g: profile.target_fats_g,
+        })
         plannedMeals.push(...dayPlan)
       }
 

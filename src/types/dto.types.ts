@@ -27,10 +27,14 @@ export type RecipeInstructions = {
 
 /**
  * Typ dla nadpisań składników (parsowany z JSON w planned_meals.ingredient_overrides)
+ *
+ * @property auto_adjusted - true jeśli zmiana została wykonana automatycznie przez algorytm optymalizacji,
+ *                           false/undefined jeśli zmiana została wykonana ręcznie przez użytkownika
  */
 export type IngredientOverrides = {
   ingredient_id: number
   new_amount: number
+  auto_adjusted?: boolean
 }[]
 
 // ============================================================================

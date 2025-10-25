@@ -104,6 +104,24 @@ export function DashboardClient({
     }))
   }
 
+  // Update modal meal when meals data refetches (e.g., after save)
+  useEffect(() => {
+    if (recipeModal.isOpen && recipeModal.meal && meals) {
+      const updatedMeal = meals.find((m) => m.id === recipeModal.meal?.id)
+      if (updatedMeal) {
+        console.log('🔄 Updating modal with fresh meal data:', {
+          mealId: updatedMeal.id,
+          oldOverrides: recipeModal.meal.ingredient_overrides,
+          newOverrides: updatedMeal.ingredient_overrides,
+        })
+        setRecipeModal((prev) => ({
+          ...prev,
+          meal: updatedMeal,
+        }))
+      }
+    }
+  }, [meals, recipeModal.isOpen, recipeModal.meal])
+
   // Auto-generuj plan tylko raz gdy brak danych lub dane niekompletne
   // Używamy ref aby śledzić czy już próbowaliśmy wygenerować plan
   const hasAttemptedGeneration = React.useRef(false)

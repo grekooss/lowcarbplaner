@@ -44,6 +44,30 @@ type Recipe = {
 type PlannedMealInsert = TablesInsert<'planned_meals'>
 
 /**
+ * Typ dla pełnych danych przepisu (z recipe_ingredients)
+ */
+type RecipeWithIngredients = Recipe & {
+  recipe_ingredients: {
+    ingredient_id: number
+    base_amount: number
+    unit: string
+    is_scalable: boolean
+    calories: number | null
+    protein_g: number | null
+    carbs_g: number | null
+    fats_g: number | null
+  }[]
+}
+
+/**
+ * Typ nadpisań składników
+ */
+type IngredientOverride = {
+  ingredient_id: number
+  new_amount: number
+}
+
+/**
  * Tolerancja różnicy kalorycznej dla pojedynczego posiłku (±15%)
  */
 const CALORIE_TOLERANCE = 0.15
@@ -57,6 +81,43 @@ const DAYS_TO_GENERATE = 7
  * Typy posiłków w kolejności (3 posiłki dziennie)
  */
 const MEAL_TYPES: Enums<'meal_type_enum'>[] = ['breakfast', 'lunch', 'dinner']
+
+/**
+ * Maksymalna procentowa zmiana ilości składnika podczas optymalizacji (20%)
+ */
+const MAX_INGREDIENT_CHANGE_PERCENT = 0.2
+
+/**
+ * Zaokrąglanie ilości składników do wielokrotności (5g)
+ */
+const INGREDIENT_ROUNDING_STEP = 5
+
+/**
+ * Próg nadmiaru makroskładnika (białko/węgle/tłuszcze) do optymalizacji (>105% zapotrzebowania)
+ */
+const MACRO_SURPLUS_THRESHOLD_PERCENT = 1.05
+
+/**
+ * Typ makroskładnika
+ */
+type MacroType = 'protein' | 'carbs' | 'fats'
+
+/**
+ * Zaokrągla ilość składnika do najbliższej wielokrotności INGREDIENT_ROUNDING_STEP
+ *
+ * Przykłady:
+ * - 181.8g → 180g
+ * - 48.2g → 50g
+ * - 223.7g → 225g
+ *
+ * @param amount - Ilość do zaokrąglenia
+ * @returns Zaokrąglona ilość do wielokrotności 5g
+ */
+function roundIngredientAmount(amount: number): number {
+  return (
+    Math.round(amount / INGREDIENT_ROUNDING_STEP) * INGREDIENT_ROUNDING_STEP
+  )
+}
 
 /**
  * Oblicza docelowe kalorie dla pojedynczego posiłku
@@ -85,6 +146,286 @@ function calculateMealCalorieRange(dailyCalories: number): {
 }
 
 /**
+ * Oblicza makroskładniki dla pojedynczego przepisu z uwzględnieniem nadpisań
+ *
+ * @param recipe - Przepis z składnikami
+ * @param overrides - Nadpisania ilości składników (opcjonalne)
+ * @returns Suma makroskładników
+ */
+function calculateRecipeMacros(
+  recipe: RecipeWithIngredients,
+  overrides?: IngredientOverride[]
+): {
+  calories: number
+  protein_g: number
+  carbs_g: number
+  fats_g: number
+} {
+  if (!recipe.recipe_ingredients || recipe.recipe_ingredients.length === 0) {
+    return {
+      calories: recipe.total_calories || 0,
+      protein_g: recipe.total_protein_g || 0,
+      carbs_g: recipe.total_carbs_g || 0,
+      fats_g: recipe.total_fats_g || 0,
+    }
+  }
+
+  let totalCalories = 0
+  let totalProtein = 0
+  let totalCarbs = 0
+  let totalFats = 0
+
+  for (const ingredient of recipe.recipe_ingredients) {
+    const override = overrides?.find(
+      (o) => o.ingredient_id === ingredient.ingredient_id
+    )
+    const baseAmount = ingredient.base_amount
+    const adjustedAmount = override?.new_amount ?? baseAmount
+
+    if (baseAmount === 0) continue
+
+    const scale = adjustedAmount / baseAmount
+
+    totalCalories += (ingredient.calories || 0) * scale
+    totalProtein += (ingredient.protein_g || 0) * scale
+    totalCarbs += (ingredient.carbs_g || 0) * scale
+    totalFats += (ingredient.fats_g || 0) * scale
+  }
+
+  return {
+    calories: Math.round(totalCalories),
+    protein_g: Math.round(totalProtein * 10) / 10,
+    carbs_g: Math.round(totalCarbs * 10) / 10,
+    fats_g: Math.round(totalFats * 10) / 10,
+  }
+}
+
+/**
+ * Oblicza nadmiar makroskładników dla dnia
+ *
+ * @param dayMacros - Suma makroskładników z 3 posiłków
+ * @param targets - Docelowe wartości makroskładników
+ * @returns Obiekt z nadmiarem dla każdego makroskładnika (wartość dodatnia = nadmiar)
+ */
+function calculateMacroSurplus(
+  dayMacros: {
+    protein_g: number
+    carbs_g: number
+    fats_g: number
+  },
+  targets: {
+    target_protein_g: number
+    target_carbs_g: number
+    target_fats_g: number
+  }
+): {
+  protein: number
+  carbs: number
+  fats: number
+} {
+  return {
+    protein: dayMacros.protein_g - targets.target_protein_g,
+    carbs: dayMacros.carbs_g - targets.target_carbs_g,
+    fats: dayMacros.fats_g - targets.target_fats_g,
+  }
+}
+
+/**
+ * Sprawdza czy makroskładnik wymaga optymalizacji
+ *
+ * Makroskładnik (białko/węgle/tłuszcze) wymaga optymalizacji gdy >105% zapotrzebowania
+ *
+ * @param dayMacros - Aktualne makroskładniki dla dnia
+ * @param targets - Docelowe wartości makroskładników
+ * @param macroType - Typ sprawdzanego makroskładnika
+ * @returns true jeśli makroskładnik przekracza 105% zapotrzebowania
+ */
+function shouldOptimizeMacro(
+  dayMacros: {
+    protein_g: number
+    carbs_g: number
+    fats_g: number
+  },
+  targets: {
+    target_protein_g: number
+    target_carbs_g: number
+    target_fats_g: number
+  },
+  macroType: MacroType
+): boolean {
+  const macroValue =
+    macroType === 'protein'
+      ? dayMacros.protein_g
+      : macroType === 'carbs'
+        ? dayMacros.carbs_g
+        : dayMacros.fats_g
+
+  const targetValue =
+    macroType === 'protein'
+      ? targets.target_protein_g
+      : macroType === 'carbs'
+        ? targets.target_carbs_g
+        : targets.target_fats_g
+
+  if (targetValue === 0) return false
+
+  const percentOfTarget = macroValue / targetValue
+
+  // Optymalizuj makro gdy przekracza 105%
+  return percentOfTarget > MACRO_SURPLUS_THRESHOLD_PERCENT
+}
+
+/**
+ * Znajduje makroskładnik, który najbardziej wymaga optymalizacji
+ *
+ * Priorytet: makro które przekracza 105% zapotrzebowania
+ *
+ * @param surplus - Nadmiar dla każdego makroskładnika
+ * @param dayMacros - Aktualne makroskładniki dla dnia
+ * @param targets - Docelowe wartości makroskładników
+ * @returns Nazwa makroskładnika z największym nadmiarem (>105%) lub null
+ */
+function findMacroForOptimization(
+  surplus: {
+    protein: number
+    carbs: number
+    fats: number
+  },
+  dayMacros: {
+    protein_g: number
+    carbs_g: number
+    fats_g: number
+  },
+  targets: {
+    target_protein_g: number
+    target_carbs_g: number
+    target_fats_g: number
+  }
+): MacroType | null {
+  // Tylko makro które przekraczają 105% zapotrzebowania
+  const validMacros = Object.entries(surplus)
+    .filter(([key, value]) => {
+      if (value <= 0) return false
+      const macroType = key as MacroType
+      return shouldOptimizeMacro(dayMacros, targets, macroType)
+    })
+    .sort(([, a], [, b]) => b - a)
+
+  if (validMacros.length === 0) {
+    return null
+  }
+
+  const firstEntry = validMacros[0]
+  if (!firstEntry) {
+    return null
+  }
+
+  return firstEntry[0] as MacroType
+}
+
+/**
+ * Znajduje składnik w przepisie, który odpowiada za największy udział danego makroskładnika
+ *
+ * @param recipe - Przepis z składnikami
+ * @param macroType - Typ makroskładnika do optymalizacji
+ * @returns Ingredient ID i jego wartość makro, lub null jeśli nie znaleziono
+ */
+function findIngredientForMacro(
+  recipe: RecipeWithIngredients,
+  macroType: MacroType
+): { ingredient_id: number; macro_value: number; is_scalable: boolean } | null {
+  if (!recipe.recipe_ingredients || recipe.recipe_ingredients.length === 0) {
+    return null
+  }
+
+  // Mapowanie typu makro na pole w ingredient
+  const macroField =
+    macroType === 'protein'
+      ? 'protein_g'
+      : macroType === 'carbs'
+        ? 'carbs_g'
+        : 'fats_g'
+
+  // Znajdź składnik z największą wartością danego makroskładnika (tylko skalowalne)
+  const scalableIngredients = recipe.recipe_ingredients
+    .filter((ing) => ing.is_scalable && (ing[macroField] || 0) > 0)
+    .sort((a, b) => (b[macroField] || 0) - (a[macroField] || 0))
+
+  if (scalableIngredients.length === 0) {
+    return null
+  }
+
+  const topIngredient = scalableIngredients[0]
+  if (!topIngredient) {
+    return null
+  }
+
+  return {
+    ingredient_id: topIngredient.ingredient_id,
+    macro_value: topIngredient[macroField] || 0,
+    is_scalable: topIngredient.is_scalable,
+  }
+}
+
+/**
+ * Oblicza nową ilość składnika aby zredukować nadmiar makroskładnika
+ *
+ * Uwzględnia limit 20% maksymalnej zmiany ilości składnika.
+ *
+ * @param ingredient - Składnik z recipe_ingredients
+ * @param macroType - Typ makroskładnika do redukcji
+ * @param targetReduction - Ile gramów makroskładnika chcemy zredukować
+ * @returns Nowa ilość składnika (new_amount) oraz rzeczywista redukcja makro
+ */
+function calculateAdjustedAmount(
+  ingredient: {
+    base_amount: number
+    protein_g: number | null
+    carbs_g: number | null
+    fats_g: number | null
+  },
+  macroType: MacroType,
+  targetReduction: number
+): { newAmount: number; actualReduction: number } {
+  const macroField =
+    macroType === 'protein'
+      ? 'protein_g'
+      : macroType === 'carbs'
+        ? 'carbs_g'
+        : 'fats_g'
+
+  const macroPerBaseAmount = ingredient[macroField] || 0
+
+  if (macroPerBaseAmount === 0) {
+    return { newAmount: ingredient.base_amount, actualReduction: 0 }
+  }
+
+  // Oblicz ile składnika (w gramach) musimy usunąć aby zredukować targetReduction gramów makro
+  const amountToReduce =
+    (targetReduction / macroPerBaseAmount) * ingredient.base_amount
+
+  // Ogranicz zmianę do maksymalnie 20% bazowej ilości
+  const maxReduction = ingredient.base_amount * MAX_INGREDIENT_CHANGE_PERCENT
+  const actualAmountReduction = Math.min(amountToReduce, maxReduction)
+
+  // Nowa ilość składnika
+  const newAmount = Math.max(0, ingredient.base_amount - actualAmountReduction)
+
+  // Zaokrąglij do wielokrotności 5g (180g, 185g, 190g...)
+  const roundedAmount = roundIngredientAmount(newAmount)
+
+  // Przelicz rzeczywistą redukcję po zaokrągleniu
+  const finalReduction =
+    ((ingredient.base_amount - roundedAmount) / ingredient.base_amount) *
+    macroPerBaseAmount
+
+  return {
+    newAmount: roundedAmount,
+    actualReduction: Math.round(finalReduction * 10) / 10,
+  }
+}
+
+/**
  * Losuje przepis z listy dostępnych przepisów
  *
  * Używa algorytmu Fisher-Yates shuffle dla losowego wyboru.
@@ -92,7 +433,9 @@ function calculateMealCalorieRange(dailyCalories: number): {
  * @param recipes - Lista dostępnych przepisów
  * @returns Wylosowany przepis lub null jeśli lista pusta
  */
-function selectRandomRecipe(recipes: Recipe[]): Recipe | null {
+function selectRandomRecipe(
+  recipes: RecipeWithIngredients[]
+): RecipeWithIngredients | null {
   if (recipes.length === 0) {
     return null
   }
@@ -111,13 +454,13 @@ function selectRandomRecipe(recipes: Recipe[]): Recipe | null {
  * @param mealType - Typ posiłku (breakfast, lunch, dinner)
  * @param minCalories - Minimalna liczba kalorii
  * @param maxCalories - Maksymalna liczba kalorii
- * @returns Lista przepisów spełniających kryteria
+ * @returns Lista przepisów spełniających kryteria (z recipe_ingredients)
  */
 async function fetchRecipesForMeal(
   mealType: Enums<'meal_type_enum'>,
   minCalories: number,
   maxCalories: number
-): Promise<Recipe[]> {
+): Promise<RecipeWithIngredients[]> {
   const supabase = createAdminClient()
 
   // Zaokrąglij kalorie do integer (kolumna total_calories w bazie to integer)
@@ -127,7 +470,25 @@ async function fetchRecipesForMeal(
   const { data, error } = await supabase
     .from('recipes')
     .select(
-      'id, name, meal_types, total_calories, total_protein_g, total_carbs_g, total_fats_g'
+      `
+      id,
+      name,
+      meal_types,
+      total_calories,
+      total_protein_g,
+      total_carbs_g,
+      total_fats_g,
+      recipe_ingredients (
+        ingredient_id,
+        base_amount,
+        unit,
+        is_scalable,
+        calories,
+        protein_g,
+        carbs_g,
+        fats_g
+      )
+      `
     )
     .contains('meal_types', [mealType])
     .gte('total_calories', minCal)
@@ -139,7 +500,7 @@ async function fetchRecipesForMeal(
     throw new Error(`Nie udało się pobrać przepisów: ${error.message}`)
   }
 
-  return (data || []) as Recipe[]
+  return (data || []) as RecipeWithIngredients[]
 }
 
 /**
@@ -151,7 +512,10 @@ async function fetchRecipesForMeal(
  * @param usedRecipeIds - Set z ID już użytych przepisów w tym dniu
  * @returns true jeśli przepis można użyć (nie ma duplikatu)
  */
-function ensureVariety(recipe: Recipe, usedRecipeIds: Set<number>): boolean {
+function ensureVariety(
+  recipe: RecipeWithIngredients,
+  usedRecipeIds: Set<number>
+): boolean {
   return !usedRecipeIds.has(recipe.id)
 }
 
@@ -172,7 +536,7 @@ async function selectRecipeForMeal(
   mealType: Enums<'meal_type_enum'>,
   calorieRange: { min: number; max: number },
   usedRecipeIds: Set<number>
-): Promise<Recipe | null> {
+): Promise<RecipeWithIngredients | null> {
   // 1. Pobranie przepisów z bazy danych
   const allRecipes = await fetchRecipesForMeal(
     mealType,
@@ -194,27 +558,324 @@ async function selectRecipeForMeal(
 }
 
 /**
- * Generuje plan posiłków dla pojedynczego dnia
+ * Optymalizuje plan dnia przez redukcję kalorii
+ *
+ * Znajduje składnik z największą liczbą kalorii i redukuje jego ilość.
+ *
+ * @param dayPlan - Plan dnia
+ * @param selectedRecipes - Przepisy z danymi składników
+ * @param calorieTarget - Ile kalorii trzeba zredukować
+ * @returns Zoptymalizowany plan
+ */
+function optimizeByCalories(
+  dayPlan: PlannedMealInsert[],
+  selectedRecipes: RecipeWithIngredients[],
+  calorieTarget: number
+): PlannedMealInsert[] {
+  let bestRecipeIndex = -1
+  let bestIngredient: {
+    ingredient_id: number
+    calories: number
+    is_scalable: boolean
+  } | null = null
+
+  // Znajdź składnik z największą liczbą kalorii
+  for (let i = 0; i < selectedRecipes.length; i++) {
+    const recipe = selectedRecipes[i]
+    if (!recipe || !recipe.recipe_ingredients) continue
+
+    for (const ing of recipe.recipe_ingredients) {
+      if (!ing.is_scalable || !ing.calories || ing.calories <= 0) continue
+
+      if (!bestIngredient || ing.calories > bestIngredient.calories) {
+        bestRecipeIndex = i
+        bestIngredient = {
+          ingredient_id: ing.ingredient_id,
+          calories: ing.calories,
+          is_scalable: ing.is_scalable,
+        }
+      }
+    }
+  }
+
+  if (bestRecipeIndex === -1 || !bestIngredient) {
+    console.log('⚠️  Nie znaleziono składnika do redukcji kalorii')
+    return dayPlan
+  }
+
+  const recipe = selectedRecipes[bestRecipeIndex]
+  if (!recipe) return dayPlan
+
+  const ingredientData = recipe.recipe_ingredients.find(
+    (ri) => ri.ingredient_id === bestIngredient.ingredient_id
+  )
+
+  if (!ingredientData) return dayPlan
+
+  // Oblicz redukcję - potrzebujemy zredukować `calorieTarget` kalorii
+  // Składnik ma `ingredientData.calories` kalorii w `ingredientData.base_amount` gram
+  const calories = ingredientData.calories || 0
+  if (calories === 0 || ingredientData.base_amount === 0) {
+    console.log(
+      '⚠️  Składnik ma 0 kalorii lub 0 gram - brak możliwości optymalizacji'
+    )
+    return dayPlan
+  }
+
+  const caloriesPerGram = calories / ingredientData.base_amount
+  const gramsToReduce = calorieTarget / caloriesPerGram
+
+  // Ogranicz do max 20%
+  const maxReduction =
+    ingredientData.base_amount * MAX_INGREDIENT_CHANGE_PERCENT
+  const actualGramsReduction = Math.min(gramsToReduce, maxReduction)
+  const newAmount = Math.max(
+    0,
+    ingredientData.base_amount - actualGramsReduction
+  )
+
+  // Zaokrąglij do wielokrotności 5g
+  const roundedAmount = roundIngredientAmount(newAmount)
+
+  // Przelicz rzeczywistą redukcję kalorii po zaokrągleniu
+  const actualCalorieReduction =
+    (ingredientData.base_amount - roundedAmount) * caloriesPerGram
+
+  const changePercent =
+    ((ingredientData.base_amount - roundedAmount) /
+      ingredientData.base_amount) *
+    100
+
+  console.log(
+    `✅ Zmniejszono składnik ID=${bestIngredient.ingredient_id} z ${ingredientData.base_amount}g na ${roundedAmount}g (-${changePercent.toFixed(1)}%)`
+  )
+  console.log(
+    `   Redukcja kalorii: ${actualCalorieReduction.toFixed(0)} kcal (docelowa: ${calorieTarget.toFixed(0)} kcal)`
+  )
+
+  const optimizedPlan = [...dayPlan]
+  const mealToUpdate = optimizedPlan[bestRecipeIndex]
+
+  if (mealToUpdate) {
+    mealToUpdate.ingredient_overrides = JSON.parse(
+      JSON.stringify([
+        {
+          ingredient_id: bestIngredient.ingredient_id,
+          new_amount: roundedAmount,
+          auto_adjusted: true, // Automatyczna zmiana przez algorytm
+        },
+      ])
+    )
+  }
+
+  return optimizedPlan
+}
+
+/**
+ * Optymalizuje plan dnia aby zmieścić się w celach kalorycznych i makroskładników
+ *
+ * Nowa logika:
+ * 1. Kalorie ZAWSZE muszą być ≤100% dziennego zapotrzebowania
+ * 2. Makro (białko/węgle/tłuszcze) optymalizujemy gdy >105%
+ *
+ * Algorytm:
+ * 1. Oblicza sumę kalorii i makroskładników z 3 posiłków
+ * 2. Sprawdza najpierw kalorie - jeśli >100%, redukuje składnik z największą liczbą kalorii
+ * 3. Potem sprawdza makro - jeśli któreś >105%, redukuje składnik odpowiedzialny za to makro
+ * 4. Zmniejsza ilość składnika proporcjonalnie (max 20%)
+ * 5. Zapisuje zmiany w ingredient_overrides
+ *
+ * @param dayPlan - Plan dnia (3 posiłki) z przepisami
+ * @param selectedRecipes - Pełne dane przepisów (z recipe_ingredients)
+ * @param targets - Cele kaloryczne i makroskładników użytkownika
+ * @returns Zoptymalizowany plan z ingredient_overrides
+ */
+function optimizeDayPlan(
+  dayPlan: PlannedMealInsert[],
+  selectedRecipes: RecipeWithIngredients[],
+  targets: {
+    target_calories: number
+    target_protein_g: number
+    target_carbs_g: number
+    target_fats_g: number
+  }
+): PlannedMealInsert[] {
+  // 1. Oblicz sumę kalorii i makroskładników dla dnia
+  let dayCalories = 0
+  const dayMacros = {
+    protein_g: 0,
+    carbs_g: 0,
+    fats_g: 0,
+  }
+
+  for (const recipe of selectedRecipes) {
+    const macros = calculateRecipeMacros(recipe)
+    dayCalories += macros.calories
+    dayMacros.protein_g += macros.protein_g
+    dayMacros.carbs_g += macros.carbs_g
+    dayMacros.fats_g += macros.fats_g
+  }
+
+  console.log(
+    `📊 Plan dnia: ${dayCalories} kcal (cel: ${targets.target_calories}), P: ${dayMacros.protein_g}g, C: ${dayMacros.carbs_g}g, F: ${dayMacros.fats_g}g`
+  )
+
+  // 2. PRIORYTET: Sprawdź kalorie - ZAWSZE muszą być ≤100%
+  if (dayCalories > targets.target_calories) {
+    const caloriePercent = (
+      (dayCalories / targets.target_calories) *
+      100
+    ).toFixed(1)
+    const calorieSurplus = dayCalories - targets.target_calories
+
+    console.log(
+      `🎯 OPTYMALIZACJA KALORII: ${caloriePercent}% zapotrzebowania, nadmiar: ${calorieSurplus.toFixed(0)} kcal`
+    )
+
+    // Znajdź składnik z największą liczbą kalorii we wszystkich przepisach
+    return optimizeByCalories(dayPlan, selectedRecipes, calorieSurplus)
+  }
+
+  // 3. Sprawdź makroskładniki - optymalizuj gdy >105%
+  const surplus = calculateMacroSurplus(dayMacros, targets)
+  const macroToOptimize = findMacroForOptimization(surplus, dayMacros, targets)
+
+  if (!macroToOptimize) {
+    console.log('✅ Plan dnia OK - brak potrzeby optymalizacji')
+    return dayPlan
+  }
+
+  // Oblicz procent nadmiaru makro
+  const macroValue =
+    macroToOptimize === 'protein'
+      ? dayMacros.protein_g
+      : macroToOptimize === 'carbs'
+        ? dayMacros.carbs_g
+        : dayMacros.fats_g
+
+  const targetValue =
+    macroToOptimize === 'protein'
+      ? targets.target_protein_g
+      : macroToOptimize === 'carbs'
+        ? targets.target_carbs_g
+        : targets.target_fats_g
+
+  const percentOfTarget = ((macroValue / targetValue) * 100).toFixed(1)
+
+  console.log(
+    `🎯 OPTYMALIZACJA MAKRO: nadmiar ${macroToOptimize} = ${surplus[macroToOptimize].toFixed(1)}g (${percentOfTarget}% zapotrzebowania)`
+  )
+
+  // 4. Znajdź składnik odpowiedzialny za nadmiar tego makro
+  let bestRecipeIndex = -1
+  let bestIngredient: {
+    ingredient_id: number
+    macro_value: number
+    is_scalable: boolean
+  } | null = null
+
+  for (let i = 0; i < selectedRecipes.length; i++) {
+    const recipe = selectedRecipes[i]
+    if (!recipe) continue
+
+    const ingredient = findIngredientForMacro(recipe, macroToOptimize)
+
+    if (
+      ingredient &&
+      ingredient.is_scalable &&
+      (!bestIngredient || ingredient.macro_value > bestIngredient.macro_value)
+    ) {
+      bestRecipeIndex = i
+      bestIngredient = ingredient
+    }
+  }
+
+  if (bestRecipeIndex === -1 || !bestIngredient) {
+    console.log('⚠️  Nie znaleziono skalowanego składnika do optymalizacji')
+    return dayPlan
+  }
+
+  // 5. Oblicz nową ilość składnika
+  const recipe = selectedRecipes[bestRecipeIndex]
+  if (!recipe) {
+    return dayPlan
+  }
+
+  const ingredientData = recipe.recipe_ingredients.find(
+    (ri) => ri.ingredient_id === bestIngredient.ingredient_id
+  )
+
+  if (!ingredientData) {
+    return dayPlan
+  }
+
+  const targetReduction = surplus[macroToOptimize]
+  const { newAmount, actualReduction } = calculateAdjustedAmount(
+    ingredientData,
+    macroToOptimize,
+    targetReduction
+  )
+
+  // Oblicz procentową zmianę składnika
+  const changePercent =
+    ((ingredientData.base_amount - newAmount) / ingredientData.base_amount) *
+    100
+
+  console.log(
+    `✅ Zmniejszono składnik ID=${bestIngredient.ingredient_id} z ${ingredientData.base_amount}g na ${newAmount}g (-${changePercent.toFixed(1)}%)`
+  )
+  console.log(
+    `   Redukcja ${macroToOptimize}: ${actualReduction.toFixed(1)}g (docelowa: ${targetReduction.toFixed(1)}g)`
+  )
+
+  // 6. Zaktualizuj ingredient_overrides w odpowiednim posiłku
+  const optimizedPlan = [...dayPlan]
+  const mealToUpdate = optimizedPlan[bestRecipeIndex]
+
+  if (mealToUpdate) {
+    mealToUpdate.ingredient_overrides = JSON.parse(
+      JSON.stringify([
+        {
+          ingredient_id: bestIngredient.ingredient_id,
+          new_amount: newAmount,
+          auto_adjusted: true, // Automatyczna zmiana przez algorytm
+        },
+      ])
+    )
+  }
+
+  return optimizedPlan
+}
+
+/**
+ * Generuje plan posiłków dla pojedynczego dnia z automatyczną optymalizacją
  *
  * @param userId - ID użytkownika
  * @param date - Data w formacie YYYY-MM-DD
- * @param dailyCalories - Dzienne zapotrzebowanie kaloryczne
- * @returns Lista 3 zaplanowanych posiłków (breakfast, lunch, dinner)
+ * @param userProfile - Profil użytkownika z celami makroskładników
+ * @returns Lista 3 zaplanowanych posiłków (breakfast, lunch, dinner) z ingredient_overrides
  * @throws Error jeśli nie udało się znaleźć przepisów
  */
 export async function generateDayPlan(
   userId: string,
   date: string,
-  dailyCalories: number
+  userProfile: {
+    target_calories: number
+    target_protein_g: number
+    target_carbs_g: number
+    target_fats_g: number
+  }
 ): Promise<PlannedMealInsert[]> {
   const dayPlan: PlannedMealInsert[] = []
+  const selectedRecipes: RecipeWithIngredients[] = []
   const usedRecipeIds = new Set<number>()
 
+  // 1. Wybierz przepisy dla każdego typu posiłku
   for (const mealType of MEAL_TYPES) {
-    // 1. Oblicz przedział kaloryczny dla posiłku
-    const calorieRange = calculateMealCalorieRange(dailyCalories)
+    // Oblicz przedział kaloryczny dla posiłku
+    const calorieRange = calculateMealCalorieRange(userProfile.target_calories)
 
-    // 2. Wybierz przepis
+    // Wybierz przepis
     const recipe = await selectRecipeForMeal(
       mealType,
       calorieRange,
@@ -227,8 +888,9 @@ export async function generateDayPlan(
       )
     }
 
-    // 3. Dodaj do planu dnia
+    // Dodaj do planu dnia i listy wybranych przepisów
     usedRecipeIds.add(recipe.id)
+    selectedRecipes.push(recipe)
     dayPlan.push({
       user_id: userId,
       recipe_id: recipe.id,
@@ -239,7 +901,15 @@ export async function generateDayPlan(
     })
   }
 
-  return dayPlan
+  // 2. Optymalizuj plan dnia
+  const optimizedPlan = optimizeDayPlan(dayPlan, selectedRecipes, {
+    target_calories: userProfile.target_calories,
+    target_protein_g: userProfile.target_protein_g,
+    target_carbs_g: userProfile.target_carbs_g,
+    target_fats_g: userProfile.target_fats_g,
+  })
+
+  return optimizedPlan
 }
 
 /**
@@ -303,13 +973,14 @@ export async function generateWeeklyPlan(
     // 1. Generuj daty dla 7 dni
     const dates = generateDates(startDate, DAYS_TO_GENERATE)
 
-    // 2. Dla każdego dnia wygeneruj plan 3 posiłków
+    // 2. Dla każdego dnia wygeneruj plan 3 posiłków z optymalizacją
     for (const date of dates) {
-      const dayPlan = await generateDayPlan(
-        userProfile.id,
-        date,
-        userProfile.target_calories
-      )
+      const dayPlan = await generateDayPlan(userProfile.id, date, {
+        target_calories: userProfile.target_calories,
+        target_protein_g: userProfile.target_protein_g,
+        target_carbs_g: userProfile.target_carbs_g,
+        target_fats_g: userProfile.target_fats_g,
+      })
 
       weeklyPlan.push(...dayPlan)
     }

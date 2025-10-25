@@ -31,6 +31,7 @@ interface RecipeDetailClientProps {
   // Ingredient editing props (optional - only for Dashboard)
   enableIngredientEditing?: boolean
   getIngredientAmount?: (ingredientId: number) => number
+  isAutoAdjusted?: (ingredientId: number) => boolean
   updateIngredientAmount?: (
     ingredientId: number,
     newAmount: number
@@ -59,6 +60,7 @@ export function RecipeDetailClient({
   showBackButton = true,
   enableIngredientEditing = false,
   getIngredientAmount,
+  isAutoAdjusted,
   updateIngredientAmount,
   incrementAmount,
   decrementAmount,
@@ -245,6 +247,9 @@ export function RecipeDetailClient({
                     key={ingredient.id}
                     ingredient={ingredient}
                     currentAmount={getIngredientAmount(ingredient.id)}
+                    isAutoAdjusted={
+                      isAutoAdjusted ? isAutoAdjusted(ingredient.id) : false
+                    }
                     onAmountChange={updateIngredientAmount}
                     onIncrement={incrementAmount}
                     onDecrement={decrementAmount}

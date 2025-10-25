@@ -38,10 +38,19 @@ export function MacroProgressSection({
 
   const caloriesConsumed = macros.consumed.calories
   const caloriesTarget = Math.max(macros.target.calories, 0)
-  const caloriesLeft = Math.max(caloriesTarget - caloriesConsumed, 0)
+  const caloriesLeft = caloriesTarget - caloriesConsumed
+  const isOverLimit = caloriesConsumed > caloriesTarget
+
+  // Podstawowy procent (0-100%)
   const caloriesPercent =
     caloriesTarget > 0 ? Math.min(caloriesConsumed / caloriesTarget, 1) : 0
   const caloriesAngle = Math.round(caloriesPercent * 360)
+
+  // Procent przekroczenia (powyżej 100%)
+  const overLimitPercent = isOverLimit
+    ? (caloriesConsumed - caloriesTarget) / caloriesTarget
+    : 0
+  const overLimitAngle = Math.round(overLimitPercent * 360)
 
   const macroRows = [
     {
@@ -102,21 +111,28 @@ export function MacroProgressSection({
           <div
             className='relative flex h-60 w-60 items-center justify-center rounded-full'
             style={{
-              background: `conic-gradient(#f5ac4b ${caloriesAngle}deg, #f0e6dd ${caloriesAngle}deg 360deg)`,
+              background: isOverLimit
+                ? `conic-gradient(#ef4444 0deg ${overLimitAngle}deg, #f5ac4b ${overLimitAngle}deg 360deg)`
+                : `conic-gradient(#f5ac4b ${caloriesAngle}deg, #f0e6dd ${caloriesAngle}deg 360deg)`,
             }}
           >
             <div className='absolute inset-[18px] flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner'>
-              <Flame className='-mt-5 mb-1 h-10 w-10 text-[#f5ac4b]' />
+              <Flame
+                className={`-mt-5 mb-1 h-10 w-10 ${isOverLimit ? 'text-red-500' : 'text-[#f5ac4b]'}`}
+              />
               <div className='mt-1 flex items-baseline gap-2'>
-                <span className='text-foreground text-5xl font-bold'>
-                  {Math.round(caloriesLeft)}
+                <span
+                  className={`text-5xl font-bold ${isOverLimit ? 'text-red-600' : 'text-foreground'}`}
+                >
+                  {isOverLimit ? '+' : ''}
+                  {Math.abs(Math.round(caloriesLeft))}
                 </span>
                 <span className='text-muted-foreground text-md font-medium'>
                   kcal
                 </span>
               </div>
               <span className='text-muted-foreground mt-1 text-xs font-semibold tracking-wide uppercase'>
-                Pozostalo kalorii
+                {isOverLimit ? 'Przekroczenie' : 'Pozostalo kalorii'}
               </span>
             </div>
           </div>

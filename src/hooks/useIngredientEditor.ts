@@ -32,8 +32,12 @@ export function useIngredientEditor({
 
   // Sync overrides when initialOverrides changes (e.g., after save or navigation)
   useEffect(() => {
+    console.log('🔄 initialOverrides changed, syncing local state:', {
+      recipeName: recipe.name,
+      newInitialOverrides: initialOverrides,
+    })
     setOverrides(initialOverrides || [])
-  }, [initialOverrides])
+  }, [initialOverrides, recipe.name])
 
   // Check if there are any changes from initial state
   const hasChanges = useMemo(() => {
@@ -41,14 +45,30 @@ export function useIngredientEditor({
     const initial = initialOverrides || []
     const current = overrides || []
 
-    // Compare by sorting and stringifying
-    const sortById = (arr: IngredientOverrides) =>
-      [...arr].sort((a, b) => a.ingredient_id - b.ingredient_id)
+    // Normalize objects to have consistent key order and sort by id
+    const normalize = (arr: IngredientOverrides) =>
+      [...arr]
+        .map((item) => ({
+          ingredient_id: item.ingredient_id,
+          new_amount: item.new_amount,
+        }))
+        .sort((a, b) => a.ingredient_id - b.ingredient_id)
 
-    return (
-      JSON.stringify(sortById(current)) !== JSON.stringify(sortById(initial))
-    )
-  }, [overrides, initialOverrides])
+    const initialStr = JSON.stringify(normalize(initial))
+    const currentStr = JSON.stringify(normalize(current))
+    const result = initialStr !== currentStr
+
+    console.log('🔍 hasChanges calculation:', {
+      recipeName: recipe.name,
+      initialOverrides,
+      overrides,
+      initialStr,
+      currentStr,
+      hasChanges: result,
+    })
+
+    return result
+  }, [overrides, initialOverrides, recipe.name])
 
   // Calculate adjusted nutrition based on current overrides
   const adjustedNutrition = useMemo(() => {
@@ -67,6 +87,17 @@ export function useIngredientEditor({
       return ingredient?.amount || 0
     },
     [overrides, ingredients]
+  )
+
+  /**
+   * Check if ingredient change was auto-adjusted by algorithm
+   */
+  const isAutoAdjusted = useCallback(
+    (ingredientId: number): boolean => {
+      const override = overrides.find((o) => o.ingredient_id === ingredientId)
+      return override?.auto_adjusted === true
+    },
+    [overrides]
   )
 
   /**
@@ -202,6 +233,7 @@ export function useIngredientEditor({
     hasChanges,
     adjustedNutrition,
     getIngredientAmount,
+    isAutoAdjusted,
     updateIngredientAmount,
     incrementAmount,
     decrementAmount,

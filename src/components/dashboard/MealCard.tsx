@@ -216,11 +216,14 @@ export function MealCard({
               </div>
             </div>
 
-            {meal.ingredient_overrides && (
-              <div className='text-xs font-semibold text-amber-600'>
-                Zmienione skladniki w tym posilku
-              </div>
-            )}
+            {meal.ingredient_overrides &&
+              meal.ingredient_overrides.some(
+                (override) => !override.auto_adjusted
+              ) && (
+                <div className='text-xs font-semibold text-amber-600'>
+                  Zmienione skladniki w tym posilku
+                </div>
+              )}
           </div>
         </div>
       </div>

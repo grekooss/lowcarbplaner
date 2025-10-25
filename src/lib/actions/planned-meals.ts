@@ -761,16 +761,30 @@ export async function getReplacementRecipes(
       return { error: 'Uwierzytelnienie wymagane' }
     }
 
-    // 4. Pobranie oryginalnego posiłku
+    // 4. Pobranie oryginalnego posiłku z pełnymi danymi
     const { data: meal, error: fetchError } = await supabase
       .from('planned_meals')
       .select(
         `
         user_id,
         meal_type,
+        ingredient_overrides,
         recipe:recipes (
           id,
-          total_calories
+          total_calories,
+          total_protein_g,
+          total_carbs_g,
+          total_fats_g,
+          recipe_ingredients (
+            base_amount,
+            calories,
+            protein_g,
+            carbs_g,
+            fats_g,
+            ingredient:ingredients (
+              id
+            )
+          )
         )
       `
       )
@@ -796,10 +810,29 @@ export async function getReplacementRecipes(
       return { error: 'Przepis nie został znaleziony dla tego posiłku' }
     }
 
-    // 5. Wyszukanie zamienników
-    const originalCalories = meal.recipe.total_calories || 0
-    const minCalories = originalCalories * 0.85
-    const maxCalories = originalCalories * 1.15
+    // 5. Obliczenie aktualnych kalorii z uwzględnieniem ingredient_overrides
+    let originalCalories = meal.recipe.total_calories || 0
+
+    // Jeśli są nadpisania składników, przelicz kalorie
+    const overrides = meal.ingredient_overrides as IngredientOverrides | null
+    if (overrides && overrides.length > 0 && meal.recipe.recipe_ingredients) {
+      originalCalories = meal.recipe.recipe_ingredients.reduce((total, ri) => {
+        const override = overrides.find(
+          (o) => o.ingredient_id === ri.ingredient.id
+        )
+        const originalAmount = ri.base_amount
+        const adjustedAmount = override?.new_amount ?? originalAmount
+
+        if (originalAmount === 0) return total
+
+        const scale = adjustedAmount / originalAmount
+        return total + (ri.calories || 0) * scale
+      }, 0)
+
+      originalCalories = Math.round(originalCalories)
+    }
+    const minCalories = Math.floor(originalCalories * 0.85)
+    const maxCalories = Math.ceil(originalCalories * 1.15)
 
     const { data: replacements, error: searchError } = await supabase
       .from('recipes')

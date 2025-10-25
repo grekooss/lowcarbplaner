@@ -6,7 +6,7 @@
  * W kontekście Dashboard - pokazuje inline ingredient editing
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2, Save } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { VisuallyHidden } from '@/components/ui/visually-hidden'
@@ -43,6 +43,7 @@ export const RecipeModal = ({
     hasChanges,
     adjustedNutrition,
     getIngredientAmount,
+    isAutoAdjusted,
     updateIngredientAmount,
     incrementAmount,
     decrementAmount,
@@ -59,7 +60,7 @@ export const RecipeModal = ({
     saveChanges(undefined, {
       onSuccess: () => {
         setIsSaveSuccessful(true)
-        setTimeout(() => setIsSaveSuccessful(false), 3000)
+        // Don't reset immediately - wait for hasChanges to become false
       },
       onError: (err) => {
         setError(
@@ -68,6 +69,16 @@ export const RecipeModal = ({
       },
     })
   }
+
+  // Reset success message after hasChanges becomes false (data synced)
+  useEffect(() => {
+    if (isSaveSuccessful && !hasChanges) {
+      const timer = setTimeout(() => {
+        setIsSaveSuccessful(false)
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [isSaveSuccessful, hasChanges])
 
   if (!meal) return null
 
@@ -120,6 +131,7 @@ export const RecipeModal = ({
             showBackButton={false}
             enableIngredientEditing={enableIngredientEditing}
             getIngredientAmount={getIngredientAmount}
+            isAutoAdjusted={isAutoAdjusted}
             updateIngredientAmount={
               enableIngredientEditing ? updateIngredientAmount : undefined
             }

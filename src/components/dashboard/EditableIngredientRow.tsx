@@ -17,6 +17,7 @@ import type { IngredientDTO } from '@/types/dto.types'
 interface EditableIngredientRowProps {
   ingredient: IngredientDTO
   currentAmount: number
+  isAutoAdjusted?: boolean
   onAmountChange: (
     ingredientId: number,
     newAmount: number
@@ -37,6 +38,7 @@ interface EditableIngredientRowProps {
 export function EditableIngredientRow({
   ingredient,
   currentAmount,
+  isAutoAdjusted = false,
   onAmountChange,
   onIncrement,
   onDecrement,
@@ -107,7 +109,7 @@ export function EditableIngredientRow({
         <div className='flex-1'>
           <p className='text-sm font-medium'>
             {ingredient.name}
-            {isChanged && (
+            {isChanged && !isAutoAdjusted && (
               <span className='ml-2 text-xs text-amber-600'>(zmieniono)</span>
             )}
           </p>

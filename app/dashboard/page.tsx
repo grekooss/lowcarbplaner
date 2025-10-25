@@ -7,6 +7,8 @@
 
 import { getPlannedMeals } from '@/lib/actions/planned-meals'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
+import { createServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
 // Force dynamic rendering because of Supabase auth (cookies)
 export const dynamic = 'force-dynamic'
@@ -20,43 +22,31 @@ export const dynamic = 'force-dynamic'
  * 4. Przekazuje dane do DashboardClient
  */
 export default async function DashboardPage() {
-  // 1. Utworzenie Supabase client - TYMCZASOWO WYŁĄCZONE
-  // const supabase = await createServerClient()
+  // 1. Utworzenie Supabase client
+  const supabase = await createServerClient()
 
-  // 2. Sprawdzenie autentykacji - TYMCZASOWO WYŁĄCZONE
-  // const {
-  //   data: { user },
-  //   error: authError,
-  // } = await supabase.auth.getUser()
+  // 2. Sprawdzenie autentykacji
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
-  // if (authError || !user) {
-  //   redirect('/login')
-  // }
+  if (authError || !user) {
+    redirect('/auth')
+  }
 
-  // Mock user dla testów (unused but kept for reference)
-  // const user = { id: 'test-user-id' }
+  // 3. Pobranie profilu użytkownika
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select(
+      'target_calories, target_protein_g, target_carbs_g, target_fats_g, disclaimer_accepted_at'
+    )
+    .eq('id', user.id)
+    .single()
 
-  // 3. Pobranie profilu użytkownika - TYMCZASOWO WYŁĄCZONE
-  // const { data: profile, error: profileError } = await supabase
-  //   .from('profiles')
-  //   .select(
-  //     'target_calories, target_protein_g, target_carbs_g, target_fats_g, disclaimer_accepted_at'
-  //   )
-  //   .eq('id', user.id)
-  //   .single()
-
-  // // Jeśli brak profilu lub nie zaakceptowano regulaminu → onboarding
-  // if (profileError || !profile || !profile.disclaimer_accepted_at) {
-  //   redirect('/onboarding')
-  // }
-
-  // Mock profile dla testów
-  const profile = {
-    target_calories: 1800,
-    target_protein_g: 120,
-    target_carbs_g: 30,
-    target_fats_g: 140,
-    disclaimer_accepted_at: new Date().toISOString(),
+  // Jeśli brak profilu lub nie zaakceptowano regulaminu → onboarding
+  if (profileError || !profile || !profile.disclaimer_accepted_at) {
+    redirect('/onboarding')
   }
 
   // 4. Pobranie posiłków na dziś (initial data)

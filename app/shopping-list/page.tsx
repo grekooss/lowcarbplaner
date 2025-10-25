@@ -1,5 +1,7 @@
 import { getShoppingList } from '@/lib/actions/shopping-list'
 import { ShoppingListClient } from '@/components/shopping-list/ShoppingListClient'
+import { createServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
 // Force dynamic rendering because of Supabase auth (cookies)
 export const dynamic = 'force-dynamic'
@@ -13,17 +15,17 @@ export const metadata = {
  * ShoppingListPage - Główna strona widoku Listy Zakupów
  *
  * Server Component odpowiedzialny za:
+ * - Sprawdzenie autentykacji
  * - Obliczenie zakresu dat (jutro + 5 dni = 6 dni)
  * - Wywołanie Server Action getShoppingList
  * - Przekazanie danych do ShoppingListClient
- *
- * @note Tymczasowo dostępne bez logowania (dla testów)
  */
 export default async function ShoppingListPage() {
-  // TODO: Przywrócić autentykację po testach
-  // const supabase = await createServerClient()
-  // const { data: { user } } = await supabase.auth.getUser()
-  // if (!user) redirect('/login')
+  const supabase = await createServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   // Oblicz zakres dat (jutro + 5 dni = 6 dni)
   const tomorrow = new Date()
