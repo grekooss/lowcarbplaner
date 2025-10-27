@@ -59,11 +59,11 @@ describe('calculateNutritionTargetsClient', () => {
 
     expect(result).not.toBeNull()
 
-    // BMR dla mężczyzny: 10*85 + 6.25*180 - 5*35 + 5 = 1810
-    // TDEE (moderate=1.55): 1810 * 1.55 ≈ 2806
+    // BMR dla mężczyzny: 10*85 + 6.25*180 - 5*35 + 5 = 1805
+    // TDEE (moderate=1.55): 1805 * 1.55 ≈ 2797.75
     // Deficyt: (0.5 * 7700) / 7 ≈ 550 kcal/dzień
-    // Kalorie celowe: 2806 - 550 ≈ 2256
-    expect(result!.target_calories).toBeCloseTo(2256, -1)
+    // Kalorie celowe: 2797.75 - 550 ≈ 2248 (Math.round)
+    expect(result!.target_calories).toBeCloseTo(2248, -1)
   })
 
   it('rozkład makro sumuje się do pełnych kalorii', () => {
