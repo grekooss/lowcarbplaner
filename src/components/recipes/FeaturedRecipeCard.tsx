@@ -10,11 +10,13 @@
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { MacroCard } from '@/components/recipes/detail/MacroCard'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
 import { BarChart3, Clock, ListOrdered, Timer } from 'lucide-react'
+import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
 interface FeaturedRecipeCardProps {
   recipe: RecipeDTO
@@ -85,9 +87,9 @@ export function FeaturedRecipeCard({
                 </h2>
 
                 {primaryMealType && (
-                  <span className='inline-flex items-center rounded-sm bg-yellow-400 px-4 py-1 text-sm font-semibold text-gray-900'>
+                  <Badge className={getMealTypeBadgeClasses(primaryMealType)}>
                     {MEAL_TYPE_LABELS[primaryMealType]}
-                  </span>
+                  </Badge>
                 )}
               </div>
 

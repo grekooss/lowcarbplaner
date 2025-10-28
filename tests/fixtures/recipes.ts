@@ -40,7 +40,7 @@ export const testIngredients: IngredientDTO[] = [
     protein_g: 0,
     carbs_g: 0,
     fats_g: 14,
-    category: 'oils',
+    category: 'oils_fats',
     is_scalable: true,
   },
   {
@@ -52,7 +52,7 @@ export const testIngredients: IngredientDTO[] = [
     protein_g: 0,
     carbs_g: 0,
     fats_g: 0,
-    category: 'spices',
+    category: 'spices_herbs',
     is_scalable: false, // Przyprawy nie są skalowalne
   },
 ]
@@ -60,13 +60,11 @@ export const testIngredients: IngredientDTO[] = [
 export const testRecipeBreakfast: RecipeDTO = {
   id: 101,
   name: 'Omlet z warzywami',
-  instructions: {
-    steps: [
-      'Rozbij jajka do miski i ubij',
-      'Dodaj pokrojone warzywa',
-      'Smaż na patelni przez 5 minut',
-    ],
-  },
+  instructions: [
+    { step: 1, description: 'Rozbij jajka do miski i ubij' },
+    { step: 2, description: 'Dodaj pokrojone warzywa' },
+    { step: 3, description: 'Smaż na patelni przez 5 minut' },
+  ],
   meal_types: ['breakfast'],
   tags: ['low-carb', 'high-protein', 'quick'],
   image_url: 'https://example.com/omlet.jpg',
@@ -84,14 +82,12 @@ export const testRecipeBreakfast: RecipeDTO = {
 export const testRecipeLunch: RecipeDTO = {
   id: 102,
   name: 'Grillowany kurczak z brokułami',
-  instructions: {
-    steps: [
-      'Przypraw kurczaka',
-      'Grilluj kurczaka przez 20 minut',
-      'Ugotuj brokuły na parze',
-      'Polej oliwą',
-    ],
-  },
+  instructions: [
+    { step: 1, description: 'Przypraw kurczaka' },
+    { step: 2, description: 'Grilluj kurczaka przez 20 minut' },
+    { step: 3, description: 'Ugotuj brokuły na parze' },
+    { step: 4, description: 'Polej oliwą' },
+  ],
   meal_types: ['lunch', 'dinner'],
   tags: ['low-carb', 'high-protein', 'healthy'],
   image_url: 'https://example.com/chicken.jpg',
@@ -109,14 +105,12 @@ export const testRecipeLunch: RecipeDTO = {
 export const testRecipeDinner: RecipeDTO = {
   id: 103,
   name: 'Stek z wołowiny z sałatką',
-  instructions: {
-    steps: [
-      'Przypraw stek',
-      'Smaż na patelni przez 6 minut z każdej strony',
-      'Przygotuj sałatkę',
-      'Podaj razem',
-    ],
-  },
+  instructions: [
+    { step: 1, description: 'Przypraw stek' },
+    { step: 2, description: 'Smaż na patelni przez 6 minut z każdej strony' },
+    { step: 3, description: 'Przygotuj sałatkę' },
+    { step: 4, description: 'Podaj razem' },
+  ],
   meal_types: ['lunch', 'dinner'],
   tags: ['low-carb', 'high-protein', 'keto'],
   image_url: 'https://example.com/steak.jpg',
@@ -163,9 +157,11 @@ export const createRecipeWithCalories = (
   return {
     id: recipeId,
     name: name || `${mealType} ${targetCalories}kcal`,
-    instructions: {
-      steps: ['Przygotuj składniki', 'Gotuj zgodnie z przepisem', 'Podaj'],
-    },
+    instructions: [
+      { step: 1, description: 'Przygotuj składniki' },
+      { step: 2, description: 'Gotuj zgodnie z przepisem' },
+      { step: 3, description: 'Podaj' },
+    ],
     meal_types: [mealType],
     tags: ['low-carb', 'high-protein'],
     image_url: `https://example.com/${mealType}-${targetCalories}.jpg`,

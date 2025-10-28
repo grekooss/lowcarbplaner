@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { Enums } from '@/types/database.types'
+import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
 interface RecipeHeaderProps {
   name: string
@@ -62,7 +63,7 @@ export function RecipeHeader({
         <div className='flex flex-wrap gap-2'>
           {/* Meal Types - primary badges */}
           {mealTypes.map((type) => (
-            <Badge key={type} variant='default'>
+            <Badge key={type} className={getMealTypeBadgeClasses(type)}>
               {MEAL_TYPE_LABELS[type]}
             </Badge>
           ))}
