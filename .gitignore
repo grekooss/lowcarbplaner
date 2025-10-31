@@ -34,6 +34,11 @@ yarn-error.log*
 .env
 .env*.local
 !.env.example
+.env.e2e
+
+# database backups
+/backups/*
+!/backups/.gitkeep
 
 # vercel
 .vercel

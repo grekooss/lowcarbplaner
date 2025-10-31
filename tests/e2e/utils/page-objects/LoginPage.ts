@@ -1,6 +1,11 @@
 import { type Page, type Locator } from '@playwright/test'
 
 /**
+ * Timing constants for animations
+ */
+const TAB_ANIMATION_DURATION = 300 // Tab switch animation
+
+/**
  * Page Object Model for Authentication Page
  * Handles login, registration, and password reset flows
  */
@@ -88,7 +93,12 @@ export class LoginPage {
    */
   async switchToRegister() {
     await this.registerTab.click()
-    await this.page.waitForTimeout(300) // Wait for tab animation
+    // Wait for tab to be active and confirm password field to appear
+    await this.registerTab.waitFor({ state: 'attached' })
+    await this.confirmPasswordInput.waitFor({
+      state: 'visible',
+      timeout: TAB_ANIMATION_DURATION + 200,
+    })
   }
 
   /**
@@ -96,7 +106,8 @@ export class LoginPage {
    */
   async switchToLogin() {
     await this.loginTab.click()
-    await this.page.waitForTimeout(300)
+    // Wait for tab to be active
+    await this.loginTab.waitFor({ state: 'attached' })
   }
 
   /**

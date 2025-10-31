@@ -251,6 +251,7 @@
   - `offset` (integer, opcjonalny, domyślnie 0): Przesunięcie wyników.
   - `tags` (string, opcjonalny, np. `kurczak,szybkie`): Filtrowanie po tagach (przecinek jako separator).
   - `meal_types` (string, opcjonalny, np. `lunch,dinner`): Filtrowanie po typach posiłków.
+  - `difficulty_level` (string, opcjonalny, np. `easy,medium`): Filtrowanie po poziomie trudności. _(Dodane post-MVP)_
 - **Ładunek odpowiedzi**:
   ```json
   {
@@ -267,7 +268,11 @@
         "total_calories": 450,
         "total_protein_g": 25.5,
         "total_carbs_g": 3.2,
-        "total_fats_g": 35.8
+        "total_fats_g": 35.8,
+        "difficulty_level": "easy",
+        "average_rating": 4.5,
+        "reviews_count": 23,
+        "health_score": null
       }
     ]
   }
@@ -287,13 +292,24 @@
     "name": "Jajecznica z boczkiem",
     "image_url": "...",
     "instructions": [
-      { "step": 1, "description": "Pokrój boczek w kostkę." },
+      {
+        "step": 1,
+        "description": "Pokrój boczek w kostkę.",
+        "prep_time_minutes": 5,
+        "cook_time_minutes": 10
+      },
       { "step": 2, "description": "Podsmaż boczek na patelni." }
     ],
     "meal_types": ["breakfast"],
     "tags": ["jajka", "szybkie", "patelnia"],
     "total_calories": 450,
-    // ... total macros
+    "total_protein_g": 25.5,
+    "total_carbs_g": 3.2,
+    "total_fats_g": 35.8,
+    "difficulty_level": "easy",
+    "average_rating": 4.5,
+    "reviews_count": 23,
+    "health_score": null
     "ingredients": [
       {
         "category": "eggs",
@@ -488,3 +504,69 @@
       - recipe_id != oryginalne recipe_id
     - Sortowanie po ABS(total_calories - original_calories) ASC
     - Zwrócenie top 10 wyników z obliczonym calorie_diff
+
+---
+
+## 6. Zmiany Post-MVP
+
+### Rozszerzenia Endpointu `GET /recipes` i `GET /recipes/{id}`
+
+**Data wprowadzenia:** 2024-10-15
+
+**Nowe pola w odpowiedzi (backward-compatible):**
+
+1. **`difficulty_level`** (string): Poziom trudności przepisu
+   - Wartości: `"easy"`, `"medium"`, `"hard"`
+   - Zawsze obecne (NOT NULL z domyślną wartością `"medium"`)
+   - Umożliwia filtrowanie po poziomie trudności
+
+2. **`average_rating`** (number | null): Średnia ocena użytkowników
+   - Zakres: 0.0 - 5.0
+   - `null` jeśli przepis nie ma jeszcze ocen
+   - Format: liczba z dwoma miejscami po przecinku (np. `4.35`)
+
+3. **`reviews_count`** (integer): Liczba ocen/recenzji
+   - Zawsze obecne (domyślna wartość: `0`)
+   - Liczba całkowita >= 0
+
+4. **`health_score`** (integer | null): Ocena zdrowotności przepisu
+   - Zakres: 0 - 100
+   - `null` jeśli nie obliczono (UWAGA: aktualnie wszystkie wartości to `null` - algorytm nie zaimplementowany)
+   - Planowany algorytm: bazuje na wartościach odżywczych i jakości składników
+
+5. **`instructions.prep_time_minutes`** (integer | null): Czas przygotowania
+   - Opcjonalne pole w strukturze JSONB `instructions`
+   - Czas przygotowania składników w minutach
+
+6. **`instructions.cook_time_minutes`** (integer | null): Czas gotowania
+   - Opcjonalne pole w strukturze JSONB `instructions`
+   - Czas gotowania/pieczenia w minutach
+
+**Nowe parametry filtrowania (GET /recipes):**
+
+- `difficulty_level` (string, opcjonalny): Filtrowanie po poziomie trudności (przecinek jako separator, np. `easy,medium`)
+
+**Status implementacji:**
+
+- ✅ Schemat bazy danych zaktualizowany
+- ✅ Wszystkie endpointy zwracają nowe pola
+- ✅ Indeksy wydajnościowe utworzone dla sortowania po `average_rating` i `health_score`
+- ⚠️ Algorytm `health_score` NIE ZAIMPLEMENTOWANY (wartości pozostają `null`)
+- ⚠️ System recenzji użytkowników NIE ZAIMPLEMENTOWANY (wartości `average_rating` i `reviews_count` ustawiane ręcznie)
+
+**Zgodność wsteczna:**
+
+- ✅ Wszystkie istniejące klienty działają bez zmian (dodano tylko nowe pola)
+- ✅ Brak breaking changes w istniejących strukturach danych
+
+**Przyszłe funkcje (poza zakresem MVP):**
+
+- Endpoint `POST /recipes/{id}/reviews` do dodawania ocen przez użytkowników
+- Endpoint `GET /recipes/{id}/reviews` do pobierania listy recenzji
+- Automatyczne przeliczanie `average_rating` i `reviews_count` via trigger PostgreSQL
+- Implementacja algorytmu `health_score` jako PostgreSQL function lub Server Action
+
+---
+
+**Ostatnia aktualizacja:** 2025-10-30
+**Zarządzane przez:** API Team

@@ -9,12 +9,12 @@ export async function ensureTestDataExists(
 ): Promise<void> {
   // Check if test data exists
   const { data: ingredients, error: ingredientsError } = await supabase
-    .from('content.ingredients')
+    .from('ingredients')
     .select('id')
     .limit(1)
 
   const { data: recipes, error: recipesError } = await supabase
-    .from('content.recipes')
+    .from('recipes')
     .select('id')
     .limit(1)
 
@@ -51,8 +51,8 @@ export async function getTestRecipes(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
   let query = supabase
-    .from('content.recipes')
-    .select('id, name, meal_types, calories')
+    .from('recipes')
+    .select('id, name, meal_types, total_calories')
     .limit(limit)
 
   if (mealType) {
@@ -140,6 +140,25 @@ export async function setupMealPlan(
 ): Promise<void> {
   const planStartDate = startDate || new Date()
 
+  // Verify profile exists before creating meal plan
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, disclaimer_accepted_at')
+    .eq('id', userId)
+    .single()
+
+  if (profileError || !profile) {
+    throw new Error(
+      `Profile not found for user ${userId}. Profile must exist before creating meal plan.`
+    )
+  }
+
+  if (!profile.disclaimer_accepted_at) {
+    throw new Error(
+      `Profile for user ${userId} has no disclaimer_accepted_at. Profile may not be fully initialized.`
+    )
+  }
+
   // Verify test data exists first
   await ensureTestDataExists(supabase)
 
@@ -172,10 +191,9 @@ export async function setupMealPlan(
 
       plannedMeals.push({
         user_id: userId,
-        date: date.toISOString().split('T')[0],
+        meal_date: date.toISOString().split('T')[0],
         meal_type: mealType,
         recipe_id: recipe.id,
-        servings: 1,
       })
     }
   }

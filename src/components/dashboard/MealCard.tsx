@@ -123,6 +123,8 @@ export function MealCard({
   return (
     <>
       <div
+        data-testid='meal-card'
+        data-meal-type={meal.meal_type}
         className={cn(
           'focus-visible:ring-primary/40 cursor-pointer rounded-3xl border-0 bg-[var(--bg-card)] p-0 shadow-none transition-transform duration-200 ease-out focus-visible:ring-2 focus-visible:outline-none',
           'hover:scale-[1.02] hover:shadow-[0_12px_28px_rgba(36,25,15,0.1)]',
@@ -188,7 +190,10 @@ export function MealCard({
               </label>
             </div>
 
-            <h3 className='text-lg leading-tight font-semibold text-slate-900 sm:text-xl'>
+            <h3
+              data-testid='recipe-name'
+              className='text-lg leading-tight font-semibold text-slate-900 sm:text-xl'
+            >
               {meal.recipe.name}
             </h3>
 

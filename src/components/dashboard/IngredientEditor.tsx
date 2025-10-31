@@ -107,7 +107,10 @@ export function IngredientEditor({
       </div>
 
       {/* Ingredients list */}
-      <div className='space-y-3 rounded-xl border bg-white p-4'>
+      <div
+        data-testid='ingredients-list'
+        className='space-y-3 rounded-xl border bg-white p-4'
+      >
         {recipe.ingredients.map((ingredient, index) => (
           <EditableIngredientRow
             key={ingredient.id}

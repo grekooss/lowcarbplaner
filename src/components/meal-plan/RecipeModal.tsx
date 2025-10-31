@@ -84,7 +84,10 @@ export const RecipeModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] max-w-[95vw] overflow-y-auto p-0 lg:max-w-[1400px]'>
+      <DialogContent
+        data-testid='recipe-modal'
+        className='max-h-[90vh] max-w-[95vw] overflow-y-auto p-0 lg:max-w-[1400px]'
+      >
         <VisuallyHidden>
           <DialogTitle>{meal.recipe.name}</DialogTitle>
         </VisuallyHidden>

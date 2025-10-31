@@ -130,12 +130,22 @@ The application should now be running on [http://localhost:3000](http://localhos
 
 This project includes several scripts to help with development:
 
+### Development & Build
+
 - `npm run dev`: Starts the development server with hot-reloading.
 - `npm run build`: Builds the application for production.
 - `npm run start`: Starts the production server.
 - `npm run lint`: Lints the code using ESLint.
 - `npm run format`: Formats all files using Prettier.
 - `npm run validate`: Runs type-checking, linting, and format checks.
+
+### Database Management
+
+- `npm run db:clone`: Clone schema + test data subset from DEV to TEST (**recommended for E2E testing**)
+- `npm run db:clone:full`: Clone entire database (schema + ALL data) from DEV to TEST (**for staging/debugging**)
+- `npm run db:clone:full:win`: Same as above, but for Windows PowerShell
+
+> 📚 **Full documentation:** See [scripts/README.md](scripts/README.md) for detailed information about database cloning scripts.
 
 ## Project Scope
 

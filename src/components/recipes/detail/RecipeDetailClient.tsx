@@ -235,7 +235,7 @@ export function RecipeDetailClient({
                 Dostosuj gramatury składników (ostrzeżenie przy &gt;15%)
               </p>
             )}
-            <div className='space-y-2'>
+            <div data-testid='ingredients-list' className='space-y-2'>
               {enableIngredientEditing &&
               getIngredientAmount &&
               updateIngredientAmount &&

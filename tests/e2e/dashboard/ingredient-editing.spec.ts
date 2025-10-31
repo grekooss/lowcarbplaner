@@ -38,19 +38,16 @@ test.describe('Dashboard - Ingredient Editing', () => {
 
     await dashboard.goto()
 
-    // Expand breakfast ingredients
-    await dashboard.expandIngredients('breakfast')
+    // Open recipe modal (which shows ingredients)
+    await dashboard.openRecipeModal('breakfast')
 
-    // Should show ingredients list
-    const ingredientsList = dashboard
-      .getMealCard('breakfast')
-      .locator('[data-testid="ingredients-list"]')
+    // Should show ingredients list in the modal
+    const modal = dashboard.getRecipeModal()
+    const ingredientsList = modal.locator('[data-testid="ingredients-list"]')
     await expect(ingredientsList).toBeVisible()
 
     // Should show at least one ingredient
-    const ingredients = dashboard
-      .getMealCard('breakfast')
-      .locator('[data-testid="ingredient-row"]')
+    const ingredients = modal.locator('[data-testid="ingredient-row"]')
     await expect(ingredients.first()).toBeVisible()
   })
 
@@ -60,6 +57,9 @@ test.describe('Dashboard - Ingredient Editing', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+
+    // Mark breakfast as eaten so macros are counted
+    await dashboard.markMealAsEaten('breakfast')
 
     // Get initial protein value
     const proteinBefore = await dashboard.getMacroValue('protein')
@@ -73,6 +73,7 @@ test.describe('Dashboard - Ingredient Editing', () => {
     // Protein value should change
     const proteinAfter = await dashboard.getMacroValue('protein')
     expect(proteinAfter).not.toBe(proteinBefore)
+    expect(proteinAfter).toBeGreaterThan(0)
   })
 
   test('should show live macro preview while editing', async ({

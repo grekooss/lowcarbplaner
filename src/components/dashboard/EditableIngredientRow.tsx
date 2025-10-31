@@ -98,7 +98,7 @@ export function EditableIngredientRow({
   const isChanged = Math.abs(currentAmount - ingredient.amount) > 0.01
 
   return (
-    <div className='space-y-1'>
+    <div data-testid='ingredient-row' className='space-y-1'>
       <div className='flex items-center gap-3'>
         {/* Index */}
         <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium'>

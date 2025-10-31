@@ -1,6 +1,13 @@
 import { type Page, type Locator } from '@playwright/test'
 
 /**
+ * Timing constants for animations and transitions
+ */
+// const ANIMATION_DURATION = 300 // Standard UI animation duration
+const DATA_LOAD_WAIT = 500 // Wait for data load and rendering
+const MACRO_CALCULATION_WAIT = 1000 // Wait for macro recalculation
+
+/**
  * Page Object Model for Dashboard Page
  * Handles meal viewing, ingredient editing, and macro tracking
  */
@@ -61,6 +68,8 @@ export class DashboardPage {
   async goto() {
     await this.page.goto('/dashboard')
     await this.page.waitForLoadState('domcontentloaded')
+    // Wait for macro data to load
+    await this.page.waitForTimeout(DATA_LOAD_WAIT)
   }
 
   /**
@@ -79,21 +88,59 @@ export class DashboardPage {
   }
 
   /**
-   * Expand ingredients list for a meal
+   * Mark meal as eaten by checking the checkbox
+   */
+  async markMealAsEaten(mealType: 'breakfast' | 'lunch' | 'dinner') {
+    const mealCard = this.getMealCard(mealType)
+    // Radix UI Checkbox uses button[role="checkbox"], not native input
+    const checkbox = mealCard.locator('button[role="checkbox"]')
+
+    // Wait for checkbox to be visible
+    await checkbox.waitFor({ state: 'visible', timeout: 5000 })
+
+    // Only check if not already checked (data-state="unchecked")
+    const state = await checkbox.getAttribute('data-state')
+    if (state !== 'checked') {
+      await checkbox.click()
+      // Wait for the meal toggle to complete and macros to update
+      await this.page.waitForTimeout(MACRO_CALCULATION_WAIT)
+    }
+  }
+
+  /**
+   * Open recipe modal by clicking on meal card
+   */
+  async openRecipeModal(mealType: 'breakfast' | 'lunch' | 'dinner') {
+    const mealCard = this.getMealCard(mealType)
+    await mealCard.click()
+
+    // Wait for modal to open
+    const modal = this.page.locator('[data-testid="recipe-modal"]')
+    await modal.waitFor({ state: 'visible', timeout: 3000 })
+  }
+
+  /**
+   * Get recipe modal locator
+   */
+  getRecipeModal() {
+    return this.page.locator('[data-testid="recipe-modal"]')
+  }
+
+  /**
+   * Expand ingredients list for a meal (opens modal first if needed)
    */
   async expandIngredients(mealType: 'breakfast' | 'lunch' | 'dinner') {
-    const mealCard = this.getMealCard(mealType)
-    const expandButton = mealCard.locator('button:has-text("Składniki")')
+    // In dashboard, ingredients are in the modal, so we need to open it first
+    const modal = this.getRecipeModal()
+    const isModalOpen = await modal.isVisible()
 
-    // Check if already expanded
-    const isExpanded = await mealCard
-      .locator('[data-testid="ingredients-list"]')
-      .isVisible()
-
-    if (!isExpanded) {
-      await expandButton.click()
-      await this.page.waitForTimeout(300) // Animation
+    if (!isModalOpen) {
+      await this.openRecipeModal(mealType)
     }
+
+    // Ingredients are now visible in the modal
+    const ingredientsList = modal.locator('[data-testid="ingredients-list"]')
+    await ingredientsList.waitFor({ state: 'visible', timeout: 2000 })
   }
 
   /**
@@ -106,26 +153,38 @@ export class DashboardPage {
   ) {
     await this.expandIngredients(mealType)
 
-    const mealCard = this.getMealCard(mealType)
-    const ingredientRow = mealCard
+    const modal = this.getRecipeModal()
+    const ingredientRow = modal
       .locator('[data-testid="ingredient-row"]')
       .nth(ingredientIndex)
 
-    // Click edit button
-    await ingredientRow.locator('button[aria-label="Edytuj"]').click()
-
-    // Enter new quantity
+    // Enter new quantity directly (EditableIngredientRow has number input visible)
     const quantityInput = ingredientRow.locator('input[type="number"]')
     await quantityInput.clear()
     await quantityInput.fill(newQuantity.toString())
 
-    // Save changes
-    await ingredientRow.locator('button:has-text("Zapisz")').click()
+    // Click the save button in the modal header
+    const saveButton = modal.locator('button:has-text("Zapisz zmiany")')
+    await saveButton.click()
 
     // Wait for save to complete
     await this.page.waitForResponse((response) =>
       response.url().includes('/api/planned-meals')
     )
+
+    // Wait for success message to appear
+    await modal
+      .locator('text=✓ Zapisano zmiany')
+      .waitFor({ state: 'visible', timeout: 3000 })
+
+    // Close modal by pressing Escape (modal doesn't auto-close)
+    await this.page.keyboard.press('Escape')
+
+    // Wait for modal to close
+    await modal.waitFor({ state: 'hidden', timeout: 3000 })
+
+    // Wait for dashboard macros to update
+    await this.page.waitForTimeout(MACRO_CALCULATION_WAIT)
   }
 
   /**
@@ -135,6 +194,8 @@ export class DashboardPage {
     macro: 'protein' | 'carbs' | 'fat' | 'calories'
   ): Promise<number> {
     const locator = this.page.locator(`[data-macro="${macro}"]`)
+    // Wait for macro element to be visible
+    await locator.waitFor({ state: 'visible', timeout: 5000 })
     const text = await locator.textContent()
 
     if (!text) return 0
@@ -183,7 +244,8 @@ export class DashboardPage {
    */
   async goToPreviousDay() {
     await this.prevDayButton.click()
-    await this.page.waitForTimeout(500) // Wait for data load
+    // Wait for page to reload with new day's data
+    await this.page.waitForLoadState('networkidle')
   }
 
   /**
@@ -191,7 +253,8 @@ export class DashboardPage {
    */
   async goToNextDay() {
     await this.nextDayButton.click()
-    await this.page.waitForTimeout(500)
+    // Wait for page to reload with new day's data
+    await this.page.waitForLoadState('networkidle')
   }
 
   /**
@@ -203,8 +266,10 @@ export class DashboardPage {
 
   /**
    * Wait for macro update animation
+   * Waits for network requests to complete (macro recalculation)
    */
   async waitForMacroUpdate() {
-    await this.page.waitForTimeout(1000) // Wait for re-calculation
+    // Wait for any pending API requests to complete
+    await this.page.waitForLoadState('networkidle')
   }
 }

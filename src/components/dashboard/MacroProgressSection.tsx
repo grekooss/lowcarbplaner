@@ -109,6 +109,7 @@ export function MacroProgressSection({
 
         <div className='-mt-2 flex flex-col items-center gap-5'>
           <div
+            data-macro='calories'
             className='relative flex h-60 w-60 items-center justify-center rounded-full'
             style={{
               background: isOverLimit
@@ -178,6 +179,7 @@ export function MacroProgressSection({
               return (
                 <div
                   key={row.key}
+                  data-macro={row.key}
                   className='flex items-center gap-4 rounded-2xl bg-white px-4 py-3 shadow-sm'
                 >
                   <div className='min-w-[70px] text-center'>

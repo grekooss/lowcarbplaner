@@ -86,13 +86,73 @@ Osoby na diecie niskowęglowodanowej stają przed dwoma powtarzalnymi wyzwaniami
 
 Poniższe funkcjonalności są świadomie wykluczone z zakresu MVP w celu skupienia się na walidacji kluczowej hipotezy produktu:
 
-- Brak możliwości ręcznego dodawania własnych produktów, posiłków lub budowania planu od zera.
-- Brak możliwości zmiany domyślnego rozkładu makroskładników (15%W/35%B/50%T).
-- Brak obsługi wykluczeń żywieniowych, alergii, nietolerancji czy preferencji (np. wegetarianizm).
-- Brak funkcji społecznościowych, gamifikacji, powiadomień push.
-- Brak integracji z zewnętrznymi urządzeniami (np. smartwatche) czy aplikacjami zdrowotnymi.
-- Brak widoku danych historycznych, podsumowań tygodniowych/miesięcznych i archiwum planów.
-- Brak jakichkolwiek form monetyzacji (aplikacja jest w pełni darmowa).
+### 4.1 Funkcjonalności wykluczone z MVP (potwierdzone jako nieobecne)
+
+- ✅ Brak możliwości ręcznego dodawania własnych produktów, posiłków lub budowania planu od zera.
+- ✅ Brak możliwości zmiany domyślnego rozkładu makroskładników (15%W/35%B/50%T).
+- ✅ Brak obsługi wykluczeń żywieniowych, alergii, nietolerancji czy preferencji (np. wegetarianizm).
+- ✅ Brak funkcji społecznościowych, gamifikacji, powiadomień push.
+- ✅ Brak integracji z zewnętrznymi urządzeniami (np. smartwatche) czy aplikacjami zdrowotnymi.
+- ✅ Brak widoku danych historycznych, podsumowań tygodniowych/miesięcznych i archiwum planów.
+- ✅ Brak jakichkolwiek form monetyzacji (aplikacja jest w pełni darmowa).
+
+### 4.2 Rozszerzenia infrastrukturalne dodane post-MVP
+
+Następujące elementy zostały dodane do infrastruktury bazy danych poza pierwotnym zakresem MVP, ale **nie są aktywnie wykorzystywane w interfejsie użytkownika** w wersji MVP:
+
+#### 4.2.1 Poziom trudności przepisu (difficulty_level)
+
+- **Status:** ✅ Zaimplementowano w bazie danych (2024-10-15)
+- **Opis:** Każdy przepis ma przypisany poziom trudności: `easy`, `medium`, `hard`
+- **Użycie w MVP:** Pole obecne w API, ale **nie ma UI do filtrowania po trudności**
+- **Przyszłość:** Funkcjonalność filtrowania może być dodana w przyszłych iteracjach
+
+#### 4.2.2 Czasy przygotowania przepisu (prep_time, cook_time)
+
+- **Status:** ✅ Zaimplementowano w bazie danych (2024-10-15)
+- **Opis:** Opcjonalne pola w instrukcjach przepisu: `prep_time_minutes`, `cook_time_minutes`
+- **Użycie w MVP:** Dane obecne w API, ale **nie są wyświetlane w UI**
+- **Przyszłość:** Możliwość sortowania przepisów po czasie przygotowania
+
+#### 4.2.3 System ocen przepisów (average_rating, reviews_count)
+
+- **Status:** ⚠️ Infrastruktura gotowa, algorytm NIE ZAIMPLEMENTOWANY
+- **Opis:** Kolumny `average_rating` (0.0-5.0) i `reviews_count` w tabeli `recipes`
+- **Użycie w MVP:**
+  - **Brak UI do dodawania ocen przez użytkowników**
+  - **Brak automatycznego przeliczania średniej oceny**
+  - Wartości mogą być ustawiane ręcznie przez administratorów
+- **Przyszłość:** Pełny system recenzji użytkowników (POST /recipes/{id}/reviews)
+
+#### 4.2.4 Ocena zdrowotności przepisu (health_score)
+
+- **Status:** ⚠️ Schemat gotowy, algorytm NIE ZAIMPLEMENTOWANY
+- **Opis:** Kolumna `health_score` (0-100) do algorytmicznej oceny zdrowotności przepisu
+- **Użycie w MVP:**
+  - **Wszystkie wartości to `null` (algorytm nie istnieje)**
+  - **Brak UI do wyświetlania health score**
+  - **Brak filtrowania/sortowania po health score**
+- **Przyszłość:** Implementacja algorytmu bazującego na makroskładnikach i jakości składników
+
+### 4.3 Podsumowanie statusu implementacji
+
+| Kategoria              | MVP (zaplanowane)        | Post-MVP (dodane)                          | Pełna funkcjonalność                  |
+| ---------------------- | ------------------------ | ------------------------------------------ | ------------------------------------- |
+| **Autentykacja**       | ✅ Email/Google OAuth    | -                                          | ✅ Kompletne                          |
+| **Onboarding**         | ✅ 5-krokowy flow        | -                                          | ✅ Kompletne                          |
+| **Generowanie planu**  | ✅ 7-dniowy plan         | -                                          | ✅ Kompletne                          |
+| **Dashboard**          | ✅ Widok dnia            | -                                          | ✅ Kompletne                          |
+| **Przepisy**           | ✅ Przeglądanie, wymiana | ⚠️ Trudność, czasy, oceny (infrastruktura) | ⚠️ Częściowe (brak UI dla nowych pól) |
+| **Lista zakupów**      | ✅ Agregowana lista      | -                                          | ✅ Kompletne                          |
+| **Profil użytkownika** | ✅ Edycja celów          | -                                          | ✅ Kompletne                          |
+| **Feedback**           | ✅ Formularz opinii      | -                                          | ✅ Kompletne                          |
+| **Dostęp offline**     | ⚠️ Częściowy caching     | -                                          | ⚠️ Wymaga testów E2E                  |
+
+**Legenda:**
+
+- ✅ Pełna implementacja zgodna z planem
+- ⚠️ Infrastruktura gotowa, brak pełnej funkcjonalności lub wymaga weryfikacji
+- ❌ Nieobecne (świadomie wykluczone z MVP)
 
 ## 5. Historyjki użytkowników
 

@@ -65,8 +65,8 @@ export default defineConfig({
     command: 'npx dotenv-cli -e .env.e2e -- npm run dev',
     url: 'http://localhost:3000',
     timeout: 120 * 1000,
-    // WAŻNE: Zawsze restartuj serwer aby załadować .env.e2e
-    reuseExistingServer: false,
+    // Reuse existing server in development, restart in CI
+    reuseExistingServer: !process.env.CI,
     stdout: 'ignore',
     stderr: 'pipe',
   },
