@@ -90,13 +90,17 @@ test.describe('User Registration', () => {
     await loginPage.goto()
     await loginPage.switchToRegister()
 
-    // Enter invalid email
+    // Enter invalid email and password to pass password validation
     await loginPage.emailInput.fill('invalid-email')
-    await loginPage.emailInput.blur()
+    await loginPage.passwordInput.fill('ValidPass123!')
+    await loginPage.confirmPasswordInput.fill('ValidPass123!')
+
+    // Click submit to trigger validation
+    await loginPage.submitButton.click()
 
     // Should show validation error (use role=alert to avoid strict mode)
     const emailError = page.locator('[role="alert"]', { hasText: /email/i })
-    await expect(emailError).toBeVisible()
+    await expect(emailError).toBeVisible({ timeout: 5000 })
   })
 
   test.skip('should show password requirements', async ({ page }) => {

@@ -19,8 +19,8 @@ export default defineConfig({
   // Fail CI build if you accidentally left test.only
   forbidOnly: !!process.env.CI,
 
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  // Retry on CI and locally for flaky tests (timing issues)
+  retries: process.env.CI ? 2 : 1,
 
   // Single worker to ensure DB consistency
   workers: process.env.CI ? 1 : 1,

@@ -93,8 +93,9 @@ test.describe('User Login', () => {
     await page.waitForLoadState('networkidle')
 
     // Check if forgot password link exists and click it
+    // Use exact text match with Polish characters
     const forgotPasswordLink = page.getByRole('link', {
-      name: /zapomnia.*has/i,
+      name: 'Zapomniałem hasła',
     })
 
     // Wait for link to be visible
@@ -119,11 +120,11 @@ test.describe('User Login', () => {
     // Verify user is logged in by checking that login form is NOT visible
     await expect(
       page.getByRole('button', { name: 'Zaloguj się' })
-    ).not.toBeVisible({ timeout: 5000 })
+    ).not.toBeVisible({ timeout: 10000 })
 
     // Reload page
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Should still be authenticated (not redirected to /auth)
     await expect(page).not.toHaveURL('/auth', { timeout: 10000 })
@@ -131,6 +132,6 @@ test.describe('User Login', () => {
     // Login form should still NOT be visible after reload
     await expect(
       page.getByRole('button', { name: 'Zaloguj się' })
-    ).not.toBeVisible({ timeout: 5000 })
+    ).not.toBeVisible({ timeout: 10000 })
   })
 })

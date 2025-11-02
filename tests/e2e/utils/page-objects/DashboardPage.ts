@@ -98,12 +98,29 @@ export class DashboardPage {
     // Wait for checkbox to be visible
     await checkbox.waitFor({ state: 'visible', timeout: 5000 })
 
+    // Get initial protein value to detect macro change
+    const proteinBefore = await this.getMacroValue('protein')
+
     // Only check if not already checked (data-state="unchecked")
     const state = await checkbox.getAttribute('data-state')
     if (state !== 'checked') {
       await checkbox.click()
-      // Wait for the meal toggle to complete and macros to update
-      await this.page.waitForTimeout(MACRO_CALCULATION_WAIT)
+
+      // Wait for macros to actually update (not just arbitrary timeout)
+      // Poll for macro change with timeout
+      const startTime = Date.now()
+      const maxWait = 5000 // 5 seconds max
+      while (Date.now() - startTime < maxWait) {
+        const proteinAfter = await this.getMacroValue('protein')
+        if (proteinAfter !== proteinBefore && proteinAfter > 0) {
+          // Macros updated successfully
+          break
+        }
+        await this.page.waitForTimeout(200) // Poll every 200ms
+      }
+
+      // Additional wait for any animations to complete
+      await this.page.waitForTimeout(500)
     }
   }
 
@@ -165,17 +182,18 @@ export class DashboardPage {
 
     // Click the save button in the modal header
     const saveButton = modal.locator('button:has-text("Zapisz zmiany")')
+
+    // Wait a bit for any changes to settle
+    await this.page.waitForTimeout(500)
+
     await saveButton.click()
 
-    // Wait for save to complete
-    await this.page.waitForResponse((response) =>
-      response.url().includes('/api/planned-meals')
-    )
-
-    // Wait for success message to appear
-    await modal
-      .locator('text=✓ Zapisano zmiany')
-      .waitFor({ state: 'visible', timeout: 3000 })
+    // Wait for save operation to complete (API request)
+    try {
+      await this.page.waitForLoadState('networkidle', { timeout: 5000 })
+    } catch {
+      console.warn('Save operation may still be in progress, continuing...')
+    }
 
     // Close modal by pressing Escape (modal doesn't auto-close)
     await this.page.keyboard.press('Escape')

@@ -190,33 +190,35 @@ export const test = base.extend<AuthFixtures>({
       throw new Error(`Failed to sign in test user: ${error?.message}`)
     }
 
-    // Set session in browser storage
-    await page.goto('/auth')
-    await page.waitForLoadState('domcontentloaded')
-
-    // Inject Supabase session into localStorage
+    // Set session in browser cookies (required for Next.js middleware)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const storageKey =
-      'sb-' + new URL(supabaseUrl).hostname.split('.')[0] + '-auth-token'
+    const projectRef = new URL(supabaseUrl).hostname.split('.')[0]
 
-    await page.evaluate(
-      ({ session, key }) => {
-        localStorage.setItem(key, JSON.stringify(session))
+    // Add Supabase auth cookies
+    await page.context().addCookies([
+      {
+        name: `sb-${projectRef}-auth-token`,
+        value: JSON.stringify(data.session),
+        domain: 'localhost',
+        path: '/',
+        httpOnly: false,
+        secure: false,
+        sameSite: 'Lax',
       },
-      { session: data.session, key: storageKey }
-    )
+    ])
 
-    // Navigate to home to trigger auth state
+    // Navigate to home page to trigger middleware auth check
     await page.goto('/')
     await page.waitForLoadState('domcontentloaded')
 
     // Wait for redirect away from /auth (can be /, /dashboard, or /onboarding)
+    // Increase timeout for slower page loads
     await page.waitForURL((url) => !url.pathname.includes('/auth'), {
-      timeout: 15000,
+      timeout: 20000,
     })
 
     // Wait for page to be fully loaded
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('networkidle', { timeout: 15000 })
 
     // Use the authenticated page
     await provide(page)

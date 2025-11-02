@@ -147,6 +147,34 @@ This project includes several scripts to help with development:
 
 > 📚 **Full documentation:** See [scripts/README.md](scripts/README.md) for detailed information about database cloning scripts.
 
+### Testing
+
+- `npm run test`: Run unit tests with Vitest
+- `npm run test:e2e`: Run E2E tests with Playwright (requires `.env.e2e` configuration)
+- `npm run test:e2e:ui`: Run E2E tests in Playwright UI mode (for debugging)
+
+**E2E Test Setup:**
+
+1. Create `.env.e2e` from `.env.e2e.example`:
+
+   ```bash
+   cp .env.e2e.example .env.e2e
+   ```
+
+2. Fill in your **test Supabase project** credentials (use a separate project from production):
+
+   ```dotenv
+   NEXT_PUBLIC_SUPABASE_URL=https://your-test-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-test-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-test-service-role-key
+   ```
+
+3. **For GitHub Actions:** Add the same credentials as repository secrets:
+   - Go to: `Settings → Secrets and variables → Actions → New repository secret`
+   - Add: `TEST_SUPABASE_URL`, `TEST_SUPABASE_ANON_KEY`, `TEST_SUPABASE_SERVICE_ROLE_KEY`
+
+> ⚠️ **Important:** Always use a dedicated test Supabase project for E2E tests, never use your production database!
+
 ## Project Scope
 
 To ensure a focused development process, the scope for the Minimum Viable Product (MVP) is clearly defined.
