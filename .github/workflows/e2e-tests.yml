@@ -44,10 +44,31 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY=${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
           EOF
 
+      - name: Verify environment configuration
+        run: |
+          echo "Checking .env.e2e file..."
+          if [ -f .env.e2e ]; then
+            echo "✅ .env.e2e file exists"
+            echo "Contents (without sensitive data):"
+            grep -v "KEY\|URL" .env.e2e || echo "File structure OK"
+          else
+            echo "❌ .env.e2e file missing!"
+            exit 1
+          fi
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+
       - name: Run E2E tests
         run: npm run test:e2e -- --project=${{ matrix.browser }} --reporter=html,json
         env:
           CI: true
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Upload test results JSON
         if: always()
