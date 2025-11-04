@@ -132,13 +132,17 @@ export async function setupUserProfile(
 /**
  * Setup test meal plan for user
  * Creates a 7-day meal plan with recipes
+ * Note: Defaults to tomorrow so showSwapButton=true in E2E tests
  */
 export async function setupMealPlan(
   supabase: SupabaseClient,
   userId: string,
   startDate?: Date
 ): Promise<void> {
-  const planStartDate = startDate || new Date()
+  // Default to tomorrow so swap button is visible in tests (isFutureDate = true)
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const planStartDate = startDate || tomorrow
 
   // Verify profile exists before creating meal plan
   const { data: profile, error: profileError } = await supabase

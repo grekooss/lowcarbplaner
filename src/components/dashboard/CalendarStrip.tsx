@@ -77,7 +77,7 @@ export function CalendarStrip({
             size='icon'
             onClick={handlePrevDay}
             className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white'
-            aria-label='Poprzedni dzien'
+            aria-label='Poprzedni dzień'
           >
             <ChevronLeft className='h-4 w-4' />
           </Button>
@@ -87,7 +87,7 @@ export function CalendarStrip({
             size='icon'
             onClick={handleNextDay}
             className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white'
-            aria-label='Nastepny dzien'
+            aria-label='Następny dzień'
           >
             <ChevronRight className='h-4 w-4' />
           </Button>

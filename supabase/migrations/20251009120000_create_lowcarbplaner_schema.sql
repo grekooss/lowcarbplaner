@@ -76,6 +76,10 @@ comment on function update_updated_at_column() is 'Trigger function to automatic
 -- This trigger function automatically creates a profile entry in public.profiles
 -- when a new user is created in auth.users. This ensures referential integrity
 -- and simplifies onboarding workflow.
+-- COMMENTED OUT: Triggers on auth.users are not supported in Supabase Cloud
+-- The E2E test fixtures create profiles manually, so this trigger is not needed for testing
+-- For production, profiles should be created by the application after user registration
+/*
 create or replace function handle_new_user()
 returns trigger
 language plpgsql
@@ -103,6 +107,7 @@ end;
 $$;
 
 comment on function handle_new_user() is 'Trigger function to automatically create a profile entry when a new user registers in auth.users.';
+*/
 
 -- ============================================================
 -- 5. Create public.ingredients table
@@ -357,11 +362,14 @@ create trigger profiles_updated_at
   for each row
   execute function update_updated_at_column();
 
+-- COMMENTED OUT: Triggers on auth.users are not supported in Supabase Cloud
 -- Trigger to automatically create profile when new user registers
+/*
 create trigger on_auth_user_created
   after insert on auth.users
   for each row
   execute function handle_new_user();
+*/
 
 -- ============================================================
 -- 12. Create public.planned_meals table

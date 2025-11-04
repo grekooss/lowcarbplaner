@@ -12,17 +12,19 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, within } from '../../helpers/test-utils'
 import userEvent from '@testing-library/user-event'
-import DashboardClient from '@/components/dashboard/DashboardClient'
-import { testPlannedMeals, generateWeekPlan } from '../../fixtures/planned-meals'
+import { DashboardClient } from '@/components/dashboard/DashboardClient'
+import { testPlannedMeals } from '../../fixtures/planned-meals'
 import { testProfile } from '../../fixtures/profiles'
+import * as usePlannedMealsQueryModule from '@/hooks/usePlannedMealsQuery'
+import * as useDailyMacrosModule from '@/hooks/useDailyMacros'
 
 // Mock hooks
 vi.mock('@/hooks/usePlannedMealsQuery', () => ({
-  usePlannedMealsQuery: () => ({
+  usePlannedMealsQuery: vi.fn(() => ({
     data: testPlannedMeals.slice(0, 3), // 3 posiłki na dzisiaj
     isLoading: false,
     error: null,
-  }),
+  })),
 }))
 
 vi.mock('@/hooks/useUser', () => ({
@@ -32,7 +34,7 @@ vi.mock('@/hooks/useUser', () => ({
 }))
 
 vi.mock('@/hooks/useDailyMacros', () => ({
-  useDailyMacros: () => ({
+  useDailyMacros: vi.fn(() => ({
     totals: {
       calories: 1800,
       protein_g: 176,
@@ -40,8 +42,28 @@ vi.mock('@/hooks/useDailyMacros', () => ({
       fats_g: 97,
     },
     targets: testProfile,
-  }),
+  })),
 }))
+
+const mockTargetMacros = {
+  target_calories: 1800,
+  target_protein_g: 158,
+  target_carbs_g: 68,
+  target_fats_g: 100,
+}
+
+const today = new Date().toISOString().split('T')[0]
+
+// Helper to render with required props
+const renderDashboard = (meals: typeof testPlannedMeals = []) => {
+  return render(
+    <DashboardClient
+      initialMeals={meals}
+      targetMacros={mockTargetMacros}
+      initialDate={today}
+    />
+  )
+}
 
 describe('Dashboard Daily View', () => {
   beforeEach(() => {
@@ -50,7 +72,13 @@ describe('Dashboard Daily View', () => {
 
   describe('Initial Render', () => {
     test('renders dashboard with today meals', async () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      render(
+        <DashboardClient
+          initialMeals={testPlannedMeals.slice(0, 3)}
+          targetMacros={mockTargetMacros}
+          initialDate={today}
+        />
+      )
 
       await waitFor(() => {
         expect(screen.getByText(/twój plan na dzisiaj/i)).toBeInTheDocument()
@@ -63,7 +91,7 @@ describe('Dashboard Daily View', () => {
     })
 
     test('displays correct date', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const today = new Date().toLocaleDateString('pl-PL', {
         weekday: 'long',
@@ -75,25 +103,29 @@ describe('Dashboard Daily View', () => {
     })
 
     test('shows loading state initially', () => {
-      vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery).mockReturnValue({
+      vi.mocked(
+        usePlannedMealsQueryModule.usePlannedMealsQuery
+      ).mockReturnValue({
         data: undefined,
         isLoading: true,
         error: null,
       })
 
-      render(<DashboardClient initialMeals={[]} />)
+      renderDashboard([])
 
       expect(screen.getByTestId('dashboard-skeleton')).toBeInTheDocument()
     })
 
     test('displays empty state when no meals', () => {
-      vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery).mockReturnValue({
+      vi.mocked(
+        usePlannedMealsQueryModule.usePlannedMealsQuery
+      ).mockReturnValue({
         data: [],
         isLoading: false,
         error: null,
       })
 
-      render(<DashboardClient initialMeals={[]} />)
+      renderDashboard([])
 
       expect(screen.getByText(/brak posiłków na dzisiaj/i)).toBeInTheDocument()
     })
@@ -101,25 +133,27 @@ describe('Dashboard Daily View', () => {
 
   describe('Meal Cards', () => {
     test('displays meal details', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
-      const breakfastCard = screen.getByText('Omlet z warzywami').closest('[data-meal-card]')
+      const breakfastCard = screen
+        .getByText('Omlet z warzywami')
+        .closest('[data-meal-card]') as HTMLElement
 
-      within(breakfastCard!).getByText(/500 kcal/i)
-      within(breakfastCard!).getByText(/40g/i) // Protein
-      within(breakfastCard!).getByText(/10g/i) // Carbs
-      within(breakfastCard!).getByText(/35g/i) // Fats
+      within(breakfastCard).getByText(/500 kcal/i)
+      within(breakfastCard).getByText(/40g/i) // Protein
+      within(breakfastCard).getByText(/10g/i) // Carbs
+      within(breakfastCard).getByText(/35g/i) // Fats
     })
 
     test('shows recipe image or placeholder', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const images = screen.getAllByRole('img')
       expect(images.length).toBeGreaterThan(0)
     })
 
     test('displays meal type badge', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       expect(screen.getByText(/śniadanie/i)).toBeInTheDocument()
       expect(screen.getByText(/obiad/i)).toBeInTheDocument()
@@ -127,7 +161,7 @@ describe('Dashboard Daily View', () => {
     })
 
     test('shows action buttons on meal card', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       // Każda karta powinna mieć przyciski akcji
       const viewButtons = screen.getAllByLabelText(/zobacz przepis/i)
@@ -143,7 +177,7 @@ describe('Dashboard Daily View', () => {
 
   describe('Macro Progress Section', () => {
     test('displays macro progress bars', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       expect(screen.getByText(/kalorie/i)).toBeInTheDocument()
       expect(screen.getByText(/białko/i)).toBeInTheDocument()
@@ -152,14 +186,14 @@ describe('Dashboard Daily View', () => {
     })
 
     test('shows current vs target values', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       // Kalorie: 1800 / 1800 (100%)
       expect(screen.getByText(/1800.*\/ 1800/)).toBeInTheDocument()
     })
 
     test('calculates progress percentage correctly', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       // Białko: 176g / 158g = 111%
       const proteinBar = screen.getByTestId('protein-progress-bar')
@@ -167,7 +201,7 @@ describe('Dashboard Daily View', () => {
     })
 
     test('shows color coding for progress (green/yellow/red)', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const caloriesBar = screen.getByTestId('calories-progress-bar')
       // 100% → zielony
@@ -175,7 +209,7 @@ describe('Dashboard Daily View', () => {
     })
 
     test('handles over-target progress (>100%)', () => {
-      vi.mocked(require('@/hooks/useDailyMacros').useDailyMacros).mockReturnValue({
+      vi.mocked(useDailyMacrosModule.useDailyMacros).mockReturnValue({
         totals: {
           calories: 2000, // Przekroczenie o 200 kcal
           protein_g: 176,
@@ -185,7 +219,7 @@ describe('Dashboard Daily View', () => {
         targets: testProfile,
       })
 
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const caloriesBar = screen.getByTestId('calories-progress-bar')
       expect(caloriesBar).toHaveAttribute('aria-valuenow', '111') // 2000/1800
@@ -194,7 +228,7 @@ describe('Dashboard Daily View', () => {
 
   describe('Calendar Navigation', () => {
     test('renders calendar strip with days', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       expect(screen.getByTestId('calendar-strip')).toBeInTheDocument()
 
@@ -204,7 +238,7 @@ describe('Dashboard Daily View', () => {
     })
 
     test('highlights current day', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const today = new Date().getDate()
       const todayButton = screen.getByRole('button', { name: String(today) })
@@ -214,13 +248,15 @@ describe('Dashboard Daily View', () => {
 
     test('changes date on day click', async () => {
       const user = userEvent.setup()
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       const tomorrowDay = tomorrow.getDate()
 
-      const tomorrowButton = screen.getByRole('button', { name: String(tomorrowDay) })
+      const tomorrowButton = screen.getByRole('button', {
+        name: String(tomorrowDay),
+      })
       await user.click(tomorrowButton)
 
       await waitFor(() => {
@@ -231,7 +267,8 @@ describe('Dashboard Daily View', () => {
     test('updates meals when date changes', async () => {
       const user = userEvent.setup()
 
-      const mockQuery = vi.fn()
+      const mockQuery = vi
+        .fn()
         .mockReturnValueOnce({
           data: testPlannedMeals.slice(0, 3), // Today
           isLoading: false,
@@ -243,13 +280,17 @@ describe('Dashboard Daily View', () => {
           error: null,
         })
 
-      vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery).mockImplementation(mockQuery)
+      vi.mocked(
+        usePlannedMealsQueryModule.usePlannedMealsQuery
+      ).mockImplementation(mockQuery)
 
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
-      const tomorrowButton = screen.getByRole('button', { name: String(tomorrow.getDate()) })
+      const tomorrowButton = screen.getByRole('button', {
+        name: String(tomorrow.getDate()),
+      })
 
       await user.click(tomorrowButton)
 
@@ -259,7 +300,7 @@ describe('Dashboard Daily View', () => {
     })
 
     test('shows navigation arrows for week navigation', () => {
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       expect(screen.getByLabelText(/poprzedni tydzień/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/następny tydzień/i)).toBeInTheDocument()
@@ -267,14 +308,16 @@ describe('Dashboard Daily View', () => {
 
     test('navigates to previous week', async () => {
       const user = userEvent.setup()
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const prevButton = screen.getByLabelText(/poprzedni tydzień/i)
       await user.click(prevButton)
 
       // Powinien załadować posiłki z poprzedniego tygodnia
       await waitFor(() => {
-        expect(vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery)).toHaveBeenCalled()
+        expect(
+          vi.mocked(usePlannedMealsQueryModule.usePlannedMealsQuery)
+        ).toHaveBeenCalled()
       })
     })
   })
@@ -282,7 +325,7 @@ describe('Dashboard Daily View', () => {
   describe('Meal Interactions', () => {
     test('opens recipe modal on view button click', async () => {
       const user = userEvent.setup()
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const viewButton = screen.getAllByLabelText(/zobacz przepis/i)[0]
       await user.click(viewButton!)
@@ -295,7 +338,7 @@ describe('Dashboard Daily View', () => {
 
     test('opens swap dialog on swap button click', async () => {
       const user = userEvent.setup()
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const swapButton = screen.getAllByLabelText(/zamień posiłek/i)[0]
       await user.click(swapButton!)
@@ -308,7 +351,7 @@ describe('Dashboard Daily View', () => {
 
     test('opens ingredient editor on edit button click', async () => {
       const user = userEvent.setup()
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const editButton = screen.getAllByLabelText(/edytuj składniki/i)[0]
       await user.click(editButton!)
@@ -329,7 +372,7 @@ describe('Dashboard Daily View', () => {
         }),
       }))
 
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const checkbox = screen.getAllByRole('checkbox', { name: /zjedzony/i })[0]
       await user.click(checkbox!)
@@ -344,16 +387,20 @@ describe('Dashboard Daily View', () => {
     test('detects incomplete week plan (< 21 meals)', async () => {
       const incompletePlan = testPlannedMeals.slice(0, 18) // 18/21
 
-      vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery).mockReturnValue({
+      vi.mocked(
+        usePlannedMealsQueryModule.usePlannedMealsQuery
+      ).mockReturnValue({
         data: incompletePlan,
         isLoading: false,
         error: null,
       })
 
-      render(<DashboardClient initialMeals={incompletePlan} />)
+      renderDashboard(incompletePlan)
 
       await waitFor(() => {
-        expect(screen.getByText(/generowanie brakujących posiłków/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/generowanie brakujących posiłków/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -366,7 +413,7 @@ describe('Dashboard Daily View', () => {
 
       const incompletePlan = testPlannedMeals.slice(0, 18)
 
-      render(<DashboardClient initialMeals={incompletePlan} />)
+      renderDashboard(incompletePlan)
 
       await waitFor(() => {
         expect(mockAutoGenerate).toHaveBeenCalled()
@@ -388,7 +435,7 @@ describe('Dashboard Daily View', () => {
 
       const incompletePlan = testPlannedMeals.slice(0, 18)
 
-      render(<DashboardClient initialMeals={incompletePlan} />)
+      renderDashboard(incompletePlan)
 
       await waitFor(() => {
         expect(screen.getByText(/wygenerowano 3 posiłki/i)).toBeInTheDocument()
@@ -398,13 +445,15 @@ describe('Dashboard Daily View', () => {
 
   describe('Error Handling', () => {
     test('displays error message when query fails', () => {
-      vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery).mockReturnValue({
+      vi.mocked(
+        usePlannedMealsQueryModule.usePlannedMealsQuery
+      ).mockReturnValue({
         data: undefined,
         isLoading: false,
         error: new Error('Failed to fetch meals'),
       })
 
-      render(<DashboardClient initialMeals={[]} />)
+      renderDashboard([])
 
       expect(screen.getByText(/błąd pobierania posiłków/i)).toBeInTheDocument()
     })
@@ -412,7 +461,9 @@ describe('Dashboard Daily View', () => {
     test('shows retry button on error', async () => {
       const mockRefetch = vi.fn()
 
-      vi.mocked(require('@/hooks/usePlannedMealsQuery').usePlannedMealsQuery).mockReturnValue({
+      vi.mocked(
+        usePlannedMealsQueryModule.usePlannedMealsQuery
+      ).mockReturnValue({
         data: undefined,
         isLoading: false,
         error: new Error('Failed to fetch meals'),
@@ -420,9 +471,11 @@ describe('Dashboard Daily View', () => {
       })
 
       const user = userEvent.setup()
-      render(<DashboardClient initialMeals={[]} />)
+      renderDashboard([])
 
-      const retryButton = screen.getByRole('button', { name: /spróbuj ponownie/i })
+      const retryButton = screen.getByRole('button', {
+        name: /spróbuj ponownie/i,
+      })
       await user.click(retryButton)
 
       expect(mockRefetch).toHaveBeenCalled()
@@ -435,7 +488,7 @@ describe('Dashboard Daily View', () => {
       global.innerWidth = 375
       global.dispatchEvent(new Event('resize'))
 
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const container = screen.getByTestId('dashboard-container')
       expect(container).toHaveClass('flex-col')
@@ -445,7 +498,7 @@ describe('Dashboard Daily View', () => {
       global.innerWidth = 1024
       global.dispatchEvent(new Event('resize'))
 
-      render(<DashboardClient initialMeals={testPlannedMeals.slice(0, 3)} />)
+      renderDashboard(testPlannedMeals.slice(0, 3))
 
       const container = screen.getByTestId('dashboard-container')
       expect(container).toHaveClass('grid-cols-2')

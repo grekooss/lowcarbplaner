@@ -61,8 +61,11 @@ export default defineConfig({
 
   // Run local dev server before tests
   webServer: {
-    // Używamy dotenv-cli do załadowania .env.e2e PRZED startem Next.js
-    command: 'npx dotenv-cli -e .env.e2e -- npm run dev',
+    // In CI: use built app (npm start), locally: use dev server (npm run dev)
+    // Both use dotenv-cli to load .env.e2e variables
+    command: process.env.CI
+      ? 'npx dotenv-cli -e .env.e2e -- npm run start'
+      : 'npx dotenv-cli -e .env.e2e -- npm run dev',
     url: 'http://localhost:3000',
     timeout: 120 * 1000,
     // Reuse existing server in development, restart in CI

@@ -4,8 +4,8 @@ import { setupMealPlan } from '../fixtures/test-data'
 
 test.describe('Dashboard - Ingredient Editing', () => {
   test.beforeEach(async ({ testUser, supabaseClient }) => {
-    // Setup meal plan for testing (profile already created by auth fixture)
-    await setupMealPlan(supabaseClient, testUser.userId)
+    // Setup meal plan starting today for ingredient editing tests
+    await setupMealPlan(supabaseClient, testUser.userId, new Date())
   })
 
   test('should display daily meals', async ({ authenticatedPage: page }) => {

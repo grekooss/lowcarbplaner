@@ -282,10 +282,10 @@ values
   ('Bulion kostny (wołowy)', 'beverages', 'ml', 15, 0, 3.0, 0.5, true, null);
 
 -- =====================================================================
--- SECTION 2: SEED UNIT CONVERSIONS (content.ingredient_unit_conversions)
+-- SECTION 2: SEED UNIT CONVERSIONS (public.ingredient_unit_conversions)
 -- =====================================================================
 
-insert into content.ingredient_unit_conversions (ingredient_id, unit_name, grams_equivalent)
+insert into public.ingredient_unit_conversions (ingredient_id, unit_name, grams_equivalent)
 values
   -- ===============================
   -- JAJA (EGGS)
@@ -467,7 +467,7 @@ group by category
 order by info;
 
 -- count unit conversions
-select 'Unit conversions inserted:' as info, count(*)::text as count from content.ingredient_unit_conversions;
+select 'Unit conversions inserted:' as info, count(*)::text as count from public.ingredient_unit_conversions;
 
 -- sample ingredient data with nutritional values
 select

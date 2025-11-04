@@ -87,7 +87,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lista na najbliższe 6 dni/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/lista na najbliższe 6 dni/i)
+        ).toBeInTheDocument()
       })
     })
   })
@@ -139,7 +141,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        const meatHeader = screen.getByText(/mięso/i).closest('[data-category-header]')
+        const meatHeader = screen
+          .getByText(/mięso/i)
+          .closest('[data-category-header]')
         within(meatHeader!).getByText(/1 pozycja/i)
       })
     })
@@ -248,11 +252,17 @@ describe('Shopping List Aggregation', () => {
         const checkboxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
 
         // Kurczak (id: 1) i Oliwa (id: 3) powinny być zaznaczone
-        const kurczakCheckbox = checkboxes.find(cb =>
-          cb.closest('[data-ingredient-id]')?.getAttribute('data-ingredient-id') === '1'
+        const kurczakCheckbox = checkboxes.find(
+          (cb) =>
+            cb
+              .closest('[data-ingredient-id]')
+              ?.getAttribute('data-ingredient-id') === '1'
         )
-        const oliwaCheckbox = checkboxes.find(cb =>
-          cb.closest('[data-ingredient-id]')?.getAttribute('data-ingredient-id') === '3'
+        const oliwaCheckbox = checkboxes.find(
+          (cb) =>
+            cb
+              .closest('[data-ingredient-id]')
+              ?.getAttribute('data-ingredient-id') === '3'
         )
 
         expect(kurczakCheckbox?.checked).toBe(true)
@@ -279,7 +289,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        const restoredCheckbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement
+        const restoredCheckbox = screen.getAllByRole(
+          'checkbox'
+        )[0] as HTMLInputElement
         expect(restoredCheckbox.checked).toBe(true)
       })
     })
@@ -332,7 +344,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lista zakupów jest pusta/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/lista zakupów jest pusta/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -366,7 +380,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByText(/błąd pobierania listy zakupów/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/błąd pobierania listy zakupów/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -379,12 +395,15 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /spróbuj ponownie/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /spróbuj ponownie/i })
+        ).toBeInTheDocument()
       })
     })
 
     test('retries on button click', async () => {
-      const mockGetList = vi.fn()
+      const mockGetList = vi
+        .fn()
         .mockResolvedValueOnce({ data: null, error: { message: 'Failed' } })
         .mockResolvedValueOnce({ data: mockShoppingList, error: null })
 
@@ -394,10 +413,14 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /spróbuj ponownie/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /spróbuj ponownie/i })
+        ).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole('button', { name: /spróbuj ponownie/i }))
+      await user.click(
+        screen.getByRole('button', { name: /spróbuj ponownie/i })
+      )
 
       await waitFor(() => {
         expect(mockGetList).toHaveBeenCalledTimes(2)
@@ -462,7 +485,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /drukuj/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /drukuj/i })
+        ).toBeInTheDocument()
       })
     })
 
@@ -474,7 +499,9 @@ describe('Shopping List Aggregation', () => {
       render(<ShoppingListClient />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /drukuj/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /drukuj/i })
+        ).toBeInTheDocument()
       })
 
       await user.click(screen.getByRole('button', { name: /drukuj/i }))

@@ -15,6 +15,7 @@ import userEvent from '@testing-library/user-event'
 import ProfileClient from '@/components/profile/ProfileClient'
 import { testProfile } from '../../fixtures/profiles'
 import { updateProfile } from '@/lib/actions/profile'
+import * as feedbackActions from '@/lib/actions/feedback'
 
 // Mock server actions
 vi.mock('@/lib/actions/profile', () => ({
@@ -48,7 +49,9 @@ describe('Profile Update & Goals Recalculation', () => {
         const weightInput = screen.getByLabelText(/waga/i) as HTMLInputElement
         expect(weightInput.value).toBe('85')
 
-        const activitySelect = screen.getByLabelText(/poziom aktywności/i) as HTMLSelectElement
+        const activitySelect = screen.getByLabelText(
+          /poziom aktywności/i
+        ) as HTMLSelectElement
         expect(activitySelect.value).toBe('moderate')
       })
     })
@@ -67,7 +70,9 @@ describe('Profile Update & Goals Recalculation', () => {
 
       expect(screen.getByLabelText(/waga/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/poziom aktywności/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /zapisz zmiany/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /zapisz zmiany/i })
+      ).toBeInTheDocument()
     })
 
     test('displays user info (age, gender, height)', () => {
@@ -110,7 +115,9 @@ describe('Profile Update & Goals Recalculation', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/waga musi być większa od 0/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/waga musi być większa od 0/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -142,7 +149,9 @@ describe('Profile Update & Goals Recalculation', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/maksymalna waga to 300 kg/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/maksymalna waga to 300 kg/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -223,7 +232,10 @@ describe('Profile Update & Goals Recalculation', () => {
       const user = userEvent.setup()
       render(<ProfileClient initialProfile={testProfile} />)
 
-      await user.selectOptions(screen.getByLabelText(/poziom aktywności/i), 'active')
+      await user.selectOptions(
+        screen.getByLabelText(/poziom aktywności/i),
+        'active'
+      )
       await user.click(screen.getByRole('button', { name: /zapisz zmiany/i }))
 
       await waitFor(() => {
@@ -253,7 +265,10 @@ describe('Profile Update & Goals Recalculation', () => {
 
       await user.clear(screen.getByLabelText(/waga/i))
       await user.type(screen.getByLabelText(/waga/i), '80')
-      await user.selectOptions(screen.getByLabelText(/poziom aktywności/i), 'active')
+      await user.selectOptions(
+        screen.getByLabelText(/poziom aktywności/i),
+        'active'
+      )
       await user.click(screen.getByRole('button', { name: /zapisz zmiany/i }))
 
       await waitFor(() => {
@@ -287,7 +302,10 @@ describe('Profile Update & Goals Recalculation', () => {
 
       await user.clear(screen.getByLabelText(/waga/i))
       await user.type(screen.getByLabelText(/waga/i), '80')
-      await user.selectOptions(screen.getByLabelText(/poziom aktywności/i), 'active')
+      await user.selectOptions(
+        screen.getByLabelText(/poziom aktywności/i),
+        'active'
+      )
       await user.click(screen.getByRole('button', { name: /zapisz zmiany/i }))
 
       await waitFor(() => {
@@ -304,7 +322,9 @@ describe('Profile Update & Goals Recalculation', () => {
       render(<ProfileClient initialProfile={testProfile} />)
 
       expect(screen.getByLabelText(/twoja opinia/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /wyślij opinię/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /wyślij opinię/i })
+      ).toBeInTheDocument()
     })
 
     test('validates feedback length (10-1000 characters)', async () => {
@@ -312,13 +332,17 @@ describe('Profile Update & Goals Recalculation', () => {
       render(<ProfileClient initialProfile={testProfile} />)
 
       const textarea = screen.getByLabelText(/twoja opinia/i)
-      const submitButton = screen.getByRole('button', { name: /wyślij opinię/i })
+      const submitButton = screen.getByRole('button', {
+        name: /wyślij opinię/i,
+      })
 
       await user.type(textarea, 'Za krótk')
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/opinia musi mieć co najmniej 10 znaków/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/opinia musi mieć co najmniej 10 znaków/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -328,13 +352,18 @@ describe('Profile Update & Goals Recalculation', () => {
         error: null,
       })
 
-      vi.mocked(require('@/lib/actions/feedback').createFeedback).mockImplementation(mockCreateFeedback)
+      vi.mocked(feedbackActions.createFeedback).mockImplementation(
+        mockCreateFeedback
+      )
 
       const user = userEvent.setup()
       render(<ProfileClient initialProfile={testProfile} />)
 
       const textarea = screen.getByLabelText(/twoja opinia/i)
-      await user.type(textarea, 'Świetna aplikacja! Bardzo pomocna w planowaniu posiłków.')
+      await user.type(
+        textarea,
+        'Świetna aplikacja! Bardzo pomocna w planowaniu posiłków.'
+      )
       await user.click(screen.getByRole('button', { name: /wyślij opinię/i }))
 
       await waitFor(() => {
@@ -358,7 +387,9 @@ describe('Profile Update & Goals Recalculation', () => {
       const user = userEvent.setup()
       render(<ProfileClient initialProfile={testProfile} />)
 
-      const textarea = screen.getByLabelText(/twoja opinia/i) as HTMLTextAreaElement
+      const textarea = screen.getByLabelText(
+        /twoja opinia/i
+      ) as HTMLTextAreaElement
       await user.type(textarea, 'Dziękuję za aplikację!')
       await user.click(screen.getByRole('button', { name: /wyślij opinię/i }))
 
@@ -371,7 +402,10 @@ describe('Profile Update & Goals Recalculation', () => {
       const user = userEvent.setup()
       render(<ProfileClient initialProfile={testProfile} />)
 
-      await user.type(screen.getByLabelText(/twoja opinia/i), 'Dziękuję za aplikację!')
+      await user.type(
+        screen.getByLabelText(/twoja opinia/i),
+        'Dziękuję za aplikację!'
+      )
       await user.click(screen.getByRole('button', { name: /wyślij opinię/i }))
 
       await waitFor(() => {
@@ -404,9 +438,11 @@ describe('Profile Update & Goals Recalculation', () => {
     })
 
     test('shows loading state during save', async () => {
-      const mockUpdate = vi.fn().mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
-      )
+      const mockUpdate = vi
+        .fn()
+        .mockImplementation(
+          () => new Promise((resolve) => setTimeout(resolve, 1000))
+        )
 
       vi.mocked(updateProfile).mockImplementation(mockUpdate)
 
@@ -421,9 +457,11 @@ describe('Profile Update & Goals Recalculation', () => {
     })
 
     test('disables form during save', async () => {
-      const mockUpdate = vi.fn().mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
-      )
+      const mockUpdate = vi
+        .fn()
+        .mockImplementation(
+          () => new Promise((resolve) => setTimeout(resolve, 1000))
+        )
 
       vi.mocked(updateProfile).mockImplementation(mockUpdate)
 
@@ -456,7 +494,9 @@ describe('Profile Update & Goals Recalculation', () => {
       await user.click(screen.getByRole('button', { name: /zapisz zmiany/i }))
 
       await waitFor(() => {
-        expect(screen.getByText(/błąd aktualizacji profilu/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/błąd aktualizacji profilu/i)
+        ).toBeInTheDocument()
       })
     })
 
@@ -482,9 +522,13 @@ describe('Profile Update & Goals Recalculation', () => {
     })
 
     test('allows retry after error', async () => {
-      const mockUpdate = vi.fn()
+      const mockUpdate = vi
+        .fn()
         .mockResolvedValueOnce({ error: { message: 'Failed' }, data: null })
-        .mockResolvedValueOnce({ data: { ...testProfile, weight_kg: 83 }, error: null })
+        .mockResolvedValueOnce({
+          data: { ...testProfile, weight_kg: 83 },
+          error: null,
+        })
 
       vi.mocked(updateProfile).mockImplementation(mockUpdate)
 

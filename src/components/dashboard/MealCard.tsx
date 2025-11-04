@@ -215,7 +215,7 @@ export function MealCard({
                     }}
                   >
                     <RefreshCw className='h-4 w-4' />
-                    Zmien przepis
+                    Zamień
                   </Button>
                 )}
               </div>

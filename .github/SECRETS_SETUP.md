@@ -20,6 +20,13 @@ To run E2E tests in GitHub Actions, you need to configure the following secrets 
 - **Value**: Your Supabase service role key
 - **Where to find**: Supabase Dashboard → Project Settings → API → Project API keys → `service_role` (⚠️ Keep this secret!)
 
+### 4. TEST_DATABASE_URL
+
+- **Value**: Your Supabase database connection string
+- **Format**: `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres`
+- **Where to find**: Supabase Dashboard → Project Settings → Database → Connection String → Transaction mode
+- **Note**: This is used to seed the database with test recipes and ingredients
+
 ## How to Add Secrets
 
 1. Go to your GitHub repository

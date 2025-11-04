@@ -15,6 +15,9 @@ test.describe('Dashboard - Recipe Swapping', () => {
 
     await dashboard.goto()
 
+    // Navigate to tomorrow (where test meals are created)
+    await dashboard.navigateToTomorrow()
+
     // Click swap on breakfast
     await dashboard.swapMeal('breakfast')
 
@@ -34,6 +37,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
 
     // Get current recipe name
     const currentRecipe = await dashboard
@@ -77,6 +81,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
 
     // Get initial macro values
     const proteinBefore = await dashboard.getMacroValue('protein')
@@ -111,6 +116,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
 
     // Open swap modal
     await dashboard.swapMeal('breakfast')
@@ -130,6 +136,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
     await dashboard.swapMeal('breakfast')
 
     // Wait for replacements to load
@@ -152,6 +159,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
 
     // Get current meal calories
     const breakfastCard = dashboard.getMealCard('breakfast')
@@ -191,6 +199,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
 
     // Get initial recipe names
     const breakfastBefore = await dashboard
@@ -235,6 +244,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     const dashboard = new DashboardPage(page)
 
     await dashboard.goto()
+    await dashboard.navigateToTomorrow()
 
     // Swap recipe
     await dashboard.swapMeal('breakfast')
@@ -252,6 +262,7 @@ test.describe('Dashboard - Recipe Swapping', () => {
     // Reload page
     await page.reload()
     await page.waitForLoadState('domcontentloaded')
+    await dashboard.navigateToTomorrow()
 
     // Recipe should still be the swapped one
     const reloadedRecipeName = await dashboard

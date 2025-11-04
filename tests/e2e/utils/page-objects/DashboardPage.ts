@@ -73,6 +73,14 @@ export class DashboardPage {
   }
 
   /**
+   * Navigate to tomorrow in the calendar
+   */
+  async navigateToTomorrow() {
+    await this.nextDayButton.click()
+    await this.page.waitForTimeout(DATA_LOAD_WAIT)
+  }
+
+  /**
    * Get meal card by type
    */
   getMealCard(mealType: 'breakfast' | 'lunch' | 'dinner'): Locator {
