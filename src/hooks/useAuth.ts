@@ -34,6 +34,7 @@ import type { UseAuthReturn } from '@/types/auth-view.types'
 export function useAuth(redirectTo?: string): UseAuthReturn {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const supabase = createClientComponentClient()
@@ -136,7 +137,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
    * Logowanie przez Google OAuth
    */
   const loginWithGoogle = useCallback(async () => {
-    setIsLoading(true)
+    setIsGoogleLoading(true)
     setError(null)
 
     try {
@@ -155,7 +156,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       toast.error('Błąd logowania', {
         description: errorMessage,
       })
-      setIsLoading(false)
+      setIsGoogleLoading(false)
     }
   }, [supabase, redirectTo])
 
@@ -229,6 +230,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
 
   return {
     isLoading,
+    isGoogleLoading,
     error,
     login,
     register,

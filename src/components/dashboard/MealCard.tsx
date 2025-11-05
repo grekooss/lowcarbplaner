@@ -32,6 +32,7 @@ import type { PlannedMealDTO } from '@/types/dto.types'
 interface MealCardProps {
   meal: PlannedMealDTO
   showSwapButton?: boolean // Kontrola widocznosci przycisku podmiany
+  enableEatenCheckbox?: boolean // Kontrola mozliwosci zaznaczania jako zjedzone (tylko dzisiaj)
   onRecipePreview: (meal: PlannedMealDTO) => void
 }
 
@@ -69,6 +70,7 @@ const formatValue = (
 export function MealCard({
   meal,
   showSwapButton = false,
+  enableEatenCheckbox = true,
   onRecipePreview,
 }: MealCardProps) {
   const [swapDialogOpen, setSwapDialogOpen] = useState(false)
@@ -174,20 +176,22 @@ export function MealCard({
                 </div>
               </div>
 
-              <label
-                className='text-muted-foreground flex items-center justify-end gap-2 text-xs font-medium'
-                onClick={(event) => event.stopPropagation()}
-              >
-                Zjedzone
-                <Checkbox
-                  id={`meal-${meal.id}`}
-                  checked={meal.is_eaten}
-                  disabled={isPending}
-                  onCheckedChange={handleToggle}
+              {enableEatenCheckbox && (
+                <label
+                  className='text-muted-foreground flex items-center justify-end gap-2 text-xs font-medium'
                   onClick={(event) => event.stopPropagation()}
-                  aria-label={`Oznacz ${meal.recipe.name} jako zjedzony`}
-                />
-              </label>
+                >
+                  Zjedzone
+                  <Checkbox
+                    id={`meal-${meal.id}`}
+                    checked={meal.is_eaten}
+                    disabled={isPending}
+                    onCheckedChange={handleToggle}
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={`Oznacz ${meal.recipe.name} jako zjedzony`}
+                  />
+                </label>
+              )}
             </div>
 
             <h3

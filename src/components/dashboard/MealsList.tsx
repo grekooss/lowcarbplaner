@@ -19,12 +19,13 @@ interface MealsListProps {
 export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   const mealsForDate = meals.filter((meal) => meal.meal_date === date)
 
-  // Sprawdź czy wybrany dzień jest od jutra (nie dzisiaj)
+  // Sprawdź czy wybrany dzień jest dzisiaj lub innym dniem
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const selectedDate = new Date(date)
   selectedDate.setHours(0, 0, 0, 0)
   const isFutureDate = selectedDate > today
+  const isCurrentDate = selectedDate.getTime() === today.getTime()
 
   const breakfast = mealsForDate.find((meal) => meal.meal_type === 'breakfast')
   const lunch = mealsForDate.find((meal) => meal.meal_type === 'lunch')
@@ -48,6 +49,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
             <MealCard
               key={meal.id}
               meal={meal}
+              enableEatenCheckbox={false}
               onRecipePreview={onRecipePreview}
             />
           ))}
@@ -80,6 +82,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
             key={meal.id}
             meal={meal}
             showSwapButton={isFutureDate}
+            enableEatenCheckbox={isCurrentDate}
             onRecipePreview={onRecipePreview}
           />
         ))}

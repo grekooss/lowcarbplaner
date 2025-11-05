@@ -80,6 +80,7 @@ export interface PasswordStrengthResult {
  */
 export interface UseAuthReturn {
   isLoading: boolean
+  isGoogleLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>

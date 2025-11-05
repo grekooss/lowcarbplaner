@@ -41,8 +41,14 @@ interface AuthClientProps {
 export function AuthClient({ initialTab, redirectTo }: AuthClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, register, loginWithGoogle, isLoading, error } =
-    useAuth(redirectTo)
+  const {
+    login,
+    register,
+    loginWithGoogle,
+    isLoading,
+    isGoogleLoading,
+    error,
+  } = useAuth(redirectTo)
 
   // Handle tab change and update URL
   const handleTabChange = (value: string) => {
@@ -98,7 +104,7 @@ export function AuthClient({ initialTab, redirectTo }: AuthClientProps) {
       {/* Social Auth */}
       <SocialAuthButton
         onLogin={loginWithGoogle}
-        isLoading={isLoading}
+        isLoading={isGoogleLoading}
         className='w-full'
       />
     </div>

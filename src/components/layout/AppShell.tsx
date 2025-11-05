@@ -170,7 +170,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
               <div className='relative' ref={headerMenuRef}>
                 <button
-                  onClick={() => user && setHeaderMenuOpen(!headerMenuOpen)}
+                  onClick={() => {
+                    if (user) {
+                      setHeaderMenuOpen(!headerMenuOpen)
+                    } else {
+                      // Przekieruj niezalogowanego użytkownika do modala logowania
+                      router.push('/auth?tab=login')
+                    }
+                  }}
                   className='flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-sm transition-colors hover:bg-slate-50'
                 >
                   {user ? (
