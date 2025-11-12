@@ -25,16 +25,28 @@ export function CalendarStrip({
 }: CalendarStripProps) {
   const days = useCalendarDays(selectedDate)
 
+  // Definiuj zakres 7 dni od dzisiaj
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const maxDate = new Date(today)
+  maxDate.setDate(today.getDate() + 6)
+
   const handlePrevDay = () => {
     const prev = new Date(selectedDate)
     prev.setDate(prev.getDate() - 1)
-    onDateChange(prev)
+    // Nie pozwól przejść przed dzisiaj
+    if (prev >= today) {
+      onDateChange(prev)
+    }
   }
 
   const handleNextDay = () => {
     const next = new Date(selectedDate)
     next.setDate(next.getDate() + 1)
-    onDateChange(next)
+    // Nie pozwól przejść poza 6 dni od dzisiaj
+    if (next <= maxDate) {
+      onDateChange(next)
+    }
   }
 
   const handleKeyDown = (
@@ -60,6 +72,12 @@ export function CalendarStrip({
     monthLabelRaw.charAt(0).toUpperCase() + monthLabelRaw.slice(1)
   const yearLabel = selectedDate.getFullYear()
 
+  // Sprawdź czy możemy nawigować
+  const normalizedSelected = new Date(selectedDate)
+  normalizedSelected.setHours(0, 0, 0, 0)
+  const canGoPrev = normalizedSelected > today
+  const canGoNext = normalizedSelected < maxDate
+
   return (
     <section className='card-soft rounded-3xl p-6 shadow-sm'>
       <div className='flex items-center justify-between gap-3'>
@@ -76,7 +94,8 @@ export function CalendarStrip({
             variant='ghost'
             size='icon'
             onClick={handlePrevDay}
-            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white'
+            disabled={!canGoPrev}
+            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50'
             aria-label='Poprzedni dzień'
           >
             <ChevronLeft className='h-4 w-4' />
@@ -86,7 +105,8 @@ export function CalendarStrip({
             variant='ghost'
             size='icon'
             onClick={handleNextDay}
-            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white'
+            disabled={!canGoNext}
+            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50'
             aria-label='Następny dzień'
           >
             <ChevronRight className='h-4 w-4' />

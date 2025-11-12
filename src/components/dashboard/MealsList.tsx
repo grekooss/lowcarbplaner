@@ -42,7 +42,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
     return (
       <section className='space-y-6 opacity-50 transition-opacity'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-xl font-semibold'>Posilki</h2>
+          <h2 className='text-xl font-semibold'>Posiłki</h2>
         </div>
         <div className='space-y-4'>
           {fallbackMeals.map((meal) => (
@@ -69,7 +69,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   return (
     <section className='space-y-6'>
       <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-semibold'>Posilki</h2>
+        <h2 className='text-xl font-semibold'>Posiłki</h2>
         <p className='text-muted-foreground text-sm'>
           {mealsForDate.filter((meal) => meal.is_eaten).length} /{' '}
           {mealsForDate.length} zjedzonych
@@ -90,7 +90,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
 
       {mealsForDate.length > 0 && mealsForDate.length < 3 && (
         <div className='text-muted-foreground text-sm'>
-          Nie wszystkie posilki zostaly jeszcze zaplanowane na ten dzien.
+          Nie wszystkie posiłki zostały jeszcze zaplanowane na ten dzień.
         </div>
       )}
     </section>

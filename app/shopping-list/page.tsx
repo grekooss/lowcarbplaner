@@ -48,12 +48,14 @@ export default async function ShoppingListPage() {
     : shoppingListResult.data || []
 
   return (
-    <main className='container mx-auto px-4 py-8'>
-      <h1 className='mb-2 text-3xl font-bold'>Lista Zakupów</h1>
-      <p className='text-muted-foreground mb-6'>
-        {startDateStr} - {endDateStr}
-      </p>
+    <div className='container mx-auto space-y-8 px-4 py-8'>
+      <div className='space-y-2'>
+        <h1 className='text-3xl font-bold tracking-tight'>Lista Zakupów</h1>
+        <p className='text-muted-foreground'>
+          {startDateStr} - {endDateStr}
+        </p>
+      </div>
       <ShoppingListClient initialShoppingList={shoppingList} />
-    </main>
+    </div>
   )
 }

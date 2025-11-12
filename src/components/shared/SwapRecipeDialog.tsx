@@ -10,18 +10,11 @@
 
 import { useState, useMemo } from 'react'
 import Image from 'next/image'
-import {
-  Loader2,
-  RefreshCw,
-  UtensilsCrossed,
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react'
+import { Loader2, RefreshCw, UtensilsCrossed } from 'lucide-react'
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -32,7 +25,6 @@ import { cn } from '@/lib/utils'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
 import { useReplacementRecipes } from '@/hooks/useReplacementRecipes'
 import { useSwapRecipe } from '@/hooks/useSwapRecipe'
-import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
 interface SwapRecipeDialogProps {
@@ -88,13 +80,8 @@ export function SwapRecipeDialog({
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <RefreshCw className='h-5 w-5' />
-            Zmień przepis: {meal.recipe.name}
+            Zmień przepis
           </DialogTitle>
-          <DialogDescription>
-            {MEAL_TYPE_LABELS[meal.meal_type]} • {originalCalories} kcal
-            <br />
-            Wybierz zamiennik o podobnej kaloryczności (±15%)
-          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className='max-h-[500px] pr-4'>
@@ -119,6 +106,56 @@ export function SwapRecipeDialog({
 
           {!isLoading && !error && replacements.length > 0 && (
             <div className='space-y-2'>
+              {/* Aktualny przepis */}
+              <div className='card-soft flex w-full items-start gap-4 rounded-3xl border-0 p-4 shadow-sm'>
+                <div className='bg-muted relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl'>
+                  {meal.recipe.image_url ? (
+                    <Image
+                      src={meal.recipe.image_url}
+                      alt={meal.recipe.name}
+                      fill
+                      className='object-cover'
+                      sizes='80px'
+                    />
+                  ) : (
+                    <div className='text-muted-foreground flex h-full w-full items-center justify-center'>
+                      <UtensilsCrossed className='h-8 w-8' />
+                    </div>
+                  )}
+                </div>
+
+                <div className='flex flex-1 flex-col gap-2'>
+                  <div className='flex items-start justify-between gap-2'>
+                    <h4 className='text-base font-semibold'>
+                      {meal.recipe.name}
+                    </h4>
+                    <Badge variant='secondary'>Aktualny</Badge>
+                  </div>
+
+                  <div className='flex flex-wrap items-center gap-3 text-sm'>
+                    <span className='font-semibold'>
+                      {originalCalories} kcal
+                    </span>
+                    <span className='text-muted-foreground'>
+                      C: {Math.round(currentNutrition.carbs_g)}g
+                    </span>
+                    <span className='text-muted-foreground'>
+                      P: {Math.round(currentNutrition.protein_g)}g
+                    </span>
+                    <span className='text-muted-foreground'>
+                      F: {Math.round(currentNutrition.fats_g)}g
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nagłówek listy zamienników */}
+              <div className='py-2'>
+                <p className='text-muted-foreground text-sm'>
+                  Wybierz zamiennik o podobnej kaloryczności (±15%)
+                </p>
+              </div>
+
               {replacements.map((replacement) => {
                 const isSelected = selectedRecipeId === replacement.id
                 const caloriesDiff = replacement.calorie_diff
@@ -131,7 +168,7 @@ export function SwapRecipeDialog({
                     key={replacement.id}
                     onClick={() => setSelectedRecipeId(replacement.id)}
                     className={cn(
-                      'border-border/60 flex w-full items-start gap-4 rounded-xl border bg-white p-4 text-left transition-all hover:shadow-md',
+                      'card-soft flex w-full items-start gap-4 rounded-3xl border-0 p-4 text-left shadow-sm transition-all hover:shadow-md',
                       isSelected && 'ring-primary ring-2'
                     )}
                   >
@@ -168,33 +205,26 @@ export function SwapRecipeDialog({
                           {replacement.total_calories} kcal
                         </span>
 
-                        <div className='flex items-center gap-1'>
-                          {caloriesDiff > 0 ? (
-                            <TrendingUp className='h-4 w-4 text-orange-500' />
-                          ) : (
-                            <TrendingDown className='h-4 w-4 text-green-600' />
+                        <span
+                          className={cn(
+                            'text-xs font-medium',
+                            caloriesDiff > 0
+                              ? 'text-orange-600'
+                              : 'text-green-600'
                           )}
-                          <span
-                            className={cn(
-                              'text-xs font-medium',
-                              caloriesDiff > 0
-                                ? 'text-orange-600'
-                                : 'text-green-600'
-                            )}
-                          >
-                            {caloriesDiff > 0 ? '+' : ''}
-                            {caloriesDiff} kcal ({diffPercent.toFixed(1)}%)
-                          </span>
-                        </div>
+                        >
+                          {caloriesDiff > 0 ? '+' : ''}
+                          {caloriesDiff} kcal ({diffPercent.toFixed(1)}%)
+                        </span>
 
                         <span className='text-muted-foreground'>
-                          C: {replacement.total_carbs_g}g
+                          C: {Math.round(replacement.total_carbs_g)}g
                         </span>
                         <span className='text-muted-foreground'>
-                          P: {replacement.total_protein_g}g
+                          P: {Math.round(replacement.total_protein_g)}g
                         </span>
                         <span className='text-muted-foreground'>
-                          F: {replacement.total_fats_g}g
+                          F: {Math.round(replacement.total_fats_g)}g
                         </span>
                       </div>
                     </div>

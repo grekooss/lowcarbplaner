@@ -176,7 +176,7 @@ export function DashboardClient({
         <Alert variant='destructive'>
           <AlertCircle className='h-4 w-4' />
           <AlertTitle>
-            {generateError ? 'Blad generowania planu' : 'Blad ladowania danych'}
+            {generateError ? 'Błąd generowania planu' : 'Błąd ładowania danych'}
           </AlertTitle>
           <AlertDescription className='space-y-2'>
             <p>
@@ -184,7 +184,7 @@ export function DashboardClient({
                 ? error.message
                 : generateError instanceof Error
                   ? generateError.message
-                  : 'Nie udalo sie pobrac posilkow. Sprobuj ponownie.'}
+                  : 'Nie udało się pobrać posiłków. Spróbuj ponownie.'}
             </p>
             <Button
               variant='outline'
@@ -197,7 +197,7 @@ export function DashboardClient({
                 }
               }}
             >
-              Sprobuj ponownie
+              Spróbuj ponownie
             </Button>
           </AlertDescription>
         </Alert>
@@ -208,9 +208,9 @@ export function DashboardClient({
   return (
     <div className='container mx-auto space-y-8 px-4 py-8'>
       <div className='space-y-2'>
-        <h1 className='text-3xl font-bold tracking-tight'>Twoj Plan Dnia</h1>
+        <h1 className='text-3xl font-bold tracking-tight'>Twój Plan Dnia</h1>
         <p className='text-muted-foreground'>
-          Sledz swoje posilki i realizacje celow zywieniowych
+          Śledź swoje posiłki i realizację celów żywieniowych
         </p>
       </div>
 

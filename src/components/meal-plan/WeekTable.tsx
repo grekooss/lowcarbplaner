@@ -80,7 +80,7 @@ export function WeekTable({
         </div>
         <div className='hidden grid-cols-3 gap-4 md:grid'>
           <div className='flex items-center justify-center rounded-md bg-[#C8E6C9] px-6 py-3 text-base font-semibold text-slate-900'>
-            Sniadanie
+            Śniadanie
           </div>
           <div className='flex items-center justify-center rounded-md bg-[#FFE082] px-6 py-3 text-base font-semibold text-slate-900'>
             Obiad

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * DayCard - Karta pojedynczego dnia zawierajaca 3 posilki (widok mobile)
+ * DayCard - Karta pojedynczego dnia zawierająca 3 posiłki (widok mobile)
  */
 
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
@@ -30,14 +30,14 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
           </div>
           {day.isToday && (
             <span className='text-primary bg-primary/10 rounded-full px-2 py-1 text-xs font-semibold'>
-              Dzis
+              Dziś
             </span>
           )}
         </div>
       </CardHeader>
 
       <CardContent className='space-y-3'>
-        {/* Sniadanie */}
+        {/* Śniadanie */}
         {day.breakfast && (
           <MealCard
             meal={day.breakfast}

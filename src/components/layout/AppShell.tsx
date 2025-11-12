@@ -42,7 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { label: 'Przepisy', href: '/recipes', icon: Utensils, requiresAuth: false },
   {
-    label: 'Lista zakupow',
+    label: 'Lista zakupów',
     href: '/shopping-list',
     icon: ShoppingBag,
     requiresAuth: true,
@@ -178,7 +178,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       router.push('/auth?tab=login')
                     }
                   }}
-                  className='flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-sm transition-colors hover:bg-slate-50'
+                  className='card-soft flex items-center gap-3 rounded-full border-0 px-4 py-2 shadow-sm transition-colors hover:opacity-90'
                 >
                   {user ? (
                     <>
@@ -195,10 +195,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <>
                       <div className='text-right'>
                         <p className='text-sm font-semibold'>
-                          Witaj w LoWCarbPlaner
+                          Witaj w LowCarbPlaner
                         </p>
                       </div>
-                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-slate-500'>
+                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-500'>
                         <User className='h-5 w-5' />
                       </div>
                     </>

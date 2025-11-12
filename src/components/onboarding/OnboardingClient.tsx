@@ -18,7 +18,7 @@ import {
   calculateNutritionTargetsClient,
   generateWeightLossOptions,
 } from '@/lib/utils/nutrition-calculator-client'
-import { createProfile, generateMealPlan } from '@/lib/actions/profile'
+import { createProfile } from '@/lib/actions/profile'
 import { GenderStep } from './GenderStep'
 import { AgeStep } from './AgeStep'
 import { WeightStep } from './WeightStep'
@@ -28,7 +28,6 @@ import { GoalStep } from './GoalStep'
 import { WeightLossRateStep } from './WeightLossRateStep'
 import { SummaryStep } from './SummaryStep'
 import { DisclaimerStep } from './DisclaimerStep'
-import { GeneratingStep } from './GeneratingStep'
 import { StepperIndicator } from './StepperIndicator'
 import { NavigationButtons } from './NavigationButtons'
 import { toast } from 'sonner'
@@ -54,7 +53,7 @@ export function OnboardingClient() {
   const stepContentRef = useRef<HTMLDivElement>(null)
 
   // Calculate total steps based on goal
-  const totalSteps = formData.goal === 'weight_loss' ? 10 : 9
+  const totalSteps = formData.goal === 'weight_loss' ? 9 : 8
 
   // Focus management: Focus step content when step changes
   useEffect(() => {
@@ -134,8 +133,6 @@ export function OnboardingClient() {
         return isStep8Valid
       case 9:
         return isStep9Valid
-      case 10:
-        return false // Generating step - can't navigate
       default:
         return false
     }
@@ -182,7 +179,6 @@ export function OnboardingClient() {
 
     setIsSubmitting(true)
     setSubmitError(null)
-    setCurrentStep(10) // Move to generating step
 
     try {
       // Create profile
@@ -202,17 +198,8 @@ export function OnboardingClient() {
         throw new Error(profileResult.error || 'Nie udało się utworzyć profilu')
       }
 
-      // Generate 7-day meal plan
-      const mealPlanResult = await generateMealPlan()
-
-      if (mealPlanResult.error) {
-        throw new Error(
-          mealPlanResult.error || 'Nie udało się wygenerować planu żywieniowego'
-        )
-      }
-
-      // Success - redirect to dashboard
-      toast.success('Twój profil i plan żywieniowy zostały utworzone.')
+      // Success - redirect to dashboard (plan will be generated there automatically)
+      toast.success('Twój profil został utworzony.')
 
       router.push('/dashboard')
     } catch (error) {
@@ -355,13 +342,6 @@ export function OnboardingClient() {
             onChange={(value) => updateField('disclaimer_accepted', value)}
           />
         )
-      case 10:
-        return (
-          <GeneratingStep
-            isError={!!submitError}
-            errorMessage={submitError || undefined}
-          />
-        )
       default:
         return null
     }
@@ -456,7 +436,7 @@ export function OnboardingClient() {
         {/* Step Content */}
         <div
           ref={stepContentRef}
-          className='bg-card mb-4 rounded-lg border p-4 sm:mb-6 sm:p-6 md:p-8'
+          className='card-soft mb-4 rounded-3xl border-0 p-6 shadow-sm sm:mb-6 sm:p-8 md:p-10'
           role='region'
           aria-label={`Krok ${currentStep} z ${totalSteps}`}
           aria-live='polite'
@@ -483,18 +463,10 @@ export function OnboardingClient() {
           />
         )}
 
-        {/* Error handling on generating step */}
-        {currentStep === 10 && submitError && (
-          <div className='mt-6 flex justify-center'>
-            <button
-              onClick={() => {
-                setCurrentStep(9)
-                setSubmitError(null)
-              }}
-              className='text-primary text-sm hover:underline'
-            >
-              Wróć do poprzedniego kroku
-            </button>
+        {/* Error handling */}
+        {submitError && (
+          <div className='mt-6 rounded-lg bg-red-50 p-4 text-center'>
+            <p className='text-destructive text-sm'>{submitError}</p>
           </div>
         )}
       </div>

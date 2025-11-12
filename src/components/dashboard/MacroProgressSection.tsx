@@ -55,7 +55,7 @@ export function MacroProgressSection({
   const macroRows = [
     {
       key: 'carbs',
-      label: 'Weglowodany',
+      label: 'Węglowodany',
       consumed: macros.consumed.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
@@ -63,7 +63,7 @@ export function MacroProgressSection({
     },
     {
       key: 'protein',
-      label: 'Bialko',
+      label: 'Białko',
       consumed: macros.consumed.protein_g,
       target: macros.target.protein_g,
       unit: 'g',
@@ -71,7 +71,7 @@ export function MacroProgressSection({
     },
     {
       key: 'fat',
-      label: 'Tluszcze',
+      label: 'Tłuszcze',
       consumed: macros.consumed.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
@@ -99,12 +99,9 @@ export function MacroProgressSection({
               Bilans kalorii
             </h2>
             <p className='text-muted-foreground text-xs'>
-              {eatenMealsCount} / {meals.length} posilkow zjedzonych
+              {eatenMealsCount} / {meals.length} posiłków zjedzonych
             </p>
           </div>
-          <span className='text-muted-foreground text-2xl leading-none'>
-            ...
-          </span>
         </div>
 
         <div className='-mt-2 flex flex-col items-center gap-5'>
@@ -133,7 +130,7 @@ export function MacroProgressSection({
                 </span>
               </div>
               <span className='text-muted-foreground mt-1 text-xs font-semibold tracking-wide uppercase'>
-                {isOverLimit ? 'Przekroczenie' : 'Pozostalo kalorii'}
+                {isOverLimit ? 'Przekroczenie' : 'Pozostało kalorii'}
               </span>
             </div>
           </div>

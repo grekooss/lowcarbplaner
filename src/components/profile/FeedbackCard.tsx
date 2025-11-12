@@ -7,13 +7,6 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -69,44 +62,40 @@ export const FeedbackCard = () => {
   const isValid = content.trim().length >= MIN_LENGTH
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Zgłoś problem lub prześlij opinię</CardTitle>
-        <CardDescription>
+    <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+      <div className='mb-6'>
+        <h2 className='text-xl font-bold'>Zgłoś problem lub prześlij opinię</h2>
+        <p className='text-muted-foreground text-sm'>
           Pomóż nam ulepszyć aplikację - napisz o swoich doświadczeniach
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='space-y-2'>
-            <Textarea
-              placeholder='Opisz swój problem lub sugestię...'
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={5}
-              maxLength={MAX_LENGTH}
-              className='resize-none'
-            />
-            <div className='text-muted-foreground flex justify-between text-xs'>
-              <span>Minimum {MIN_LENGTH} znaków</span>
-              <span
-                className={
-                  charCount > MAX_LENGTH * 0.9 ? 'text-destructive' : ''
-                }
-              >
-                {charCount} / {MAX_LENGTH}
-              </span>
-            </div>
+        </p>
+      </div>
+      <form onSubmit={handleSubmit} className='space-y-4'>
+        <div className='space-y-2'>
+          <Textarea
+            placeholder='Opisz swój problem lub sugestię...'
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={5}
+            maxLength={MAX_LENGTH}
+            className='resize-none'
+          />
+          <div className='text-muted-foreground flex justify-between text-xs'>
+            <span>Minimum {MIN_LENGTH} znaków</span>
+            <span
+              className={charCount > MAX_LENGTH * 0.9 ? 'text-destructive' : ''}
+            >
+              {charCount} / {MAX_LENGTH}
+            </span>
           </div>
-          <Button
-            type='submit'
-            disabled={!isValid || isSubmitting}
-            className='w-full'
-          >
-            {isSubmitting ? 'Wysyłanie...' : 'Wyślij opinię'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+        <Button
+          type='submit'
+          disabled={!isValid || isSubmitting}
+          className='w-full'
+        >
+          {isSubmitting ? 'Wysyłanie...' : 'Wyślij opinię'}
+        </Button>
+      </form>
+    </div>
   )
 }

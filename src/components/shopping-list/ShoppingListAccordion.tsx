@@ -62,47 +62,102 @@ export const ShoppingListAccordion = ({
   }, [purchasedItems, shoppingList])
 
   return (
-    <Accordion
-      type='multiple'
-      value={openCategories}
-      onValueChange={setOpenCategories}
-      className='w-full space-y-2'
-    >
-      {shoppingList.map((categoryData) => {
-        const categoryLabel = INGREDIENT_CATEGORY_LABELS[categoryData.category]
-        const itemCount = categoryData.items.length
+    <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
+      <Accordion
+        type='multiple'
+        value={openCategories}
+        onValueChange={setOpenCategories}
+        className='w-full space-y-4 lg:col-span-1'
+      >
+        {shoppingList
+          .slice(0, Math.ceil(shoppingList.length / 2))
+          .map((categoryData) => {
+            const categoryLabel =
+              INGREDIENT_CATEGORY_LABELS[categoryData.category]
+            const itemCount = categoryData.items.length
 
-        // Oblicz ile produktów jest kupionych
-        const purchasedCount = categoryData.items.filter((item) => {
-          const key = `${categoryData.category}__${item.name}`
-          return purchasedItems[key] === true
-        }).length
+            // Oblicz ile produktów jest kupionych
+            const purchasedCount = categoryData.items.filter((item) => {
+              const key = `${categoryData.category}__${item.name}`
+              return purchasedItems[key] === true
+            }).length
 
-        return (
-          <AccordionItem
-            key={categoryData.category}
-            value={categoryData.category}
-            className='rounded-lg border px-4'
-          >
-            <AccordionTrigger className='hover:no-underline'>
-              <div className='flex w-full items-center justify-between pr-4'>
-                <span className='text-lg font-semibold'>{categoryLabel}</span>
-                <span className='text-muted-foreground text-sm'>
-                  {purchasedCount}/{itemCount}
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent>
-              <CategorySection
-                category={categoryData.category}
-                items={categoryData.items}
-                purchasedItems={purchasedItems}
-                onTogglePurchased={onTogglePurchased}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        )
-      })}
-    </Accordion>
+            return (
+              <AccordionItem
+                key={categoryData.category}
+                value={categoryData.category}
+                className='card-soft rounded-3xl border-0 px-6 py-4 shadow-sm'
+              >
+                <AccordionTrigger className='hover:no-underline'>
+                  <div className='flex w-full items-center justify-between pr-4'>
+                    <span className='text-foreground text-lg font-semibold'>
+                      {categoryLabel}
+                    </span>
+                    <span className='text-muted-foreground text-sm font-medium'>
+                      {purchasedCount}/{itemCount}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CategorySection
+                    category={categoryData.category}
+                    items={categoryData.items}
+                    purchasedItems={purchasedItems}
+                    onTogglePurchased={onTogglePurchased}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            )
+          })}
+      </Accordion>
+
+      <Accordion
+        type='multiple'
+        value={openCategories}
+        onValueChange={setOpenCategories}
+        className='w-full space-y-4 lg:col-span-1'
+      >
+        {shoppingList
+          .slice(Math.ceil(shoppingList.length / 2))
+          .map((categoryData) => {
+            const categoryLabel =
+              INGREDIENT_CATEGORY_LABELS[categoryData.category]
+            const itemCount = categoryData.items.length
+
+            // Oblicz ile produktów jest kupionych
+            const purchasedCount = categoryData.items.filter((item) => {
+              const key = `${categoryData.category}__${item.name}`
+              return purchasedItems[key] === true
+            }).length
+
+            return (
+              <AccordionItem
+                key={categoryData.category}
+                value={categoryData.category}
+                className='card-soft rounded-3xl border-0 px-6 py-4 shadow-sm'
+              >
+                <AccordionTrigger className='hover:no-underline'>
+                  <div className='flex w-full items-center justify-between pr-4'>
+                    <span className='text-foreground text-lg font-semibold'>
+                      {categoryLabel}
+                    </span>
+                    <span className='text-muted-foreground text-sm font-medium'>
+                      {purchasedCount}/{itemCount}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CategorySection
+                    category={categoryData.category}
+                    items={categoryData.items}
+                    purchasedItems={purchasedItems}
+                    onTogglePurchased={onTogglePurchased}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            )
+          })}
+      </Accordion>
+    </div>
   )
 }

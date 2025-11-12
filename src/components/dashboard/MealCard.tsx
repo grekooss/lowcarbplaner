@@ -37,8 +37,8 @@ interface MealCardProps {
 }
 
 const DIFFICULTY_LABEL: Record<'easy' | 'medium' | 'hard', string> = {
-  easy: 'Latwy',
-  medium: 'Sredni',
+  easy: 'Łatwy',
+  medium: 'Średni',
   hard: 'Trudny',
 }
 
@@ -230,7 +230,7 @@ export function MealCard({
                 (override) => !override.auto_adjusted
               ) && (
                 <div className='text-xs font-semibold text-amber-600'>
-                  Zmienione skladniki w tym posilku
+                  Zmienione składniki w tym posiłku
                 </div>
               )}
           </div>

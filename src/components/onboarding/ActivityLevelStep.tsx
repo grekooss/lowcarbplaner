@@ -50,7 +50,7 @@ export function ActivityLevelStep({ value, onChange }: ActivityLevelStepProps) {
         {ACTIVITY_LEVELS.map((level) => (
           <div
             key={level}
-            className='hover:bg-accent flex items-start space-x-3 rounded-lg border p-4 transition-colors'
+            className='card-soft flex items-start space-x-3 rounded-3xl border-0 p-4 shadow-sm transition-colors hover:opacity-80'
           >
             <RadioGroupItem value={level} id={level} className='mt-1' />
             <Label

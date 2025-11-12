@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { ShoppingListAccordion } from './ShoppingListAccordion'
-import { InfoBanner } from './InfoBanner'
 import { EmptyState } from './EmptyState'
 import { cleanupPurchasedState } from '@/types/shopping-list-view.types'
 import type { ShoppingListResponseDTO } from '@/types/dto.types'
@@ -67,13 +66,10 @@ export const ShoppingListClient = ({
   }
 
   return (
-    <div className='space-y-6'>
-      <InfoBanner />
-      <ShoppingListAccordion
-        shoppingList={initialShoppingList}
-        purchasedItems={purchasedItems}
-        onTogglePurchased={handleTogglePurchased}
-      />
-    </div>
+    <ShoppingListAccordion
+      shoppingList={initialShoppingList}
+      purchasedItems={purchasedItems}
+      onTogglePurchased={handleTogglePurchased}
+    />
   )
 }

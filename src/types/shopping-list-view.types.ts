@@ -34,12 +34,11 @@ export function getItemKey(category: string, name: string): string {
 }
 
 /**
- * Helper function: sortuje produkty według stanu purchased
- * Odznaczone (false) na górze, zaznaczone (true) na dole
- * @param items - Lista produktów do posortowania
+ * Helper function: mapuje produkty z flagą isPurchased
+ * @param items - Lista produktów
  * @param purchasedState - Stan zaznaczonych produktów
  * @param category - Kategoria produktów
- * @returns Posortowana lista produktów z flagą isPurchased
+ * @returns Lista produktów z flagą isPurchased, sortowana alfabetycznie
  */
 export function sortItemsByPurchasedState(
   items: { name: string; total_amount: number; unit: string }[],
@@ -51,14 +50,7 @@ export function sortItemsByPurchasedState(
       ...item,
       isPurchased: purchasedState[getItemKey(category, item.name)] || false,
     }))
-    .sort((a, b) => {
-      // Odznaczone (false) przed zaznaczonymi (true)
-      if (a.isPurchased === b.isPurchased) {
-        // Secondary sort: alfabetycznie po nazwie
-        return a.name.localeCompare(b.name, 'pl')
-      }
-      return a.isPurchased ? 1 : -1
-    })
+    .sort((a, b) => a.name.localeCompare(b.name, 'pl'))
 }
 
 /**

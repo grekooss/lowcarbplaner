@@ -38,7 +38,7 @@ export const CategorySection = ({
   }, [items, purchasedItems, category])
 
   return (
-    <ul className='space-y-2'>
+    <ul className='space-y-1 pt-2'>
       {sortedItems.map((item) => (
         <ShoppingListItem
           key={getItemKey(category, item.name)}

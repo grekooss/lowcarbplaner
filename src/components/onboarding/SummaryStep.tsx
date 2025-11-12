@@ -13,7 +13,6 @@ import {
   type OnboardingFormData,
   type CalculatedTargets,
 } from '@/types/onboarding-view.types'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
 interface SummaryStepProps {
@@ -33,11 +32,9 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
 
       <div className='space-y-4'>
         {/* Personal Data */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg'>Twoje dane</CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-3'>
+        <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+          <h3 className='mb-4 text-lg font-bold'>Twoje dane</h3>
+          <div className='space-y-3'>
             <div className='flex justify-between'>
               <span className='text-muted-foreground'>Płeć:</span>
               <span className='font-medium'>
@@ -89,16 +86,14 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                   </div>
                 </>
               )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Nutrition Targets */}
         {calculatedTargets && (
-          <Card>
-            <CardHeader>
-              <CardTitle className='text-lg'>Twoje cele żywieniowe</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-3'>
+          <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+            <h3 className='mb-4 text-lg font-bold'>Twoje cele żywieniowe</h3>
+            <div className='space-y-3'>
               <div className='flex items-center justify-between'>
                 <span className='text-muted-foreground'>Kalorie dziennie:</span>
                 <span className='text-primary text-2xl font-bold'>
@@ -133,8 +128,8 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </div>

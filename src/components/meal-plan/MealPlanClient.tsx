@@ -1,8 +1,8 @@
 ﻿'use client'
 
 /**
- * MealPlanClient - Glowny wrapper po stronie klienta
- * Zarzadza stanem modali, responsywnoscia i integracja z TanStack Query
+ * MealPlanClient - Główny wrapper po stronie klienta
+ * Zarządza stanem modali, responsywnością i integracją z TanStack Query
  */
 
 import React, { useState, useMemo, useEffect } from 'react'
@@ -23,7 +23,7 @@ interface MealPlanClientProps {
 }
 
 /**
- * Glowny komponent kliencki widoku Plan Posiolkow
+ * Główny komponent kliencki widoku Plan Posiłków
  * Renderuje responsywnie: WeekTable (desktop) lub DayList (mobile)
  */
 export const MealPlanClient = ({
@@ -63,7 +63,7 @@ export const MealPlanClient = ({
     useAutoGenerateMealPlan()
 
   // Auto-generuj plan tylko raz gdy brak danych lub dane niekompletne
-  // Uzywamy ref aby sledzic czy juz probowalismy wygenerowac plan
+  // Używamy ref aby śledzić czy już próbowaliśmy wygenerować plan
   const hasAttemptedGeneration = React.useRef(false)
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export const MealPlanClient = ({
     if (shouldGenerate) {
       hasAttemptedGeneration.current = true
       console.log(
-        `Auto-generating meal plan for week ${startDate} (ma ${meals.length}/${expectedMealsCount} posilkow)`
+        `Auto-generating meal plan for week ${startDate} (ma ${meals.length}/${expectedMealsCount} posiłków)`
       )
       generatePlan()
     }
@@ -141,7 +141,7 @@ export const MealPlanClient = ({
     }
   }, [weekPlan.endDate, weekPlan.startDate])
 
-  // Handler klikniecia na posilek (zobacz przepis)
+  // Handler kliknięcia na posiłek (zobacz przepis)
   const handleMealClick = (meal: PlannedMealDTO) => {
     setRecipeModal({
       isOpen: true,
@@ -149,7 +149,7 @@ export const MealPlanClient = ({
     })
   }
 
-  // Handler klikniecia "Zmien posilek"
+  // Handler kliknięcia "Zmień posiłek"
   const handleSwapClick = (mealId: number, mealType: string) => {
     setReplacementsModal({
       isOpen: true,
@@ -160,17 +160,17 @@ export const MealPlanClient = ({
 
   return (
     <>
-      {/* Wskaznik generowania planu */}
+      {/* Wskaźnik generowania planu */}
       {isGenerating && (
         <div className='mb-6 rounded-2xl border bg-blue-50 p-4'>
           <div className='flex items-center gap-3'>
             <Loader2 className='h-5 w-5 animate-spin text-blue-600' />
             <div>
               <p className='font-semibold text-blue-900'>
-                Generowanie planu posilkow...
+                Generowanie planu posiłków...
               </p>
               <p className='text-sm text-blue-700'>
-                To moze potrwac chwile. Tworzymy spersonalizowany plan na 7 dni.
+                To może potrwać chwilę. Tworzymy spersonalizowany plan na 7 dni.
               </p>
             </div>
           </div>
@@ -211,7 +211,7 @@ export const MealPlanClient = ({
         </div>
       </div>
 
-      {/* Modal podgladu przepisu */}
+      {/* Modal podglądu przepisu */}
       <RecipeModal
         isOpen={recipeModal.isOpen}
         meal={recipeModal.meal}
@@ -221,7 +221,7 @@ export const MealPlanClient = ({
         enableIngredientEditing={false}
       />
 
-      {/* Modal zamiennikow */}
+      {/* Modal zamienników */}
       <ReplacementsModal
         isOpen={replacementsModal.isOpen}
         mealId={replacementsModal.mealId}

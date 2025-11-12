@@ -35,6 +35,12 @@ export const ShoppingListItem = ({
 }: ShoppingListItemProps) => {
   const itemId = `${category}__${item.name}`
 
+  // Format amount: remove unnecessary decimals (.00)
+  const formatAmount = (amount: number): string => {
+    const rounded = Math.round(amount * 100) / 100
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2)
+  }
+
   return (
     <li className='flex items-start gap-3 py-2'>
       <Checkbox
@@ -61,11 +67,14 @@ export const ShoppingListItem = ({
           </span>
           <span
             className={cn(
-              'text-muted-foreground text-sm whitespace-nowrap',
+              'text-foreground whitespace-nowrap',
               isPurchased && 'opacity-60'
             )}
           >
-            {item.total_amount.toFixed(2)} {item.unit}
+            <span className='text-lg font-semibold'>
+              {formatAmount(item.total_amount)}
+            </span>{' '}
+            <span className='text-sm'>{item.unit}</span>
           </span>
         </div>
       </label>
