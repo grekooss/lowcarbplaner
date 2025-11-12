@@ -53,7 +53,7 @@ export function DisclaimerStep({ value, onChange }: DisclaimerStepProps) {
         </AlertDescription>
       </Alert>
 
-      <div className='flex items-start space-x-3 rounded-lg border p-4'>
+      <div className='flex items-start space-x-3 rounded-3xl bg-white p-4 shadow-sm'>
         <Checkbox
           id='disclaimer'
           checked={value}

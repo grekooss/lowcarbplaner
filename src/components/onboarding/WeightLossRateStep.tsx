@@ -56,7 +56,7 @@ export function WeightLossRateStep({
         {options.map((option) => (
           <div
             key={option.value}
-            className={`card-soft flex items-start space-x-3 rounded-3xl border-0 p-4 shadow-sm transition-colors ${
+            className={`flex items-start space-x-3 rounded-3xl bg-white p-4 shadow-sm transition-colors ${
               option.isDisabled
                 ? 'cursor-not-allowed opacity-50'
                 : 'hover:opacity-80'

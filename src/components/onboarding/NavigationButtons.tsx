@@ -25,8 +25,6 @@ interface NavigationButtonsProps {
 }
 
 export function NavigationButtons({
-  currentStep,
-  totalSteps,
   canGoBack,
   canGoNext,
   isLastStep,
@@ -38,14 +36,14 @@ export function NavigationButtons({
   submitButtonText = 'Wygeneruj plan',
 }: NavigationButtonsProps) {
   return (
-    <div className='flex flex-col items-stretch justify-between gap-3 border-t pt-4 sm:flex-row sm:items-center sm:gap-0 sm:pt-6'>
+    <div className='flex flex-col items-stretch justify-between gap-3 pt-4 sm:flex-row sm:items-center sm:gap-0 sm:pt-6'>
       {/* Back Button */}
       <Button
         type='button'
         variant='outline'
         onClick={onBack}
         disabled={!canGoBack || isLoading}
-        className='order-2 gap-2 sm:order-1'
+        className='gap-2'
         size='lg'
       >
         <ChevronLeft className='h-4 w-4' />
@@ -53,18 +51,13 @@ export function NavigationButtons({
         <span className='sm:hidden'>Cofnij</span>
       </Button>
 
-      {/* Progress Indicator - Hidden on mobile (shown in stepper) */}
-      <div className='text-muted-foreground order-3 hidden text-sm sm:order-2 sm:block'>
-        Krok {currentStep} z {totalSteps}
-      </div>
-
       {/* Next/Submit Button */}
       {isLastStep ? (
         <Button
           type='button'
           onClick={onSubmit}
           disabled={!canGoNext || isLoading}
-          className='order-1 gap-2 sm:order-3'
+          className='gap-2'
           size='lg'
         >
           {isLoading ? (
@@ -85,7 +78,7 @@ export function NavigationButtons({
           type='button'
           onClick={onNext}
           disabled={!canGoNext || isLoading}
-          className='order-1 gap-2 sm:order-3'
+          className='gap-2'
           size='lg'
         >
           <span className='hidden sm:inline'>{nextButtonText}</span>

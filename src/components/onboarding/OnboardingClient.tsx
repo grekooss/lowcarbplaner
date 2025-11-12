@@ -401,13 +401,13 @@ export function OnboardingClient() {
     steps.push(
       {
         number: formData.goal === 'weight_loss' ? 8 : 7,
-        title: 'Podsumowanie',
+        title: 'Przegląd',
         isCompleted: currentStep > (formData.goal === 'weight_loss' ? 8 : 7),
         isCurrent: currentStep === (formData.goal === 'weight_loss' ? 8 : 7),
       },
       {
         number: formData.goal === 'weight_loss' ? 9 : 8,
-        title: 'Oświadczenie',
+        title: 'Zgoda',
         isCompleted: currentStep > (formData.goal === 'weight_loss' ? 9 : 8),
         isCurrent: currentStep === (formData.goal === 'weight_loss' ? 9 : 8),
       }
@@ -436,7 +436,7 @@ export function OnboardingClient() {
         {/* Step Content */}
         <div
           ref={stepContentRef}
-          className='card-soft mb-4 rounded-3xl border-0 p-6 shadow-sm sm:mb-6 sm:p-8 md:p-10'
+          className='card-soft mb-4 rounded-3xl border-0 p-6 shadow-sm outline-none sm:mb-6 sm:p-8 md:p-10'
           role='region'
           aria-label={`Krok ${currentStep} z ${totalSteps}`}
           aria-live='polite'

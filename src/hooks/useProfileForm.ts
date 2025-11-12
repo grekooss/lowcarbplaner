@@ -45,7 +45,7 @@ export function useProfileForm(initialProfile: ProfileDTO) {
 
       toast.success('Sukces', {
         description:
-          'Profil został zaktualizowany. Twoje cele żywieniowe zostały przeliczone.',
+          'Profil został zaktualizowany. Twoje cele żywieniowe zostały przeliczone. Plan posiłków zostanie wygenerowany ponownie.',
       })
 
       // Reload page to show updated targets

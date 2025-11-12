@@ -58,7 +58,7 @@ export function AuthClient({ initialTab, redirectTo }: AuthClientProps) {
   }
 
   return (
-    <div className='card-soft w-full max-w-md space-y-6 rounded-3xl border-0 p-8 shadow-sm'>
+    <div className='card-soft w-full max-w-2xl space-y-6 rounded-3xl border-0 p-8 shadow-sm'>
       {/* Header */}
       <div className='space-y-2 text-center'>
         <h1 className='text-3xl font-bold tracking-tight'>

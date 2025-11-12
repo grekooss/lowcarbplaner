@@ -44,13 +44,11 @@ export function StepperIndicator({ steps }: StepperIndicatorProps) {
       </div>
 
       {/* Desktop: Full stepper */}
-      <ol className='hidden items-center justify-between md:flex'>
-        {steps.map((step, index) => (
+      <ol className='hidden items-center md:flex'>
+        {steps.map((step) => (
           <li
             key={step.number}
-            className={`flex items-center ${
-              index !== steps.length - 1 ? 'flex-1' : ''
-            }`}
+            className='flex flex-1 items-center justify-center'
           >
             {/* Step Circle */}
             <div className='flex flex-col items-center'>
@@ -59,8 +57,8 @@ export function StepperIndicator({ steps }: StepperIndicatorProps) {
                   step.isCompleted
                     ? 'border-primary bg-primary text-primary-foreground'
                     : step.isCurrent
-                      ? 'border-primary bg-background text-primary'
-                      : 'border-muted-foreground/30 bg-background text-muted-foreground'
+                      ? 'border-primary text-primary bg-white'
+                      : 'border-muted-foreground/30 text-muted-foreground bg-white'
                 }`}
                 aria-current={step.isCurrent ? 'step' : undefined}
               >
@@ -80,16 +78,6 @@ export function StepperIndicator({ steps }: StepperIndicatorProps) {
                 {step.title}
               </span>
             </div>
-
-            {/* Connector Line */}
-            {index !== steps.length - 1 && (
-              <div
-                className={`mx-2 h-0.5 flex-1 transition-colors ${
-                  step.isCompleted ? 'bg-primary' : 'bg-muted-foreground/30'
-                }`}
-                aria-hidden='true'
-              />
-            )}
           </li>
         ))}
       </ol>

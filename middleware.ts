@@ -61,6 +61,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/shopping-list') ||
     pathname.startsWith('/settings')
 
+  // Public routes that require onboarding for authenticated users
+  const isPublicButRequiresOnboarding = pathname.startsWith('/recipes')
+
   // If user is not authenticated and tries to access protected route or onboarding
   if (!user && (isProtectedRoute || isOnboardingRoute)) {
     const redirectUrl = request.nextUrl.clone()
@@ -95,6 +98,13 @@ export async function middleware(request: NextRequest) {
 
     // If on protected route and not completed onboarding → redirect to onboarding
     if (isProtectedRoute && !hasCompletedOnboarding) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/onboarding'
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // If on public route that requires onboarding and not completed → redirect to onboarding
+    if (isPublicButRequiresOnboarding && !hasCompletedOnboarding) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/onboarding'
       return NextResponse.redirect(redirectUrl)

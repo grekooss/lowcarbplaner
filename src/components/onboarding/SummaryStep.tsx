@@ -32,7 +32,7 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
 
       <div className='space-y-4'>
         {/* Personal Data */}
-        <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+        <div className='rounded-3xl bg-white p-6 shadow-sm'>
           <h3 className='mb-4 text-lg font-bold'>Twoje dane</h3>
           <div className='space-y-3'>
             <div className='flex justify-between'>
@@ -91,7 +91,7 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
 
         {/* Nutrition Targets */}
         {calculatedTargets && (
-          <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+          <div className='rounded-3xl bg-white p-6 shadow-sm'>
             <h3 className='mb-4 text-lg font-bold'>Twoje cele żywieniowe</h3>
             <div className='space-y-3'>
               <div className='flex items-center justify-between'>

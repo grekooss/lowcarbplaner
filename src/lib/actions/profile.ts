@@ -417,7 +417,20 @@ export async function updateMyProfile(
       }
     }
 
-    // 8. Transformacja do DTO
+    // 8. Usunięcie wszystkich zaplanowanych posiłków (regeneracja planu)
+    const { error: deleteMealsError } = await supabase
+      .from('planned_meals')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (deleteMealsError) {
+      console.warn(
+        'Błąd podczas usuwania starych posiłków (nie krytyczny):',
+        deleteMealsError
+      )
+    }
+
+    // 9. Transformacja do DTO
     const profileDTO: ProfileDTO = {
       email: updatedProfile.email,
       gender: updatedProfile.gender,

@@ -40,7 +40,7 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
   const goalValue = form.watch('goal')
 
   return (
-    <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+    <div className='rounded-3xl bg-white p-6 shadow-sm'>
       <h2 className='mb-6 text-xl font-bold'>Edycja profilu</h2>
       <Form {...form}>
         <form onSubmit={onSubmit} className='space-y-6'>
