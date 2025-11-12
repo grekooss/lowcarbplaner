@@ -218,13 +218,13 @@ export function SwapRecipeDialog({
                         </span>
 
                         <span className='text-muted-foreground'>
-                          C: {Math.round(replacement.total_carbs_g)}g
+                          C: {Math.round(replacement.total_carbs_g ?? 0)}g
                         </span>
                         <span className='text-muted-foreground'>
-                          P: {Math.round(replacement.total_protein_g)}g
+                          P: {Math.round(replacement.total_protein_g ?? 0)}g
                         </span>
                         <span className='text-muted-foreground'>
-                          F: {Math.round(replacement.total_fats_g)}g
+                          F: {Math.round(replacement.total_fats_g ?? 0)}g
                         </span>
                       </div>
                     </div>
