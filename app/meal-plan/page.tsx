@@ -66,15 +66,8 @@ export default async function MealPlanPage() {
   })
 
   return (
-    <main className='container mx-auto px-4 py-6'>
-      <div className='mb-4'>
-        <h1 className='text-3xl font-bold tracking-tight'>Plan Posiłków</h1>
-        <p className='text-muted-foreground mt-2'>
-          Twój plan na najbliższych 7 dni
-        </p>
-      </div>
-
+    <div className='pb-6'>
       <MealPlanClient initialMeals={meals} startDate={startDateStr} />
-    </main>
+    </div>
   )
 }

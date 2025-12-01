@@ -206,43 +206,40 @@ export function DashboardClient({
   }
 
   return (
-    <div className='container mx-auto space-y-8 px-4 py-8'>
-      <div className='space-y-2'>
-        <h1 className='text-3xl font-bold tracking-tight'>Twój Plan Dnia</h1>
-        <p className='text-muted-foreground'>
-          Śledź swoje posiłki i realizację celów żywieniowych
-        </p>
-      </div>
-
-      <div className='grid gap-8 lg:grid-cols-[minmax(0,_2.75fr)_minmax(0,_1fr)]'>
-        {/* Column 1 - calendar and meals of the day */}
-        <div className='space-y-6'>
+    <div className='space-y-8'>
+      <div className='grid items-start gap-8 xl:grid-cols-3'>
+        {/* Column 1 - calendar (spans 2 cols on xl) */}
+        <div className='xl:col-span-2'>
           <CalendarStrip
             selectedDate={normalizedSelectedDate}
             onDateChange={setSelectedDate}
           />
-          <div className='relative'>
-            {isGenerating && (
-              <div className='absolute top-4 right-4 z-10'>
-                <div className='bg-background/95 flex items-center gap-2 rounded-full border px-4 py-2 text-sm shadow-lg backdrop-blur-sm'>
-                  <Loader2 className='text-primary h-4 w-4 animate-spin' />
-                  <span className='font-medium'>Generowanie planu...</span>
-                </div>
-              </div>
-            )}
-            <MealsList
-              meals={displayMeals}
-              date={selectedDateStr}
-              onRecipePreview={handleRecipePreview}
-            />
-          </div>
         </div>
 
-        {/* Column 2 - calories / macros */}
-        <div className='space-y-6'>
+        {/* Column 2 - calories / macros (spans 1 col, 2 rows on xl) */}
+        <div className='w-full xl:col-span-1 xl:row-span-2'>
           <MacroProgressSection
             meals={displayMeals}
             targetMacros={targetMacros}
+          />
+        </div>
+
+        {/* Column 1 continued - meals list */}
+        <div className='relative xl:col-span-2'>
+          {isGenerating && (
+            <div className='absolute top-4 right-4 z-10'>
+              <div className='flex items-center gap-2 rounded-full border-2 border-white bg-white/90 px-4 py-2 text-sm shadow-lg backdrop-blur-xl'>
+                <Loader2 className='h-4 w-4 animate-spin text-red-600' />
+                <span className='font-medium text-gray-700'>
+                  Generowanie planu...
+                </span>
+              </div>
+            </div>
+          )}
+          <MealsList
+            meals={displayMeals}
+            date={selectedDateStr}
+            onRecipePreview={handleRecipePreview}
           />
         </div>
       </div>

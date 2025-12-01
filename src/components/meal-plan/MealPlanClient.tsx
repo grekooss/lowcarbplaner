@@ -179,36 +179,37 @@ export const MealPlanClient = ({
 
       {/* Desktop: WeekTable (widoczny >= md) */}
       <div className='hidden md:block'>
-        <div
-          className='relative rounded-[32px] border-none bg-white px-6 pt-4 pb-6 shadow-none'
-          style={{ border: 'none', boxShadow: 'none' }}
-        >
+        <section className='rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
           <WeekTable
             weekPlan={weekPlan}
             monthHeader={monthHeader}
             onMealClick={handleMealClick}
             onSwapClick={handleSwapClick}
           />
-        </div>
+        </section>
       </div>
 
       {/* Mobile: DayList (widoczny < md) */}
       {monthHeader && (
-        <div className='mb-2 rounded-md bg-[#F5EFE7] px-4 py-2 text-slate-900 md:hidden'>
-          <span className='text-base font-semibold'>{monthHeader.primary}</span>
+        <div className='mb-2 rounded-md bg-[#F5EFE7] px-4 py-2 md:hidden'>
+          <span className='text-base font-bold text-gray-900'>
+            {monthHeader.primary}
+          </span>
+          {monthHeader.secondary && (
+            <span className='ml-2 text-sm text-gray-500'>
+              {monthHeader.secondary}
+            </span>
+          )}
         </div>
       )}
       <div className='block md:hidden'>
-        <div
-          className='rounded-[32px] border-none bg-white px-4 py-4 shadow-none'
-          style={{ border: 'none', boxShadow: 'none' }}
-        >
+        <section className='rounded-3xl border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-xl'>
           <DayList
             weekPlan={weekPlan}
             onMealClick={handleMealClick}
             onSwapClick={handleSwapClick}
           />
-        </div>
+        </section>
       </div>
 
       {/* Modal podglądu przepisu */}

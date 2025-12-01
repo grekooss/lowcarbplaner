@@ -8,9 +8,7 @@
 'use client'
 
 import type { KeyboardEvent } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { useCalendarDays } from '@/hooks/useCalendarDays'
 import { cn } from '@/lib/utils'
 
@@ -72,49 +70,16 @@ export function CalendarStrip({
     monthLabelRaw.charAt(0).toUpperCase() + monthLabelRaw.slice(1)
   const yearLabel = selectedDate.getFullYear()
 
-  // Sprawdź czy możemy nawigować
-  const normalizedSelected = new Date(selectedDate)
-  normalizedSelected.setHours(0, 0, 0, 0)
-  const canGoPrev = normalizedSelected > today
-  const canGoNext = normalizedSelected < maxDate
-
   return (
-    <section className='card-soft rounded-3xl p-6 shadow-sm'>
-      <div className='flex items-center justify-between gap-3'>
-        <div className='flex items-baseline gap-2'>
-          <span className='text-lg font-semibold capitalize'>{monthLabel}</span>
-          <span className='text-muted-foreground text-sm font-medium'>
-            {yearLabel}
-          </span>
-        </div>
-
-        <div className='flex gap-2'>
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon'
-            onClick={handlePrevDay}
-            disabled={!canGoPrev}
-            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50'
-            aria-label='Poprzedni dzień'
-          >
-            <ChevronLeft className='h-4 w-4' />
-          </Button>
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon'
-            onClick={handleNextDay}
-            disabled={!canGoNext}
-            className='text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl bg-white shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50'
-            aria-label='Następny dzień'
-          >
-            <ChevronRight className='h-4 w-4' />
-          </Button>
-        </div>
+    <section className='flex flex-col gap-6 rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
+      <div className='flex flex-col items-center gap-1 px-1'>
+        <h2 className='text-2xl font-bold tracking-tight text-gray-800'>
+          {monthLabel}{' '}
+          <span className='text-lg text-gray-500'>{yearLabel}</span>
+        </h2>
       </div>
 
-      <div className='mt-6 grid grid-cols-7 gap-2'>
+      <div className='grid w-full grid-cols-7 gap-2 sm:gap-4'>
         {days.map((day) => {
           const isSelected = day.isSelected
           const isToday = day.isToday
@@ -126,29 +91,27 @@ export function CalendarStrip({
               onClick={() => onDateChange(day.date)}
               onKeyDown={(event) => handleKeyDown(event, day.date)}
               className={cn(
-                'focus-visible:ring-primary flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-sm transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                'text-muted-foreground border border-transparent bg-white shadow-sm hover:shadow-md',
-                isSelected &&
-                  'bg-primary text-primary-foreground border-transparent shadow-md',
-                isToday && !isSelected && 'border-primary/30 text-foreground'
+                'flex h-16 flex-col items-center justify-center rounded-md border-2 transition-all',
+                isSelected
+                  ? 'border-red-600 bg-red-600 text-white shadow-lg shadow-red-500/30'
+                  : 'border-transparent bg-white text-gray-600 hover:border-red-600 hover:bg-white hover:text-red-600',
+                isToday && !isSelected && 'border-red-300'
               )}
               aria-pressed={isSelected}
               aria-label={`${day.dayName} ${day.dayNumber} ${day.monthName}`}
             >
               <span
                 className={cn(
-                  'text-xs font-semibold uppercase',
-                  isSelected
-                    ? 'text-primary-foreground'
-                    : 'text-muted-foreground'
+                  'text-[10px] font-bold tracking-wide uppercase opacity-90',
+                  isSelected ? 'text-white' : 'text-gray-500'
                 )}
               >
                 {day.dayName}
               </span>
               <span
                 className={cn(
-                  'text-lg leading-none font-semibold',
-                  isSelected ? 'text-primary-foreground' : 'text-foreground'
+                  'text-lg font-bold',
+                  isSelected ? 'text-white' : 'text-gray-800'
                 )}
               >
                 {day.dayNumber}

@@ -1,16 +1,20 @@
 /**
  * MacroProgressSection
  *
- * Daily calorie intake card matching dashboard mock.
+ * Daily calorie intake card matching glassmorphism design.
  * Displays circular calorie progress and macro rows.
  */
 
 'use client'
 
-import { Flame, UtensilsCrossed } from 'lucide-react'
+import { useState } from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
 
 import { useDailyMacros } from '@/hooks/useDailyMacros'
 import type { PlannedMealDTO } from '@/types/dto.types'
+
+const COLORS = ['#dc2626', '#ffffff'] // Red-600 and White
 
 interface MacroProgressSectionProps {
   meals: PlannedMealDTO[]
@@ -26,6 +30,8 @@ export function MacroProgressSection({
   meals,
   targetMacros,
 }: MacroProgressSectionProps) {
+  const [mounted] = useState(true)
+
   const macros = useDailyMacros({
     meals,
     targetCalories: targetMacros.target_calories,
@@ -38,19 +44,12 @@ export function MacroProgressSection({
 
   const caloriesConsumed = macros.consumed.calories
   const caloriesTarget = Math.max(macros.target.calories, 0)
-  const caloriesLeft = caloriesTarget - caloriesConsumed
-  const isOverLimit = caloriesConsumed > caloriesTarget
+  const remainingCalories = Math.max(0, caloriesTarget - caloriesConsumed)
 
-  // Podstawowy procent (0-100%)
-  const caloriesPercent =
-    caloriesTarget > 0 ? Math.min(caloriesConsumed / caloriesTarget, 1) : 0
-  const caloriesAngle = Math.round(caloriesPercent * 360)
-
-  // Procent przekroczenia (powyżej 100%)
-  const overLimitPercent = isOverLimit
-    ? (caloriesConsumed - caloriesTarget) / caloriesTarget
-    : 0
-  const overLimitAngle = Math.round(overLimitPercent * 360)
+  const chartData = [
+    { name: 'Consumed', value: caloriesConsumed },
+    { name: 'Remaining', value: remainingCalories },
+  ]
 
   const macroRows = [
     {
@@ -59,7 +58,10 @@ export function MacroProgressSection({
       consumed: macros.consumed.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
-      color: '#b9e57d',
+      color: 'bg-orange-500',
+      bgColor: 'bg-orange-500',
+      icon: Wheat,
+      iconColor: 'text-white',
     },
     {
       key: 'protein',
@@ -67,7 +69,10 @@ export function MacroProgressSection({
       consumed: macros.consumed.protein_g,
       target: macros.target.protein_g,
       unit: 'g',
-      color: '#8bd6ff',
+      color: 'bg-blue-500',
+      bgColor: 'bg-blue-500',
+      icon: Beef,
+      iconColor: 'text-white',
     },
     {
       key: 'fat',
@@ -75,140 +80,105 @@ export function MacroProgressSection({
       consumed: macros.consumed.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
-      color: '#f6cb76',
-    },
-  ]
-
-  const statItems = [
-    {
-      key: 'eaten',
-      icon: UtensilsCrossed,
-      value: Math.round(caloriesConsumed),
-      unit: 'kcal',
-      label: 'Zjedzone kalorie',
-      accent: '#c9ea84',
+      color: 'bg-green-500',
+      bgColor: 'bg-green-500',
+      icon: Droplet,
+      iconColor: 'text-white',
     },
   ]
 
   return (
-    <section className='card-soft rounded-3xl p-6 shadow-sm'>
-      <div className='flex flex-col gap-6'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <h2 className='text-foreground text-lg font-semibold'>
-              Bilans kalorii
-            </h2>
-            <p className='text-muted-foreground text-xs'>
-              {eatenMealsCount} / {meals.length} posiłków zjedzonych
-            </p>
-          </div>
-        </div>
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-1'>
+      {/* Calorie Balance Card */}
+      <div className='h-full rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
+        <h3 className='mb-2 text-lg font-bold text-gray-800'>Bilans kalorii</h3>
+        <p className='mb-6 text-sm text-gray-500'>
+          {eatenMealsCount} / {meals.length} posiłków zjedzonych
+        </p>
 
-        <div className='-mt-2 flex flex-col items-center gap-5'>
-          <div
-            data-macro='calories'
-            className='relative flex h-60 w-60 items-center justify-center rounded-full'
-            style={{
-              background: isOverLimit
-                ? `conic-gradient(#ef4444 0deg ${overLimitAngle}deg, #f5ac4b ${overLimitAngle}deg 360deg)`
-                : `conic-gradient(#f5ac4b ${caloriesAngle}deg, #f0e6dd ${caloriesAngle}deg 360deg)`,
-            }}
-          >
-            <div className='absolute inset-[18px] flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner'>
-              <Flame
-                className={`-mt-5 mb-1 h-10 w-10 ${isOverLimit ? 'text-red-500' : 'text-[#f5ac4b]'}`}
-              />
-              <div className='mt-1 flex items-baseline gap-2'>
-                <span
-                  className={`text-5xl font-bold ${isOverLimit ? 'text-red-600' : 'text-foreground'}`}
-                >
-                  {isOverLimit ? '+' : ''}
-                  {Math.abs(Math.round(caloriesLeft))}
-                </span>
-                <span className='text-muted-foreground text-md font-medium'>
-                  kcal
-                </span>
-              </div>
-              <span className='text-muted-foreground mt-1 text-xs font-semibold tracking-wide uppercase'>
-                {isOverLimit ? 'Przekroczenie' : 'Pozostało kalorii'}
+        <div className='relative flex h-64 items-center justify-center'>
+          <ResponsiveContainer width='100%' height='100%'>
+            <PieChart>
+              <Pie
+                data={chartData}
+                innerRadius={80}
+                outerRadius={100}
+                startAngle={90}
+                endAngle={-270}
+                dataKey='value'
+                stroke='none'
+                cornerRadius={10}
+                isAnimationActive={mounted}
+              >
+                {chartData.map((_, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+          <div className='absolute inset-0 flex flex-col items-center justify-center'>
+            <Flame className='mb-2 h-8 w-8 text-red-500' />
+            <div className='flex items-baseline gap-1'>
+              <span className='text-4xl font-bold text-gray-800'>
+                {Math.round(caloriesConsumed)}
               </span>
+              <span className='text-lg font-bold text-gray-500'>kcal</span>
             </div>
-          </div>
-
-          <div className='flex w-full flex-wrap justify-center gap-4 lg:max-w-[420px]'>
-            {statItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <div
-                  key={item.key}
-                  className='flex min-w-[180px] flex-1 items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm'
-                >
-                  <div
-                    className='text-primary-foreground flex h-10 w-10 items-center justify-center rounded-full'
-                    style={{ backgroundColor: item.accent }}
-                  >
-                    <Icon className='text-foreground h-5 w-5' />
-                  </div>
-                  <div className='flex flex-col'>
-                    <span className='text-foreground text-base font-semibold'>
-                      {item.value}{' '}
-                      <span className='text-muted-foreground text-sm font-medium'>
-                        {item.unit}
-                      </span>
-                    </span>
-                    <span className='text-muted-foreground text-xs tracking-wide uppercase'>
-                      {item.label}
-                    </span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className='w-full space-y-3'>
-            {macroRows.map((row) => {
-              const targetValue = Math.max(row.target, 0)
-              const percent =
-                targetValue > 0
-                  ? Math.min((row.consumed / targetValue) * 100, 999)
-                  : 0
-
-              return (
-                <div
-                  key={row.key}
-                  data-macro={row.key}
-                  className='flex items-center gap-4 rounded-2xl bg-white px-4 py-3 shadow-sm'
-                >
-                  <div className='min-w-[70px] text-center'>
-                    <div className='text-foreground text-2xl font-bold'>
-                      {Math.round(row.consumed)}
-                    </div>
-                    <div className='text-muted-foreground text-xs'>
-                      /{Math.round(targetValue)}
-                      {row.unit}
-                    </div>
-                  </div>
-                  <div className='flex flex-1 flex-col gap-2'>
-                    <div className='text-foreground flex items-center justify-between text-sm font-semibold'>
-                      <span>{row.label}</span>
-                      <span>{Math.round(percent)}%</span>
-                    </div>
-                    <div className='bg-muted h-2 w-full rounded-full'>
-                      <div
-                        className='h-2 rounded-full'
-                        style={{
-                          width: `${Math.min(percent, 100)}%`,
-                          backgroundColor: row.color,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            <span className='mt-1 text-xs font-bold tracking-wide text-gray-400 uppercase'>
+              zjedzonych
+            </span>
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Macro Breakdown Card */}
+      <div className='h-full rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
+        <h3 className='mb-6 text-lg font-bold text-gray-800'>Makroskładniki</h3>
+        <div className='space-y-6'>
+          {macroRows.map((row) => {
+            const targetValue = Math.max(row.target, 0)
+            const percent =
+              targetValue > 0
+                ? Math.min((row.consumed / targetValue) * 100, 100)
+                : 0
+            const Icon = row.icon
+
+            return (
+              <div key={row.key}>
+                <div className='mb-2 flex items-end justify-between gap-2'>
+                  <div className='flex min-w-0 flex-1 items-center gap-3'>
+                    <div
+                      className={`h-8 w-8 rounded-sm ${row.bgColor} flex flex-shrink-0 items-center justify-center`}
+                    >
+                      <Icon className={`h-4 w-4 ${row.iconColor}`} />
+                    </div>
+                    <span className='truncate font-bold text-gray-700'>
+                      {row.label}
+                    </span>
+                  </div>
+                  <div className='flex-shrink-0 text-right whitespace-nowrap'>
+                    <span className='text-sm font-bold text-gray-800'>
+                      {Math.round(row.consumed)}g
+                    </span>
+                    <span className='ml-1 text-xs text-gray-600'>
+                      / {Math.round(targetValue)}g
+                    </span>
+                  </div>
+                </div>
+                <div className='h-3 overflow-hidden rounded-full border border-gray-100 bg-gray-100'>
+                  <div
+                    className={`h-full ${row.color} rounded-full transition-all duration-1000 ease-out`}
+                    style={{ width: mounted ? `${percent}%` : '0%' }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
   )
 }

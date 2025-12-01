@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -14,6 +14,9 @@ import {
   UserCircle,
   LogOut,
   Settings,
+  Hexagon,
+  ChevronDown,
+  MonitorPlay,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/hooks/useUser'
@@ -29,13 +32,13 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: 'Panel Dzienny',
+    label: 'Panel dzienny',
     href: '/dashboard',
     icon: LayoutDashboard,
     requiresAuth: true,
   },
   {
-    label: 'Widok Tygodnia',
+    label: 'Widok tygodnia',
     href: '/meal-plan',
     icon: CalendarRange,
     requiresAuth: true,
@@ -49,6 +52,36 @@ const NAV_ITEMS: NavItem[] = [
   },
 ]
 
+const textShadowStyle = { textShadow: '0 1px 3px rgba(0,0,0,0.3)' }
+
+const getViewInfo = (pathname: string) => {
+  if (pathname === '/dashboard' || pathname === '/') {
+    return { title: 'Panel dzienny', subtitle: 'Śledź swoje posiłki i kalorie' }
+  }
+  if (pathname.startsWith('/meal-plan')) {
+    return {
+      title: 'Widok tygodnia',
+      subtitle: 'Twój plan na najbliższe 7 dni',
+    }
+  }
+  if (pathname.startsWith('/recipes')) {
+    return {
+      title: 'Przepisy',
+      subtitle: 'Przeglądaj i odkrywaj pyszne przepisy low-carb',
+    }
+  }
+  if (pathname.startsWith('/shopping-list')) {
+    return { title: 'Lista zakupów', subtitle: 'Zakupy na najbliższy tydzień' }
+  }
+  if (pathname.startsWith('/profile')) {
+    return { title: 'Ustawienia', subtitle: 'Zarządzaj swoim profilem' }
+  }
+  if (pathname.startsWith('/onboarding')) {
+    return { title: 'Konfiguracja', subtitle: 'Skonfiguruj swój profil' }
+  }
+  return { title: 'LowCarbPlaner', subtitle: 'Zaplanuj swoje posiłki' }
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -58,19 +91,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const headerMenuRef = useRef<HTMLDivElement>(null)
   const supabase = createClientComponentClient()
 
-  // Pobierz imię użytkownika z user_metadata lub email
   const getUserDisplayName = () => {
     if (!user) return null
-    // Próbujemy pobrać imię z metadanych
     const firstName = user.user_metadata?.first_name || user.user_metadata?.name
     if (firstName) return firstName
-    // Fallback na część email przed @
     return user.email?.split('@')[0] || 'Użytkowniku'
   }
 
   const displayName = getUserDisplayName()
 
-  // Zamknij menu po kliknięciu poza nim
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -85,7 +114,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Funkcja wylogowania
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
@@ -103,23 +131,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     item: NavItem,
     onNavigate?: () => void
   ) => {
-    // Jeśli link wymaga autoryzacji i użytkownik nie jest zalogowany
     if (item.requiresAuth && !user) {
       e.preventDefault()
       onNavigate?.()
-      // Otwórz modal auth z redirectem do docelowej strony
       router.push(`/auth?redirect=${item.href}`)
     } else {
       onNavigate?.()
     }
   }
 
-  const renderNavLinks = (onNavigate?: () => void) =>
+  const renderNavLinks = (onNavigate?: () => void, isMobile = false) =>
     NAV_ITEMS.map((item) => {
       const isActive =
         pathname === item.href ||
         (item.href !== '/' && pathname.startsWith(item.href))
       const Icon = item.icon
+
+      if (isMobile) {
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={(e) => handleNavClick(e, item, onNavigate)}
+            className={cn(
+              'flex items-center gap-3 rounded-md border-2 px-4 py-3 text-sm font-medium transition-all',
+              isActive
+                ? 'border-white bg-white/60 font-bold text-gray-800 shadow-lg backdrop-blur-xl'
+                : 'border-transparent text-gray-700 hover:bg-white/10 hover:text-gray-900'
+            )}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <Icon
+              className={cn(
+                'h-5 w-5',
+                isActive ? 'text-gray-500' : 'text-gray-600'
+              )}
+            />
+            <span>{item.label}</span>
+          </Link>
+        )
+      }
 
       return (
         <Link
@@ -127,144 +178,247 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           href={item.href}
           onClick={(e) => handleNavClick(e, item, onNavigate)}
           className={cn(
-            'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors',
+            'flex items-center gap-3 rounded-md border-2 px-4 py-3 text-sm font-medium transition-all',
             isActive
-              ? 'bg-[color:var(--primary)] text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:bg-white hover:text-slate-900'
+              ? 'border-white bg-white/60 font-bold text-gray-800 shadow-lg backdrop-blur-xl'
+              : 'border-transparent text-white hover:bg-white/10 hover:text-white'
           )}
           aria-current={isActive ? 'page' : undefined}
         >
-          <Icon className={cn('h-5 w-5', isActive ? 'text-slate-900' : '')} />
-          <span>{item.label}</span>
+          <Icon
+            className={cn('h-5 w-5', isActive ? 'text-gray-500' : 'text-white')}
+            style={
+              !isActive
+                ? { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }
+                : {}
+            }
+          />
+          <span style={!isActive ? textShadowStyle : {}}>{item.label}</span>
         </Link>
       )
     })
 
   return (
     <>
-      <div className='flex min-h-screen justify-center bg-[var(--background)] px-3 py-2 text-slate-900 sm:px-6 lg:px-10'>
-        <div className='flex w-full max-w-[1440px] flex-col gap-0 lg:flex-row'>
-          <aside className='hidden w-60 flex-col bg-white px-5 py-8 lg:flex'>
-            <Link
-              href='/'
-              className='text-2xl font-black text-[color:var(--primary-dark)]'
-            >
-              LowCarbPlaner
-            </Link>
-            <nav className='mt-10 flex flex-1 flex-col gap-2'>
-              {renderNavLinks()}
-            </nav>
-          </aside>
+      {/* Full viewport container with background */}
+      <div className='relative flex h-screen w-full items-center justify-center overflow-hidden font-sans'>
+        {/* Background Image */}
+        <div className='pointer-events-none fixed inset-0 z-0'>
+          <div
+            className='absolute inset-0 bg-cover bg-center'
+            style={{
+              backgroundImage: "url('/GeneratedImage.png')",
+            }}
+          />
+        </div>
 
-          <div className='relative flex flex-1 flex-col overflow-hidden bg-white'>
-            {/* User Menu - Floating in top right */}
-            <div className='absolute top-4 right-5 z-50 flex items-center gap-3 lg:top-7 lg:right-8'>
-              <button
-                type='button'
-                className='inline-flex items-center justify-center rounded-xl bg-white p-2 text-slate-700 shadow-sm lg:hidden'
-                onClick={() => setMobileNavOpen(true)}
-                aria-label='Otworz menu'
-              >
-                <Menu className='h-5 w-5' />
-              </button>
-
-              <div className='relative' ref={headerMenuRef}>
-                <button
-                  onClick={() => {
-                    if (user) {
-                      setHeaderMenuOpen(!headerMenuOpen)
-                    } else {
-                      // Przekieruj niezalogowanego użytkownika do modala logowania
-                      router.push('/auth?tab=login')
-                    }
-                  }}
-                  className='card-soft flex items-center gap-3 rounded-full border-0 px-4 py-2 shadow-sm transition-colors hover:opacity-90'
+        {/* Main Container Wrapper for Panel + Ads */}
+        <div className='relative z-30 flex h-full w-full max-w-[1800px] items-center justify-center gap-6 p-2 lg:p-10'>
+          {/* Main Glass Panel */}
+          <div className='flex h-full w-full flex-1 overflow-hidden rounded-2xl border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md md:rounded-3xl lg:rounded-3xl'>
+            {/* Sidebar - Desktop */}
+            <aside className='hidden h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white lg:flex'>
+              {/* Logo */}
+              <div className='mb-10 flex items-center gap-3 px-2'>
+                <div className='rounded-lg bg-red-600 p-1.5 shadow-lg shadow-red-500/30'>
+                  <Hexagon className='h-5 w-5 fill-current text-white' />
+                </div>
+                <span
+                  className='text-xl font-bold tracking-tight'
+                  style={textShadowStyle}
                 >
-                  {user ? (
-                    <>
-                      <div className='text-right'>
-                        <p className='text-sm font-semibold'>
-                          Witaj {displayName}
-                        </p>
-                      </div>
-                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--primary)] text-sm font-semibold text-[color:var(--primary-foreground)]'>
-                        <UserCircle className='h-6 w-6' />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className='text-right'>
-                        <p className='text-sm font-semibold'>
-                          Witaj w LowCarbPlaner
-                        </p>
-                      </div>
-                      <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-500'>
-                        <User className='h-5 w-5' />
-                      </div>
-                    </>
-                  )}
-                </button>
+                  LowCarb
+                </span>
+              </div>
 
-                {/* Dropdown Menu */}
-                {user && headerMenuOpen && (
-                  <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg'>
+              <div className='no-scrollbar flex-1 space-y-8 overflow-y-auto'>
+                {/* Main Menu */}
+                <div>
+                  <h3
+                    className='mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'
+                    style={textShadowStyle}
+                  >
+                    Menu
+                  </h3>
+                  <nav className='space-y-2'>{renderNavLinks()}</nav>
+                </div>
+
+                {/* System */}
+                <div>
+                  <h3
+                    className='mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'
+                    style={textShadowStyle}
+                  >
+                    System
+                  </h3>
+                  <div className='space-y-1'>
                     <Link
                       href='/profile'
-                      className='flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-slate-50'
-                      onClick={() => setHeaderMenuOpen(false)}
+                      className='flex items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
                     >
-                      <Settings className='h-4 w-4 text-slate-500' />
-                      <span>Ustawienia profilu</span>
+                      <Settings
+                        className='h-5 w-5 text-white'
+                        style={{
+                          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                        }}
+                      />
+                      <span style={textShadowStyle}>Ustawienia</span>
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className='flex w-full items-center gap-3 px-4 py-3 text-sm text-red-600 transition-colors hover:bg-red-50'
+                      className='flex w-full items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
                     >
-                      <LogOut className='h-4 w-4' />
-                      <span>Wyloguj się</span>
+                      <LogOut
+                        className='h-5 w-5 text-white'
+                        style={{
+                          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                        }}
+                      />
+                      <span style={textShadowStyle}>Wyloguj</span>
                     </button>
                   </div>
-                )}
+                </div>
+              </div>
+            </aside>
+
+            {/* Mobile Sidebar Overlay */}
+            {mobileNavOpen && (
+              <div
+                className='fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden'
+                onClick={() => setMobileNavOpen(false)}
+              >
+                <div
+                  className='h-full w-64 bg-white/90 p-6 shadow-xl backdrop-blur-xl'
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className='mb-8 flex items-center justify-between'>
+                    <div className='flex items-center gap-3'>
+                      <div className='rounded-lg bg-red-600 p-1.5'>
+                        <Hexagon className='h-5 w-5 fill-current text-white' />
+                      </div>
+                      <span className='text-xl font-bold text-gray-800'>
+                        LowCarb
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setMobileNavOpen(false)}
+                      className='rounded-lg p-2 hover:bg-gray-100'
+                    >
+                      <X className='h-5 w-5 text-gray-600' />
+                    </button>
+                  </div>
+                  <nav className='space-y-2'>
+                    {renderNavLinks(() => setMobileNavOpen(false), true)}
+                  </nav>
+                </div>
+              </div>
+            )}
+
+            {/* Main Content Area */}
+            <main className='custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-4 lg:p-8'>
+              {/* Header */}
+              <header className='mb-6 flex items-center justify-between'>
+                <div className='flex items-center gap-4'>
+                  <button
+                    className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 lg:hidden'
+                    onClick={() => setMobileNavOpen(true)}
+                  >
+                    <Menu className='h-6 w-6 text-gray-600' />
+                  </button>
+
+                  {/* View Title with Red Bar */}
+                  <div className='flex items-center gap-3'>
+                    <div className='hidden h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:block' />
+                    <div className='flex flex-col justify-center'>
+                      <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:text-3xl'>
+                        {getViewInfo(pathname).title}
+                      </h1>
+                      <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>
+                        {getViewInfo(pathname).subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Menu */}
+                <div className='relative' ref={headerMenuRef}>
+                  <button
+                    onClick={() => {
+                      if (user) {
+                        setHeaderMenuOpen(!headerMenuOpen)
+                      } else {
+                        router.push('/auth?tab=login')
+                      }
+                    }}
+                    className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-4 pl-1 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90'
+                  >
+                    {user ? (
+                      <>
+                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-600'>
+                          <UserCircle className='h-5 w-5 text-white' />
+                        </div>
+                        <span className='text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900'>
+                          Witaj {displayName}
+                        </span>
+                        <ChevronDown className='h-4 w-4 text-gray-500' />
+                      </>
+                    ) : (
+                      <>
+                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
+                          <User className='h-4 w-4 text-gray-500' />
+                        </div>
+                        <span className='text-sm font-bold text-gray-700'>
+                          Zaloguj się
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {user && headerMenuOpen && (
+                    <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
+                      <Link
+                        href='/profile'
+                        className='flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                        onClick={() => setHeaderMenuOpen(false)}
+                      >
+                        <Settings className='h-4 w-4 text-gray-500' />
+                        <span>Ustawienia profilu</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className='flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
+                      >
+                        <LogOut className='h-4 w-4' />
+                        <span>Wyloguj się</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </header>
+
+              {/* Page Content */}
+              <div className='animate-in fade-in pb-8'>{children}</div>
+            </main>
+          </div>
+
+          {/* Global Right Side Ad Panel (Visible on Large Screens) */}
+          <div className='hidden h-full w-80 2xl:flex'>
+            <div className='group flex h-full w-full flex-col rounded-2xl border-2 border-white bg-white/20 p-6 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 md:rounded-3xl lg:rounded-3xl'>
+              <h3 className='mb-6 text-lg font-bold text-gray-800'>Reklama</h3>
+              <div className='flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50'>
+                <MonitorPlay className='h-12 w-12 text-gray-600 transition-colors group-hover:text-red-500' />
+                <div className='text-xl font-bold text-gray-700 transition-colors group-hover:text-red-600'>
+                  Google Ads
+                </div>
+                <span className='text-xs font-medium text-gray-500'>
+                  Treść sponsorowana
+                </span>
               </div>
             </div>
-
-            <main className='flex-1 bg-white'>{children}</main>
           </div>
         </div>
       </div>
-
-      {mobileNavOpen && (
-        <div className='fixed inset-0 z-50 bg-black/40 lg:hidden'>
-          <button
-            type='button'
-            className='absolute inset-0 h-full w-full cursor-default'
-            onClick={() => setMobileNavOpen(false)}
-            aria-label='Zamknij menu'
-          />
-          <div className='relative h-full w-72 max-w-[80vw] bg-[var(--bg-card)] p-6 shadow-2xl'>
-            <div className='flex items-center justify-between'>
-              <Link
-                href='/'
-                className='text-xl font-black text-[color:var(--primary-dark)]'
-                onClick={() => setMobileNavOpen(false)}
-              >
-                LowCarbPlaner
-              </Link>
-              <button
-                type='button'
-                className='rounded-xl bg-white p-2 text-slate-700 shadow-sm'
-                onClick={() => setMobileNavOpen(false)}
-                aria-label='Zamknij menu'
-              >
-                <X className='h-5 w-5' />
-              </button>
-            </div>
-            <nav className='mt-8 flex flex-col gap-2'>
-              {renderNavLinks(() => setMobileNavOpen(false))}
-            </nav>
-          </div>
-        </div>
-      )}
     </>
   )
 }

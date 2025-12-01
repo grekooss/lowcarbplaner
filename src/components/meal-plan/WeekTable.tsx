@@ -1,6 +1,7 @@
 /**
  * WeekTable - desktop week view for the meal plan.
  * Displays week plan as vertical rows with day cards and meal cards.
+ * Design based on Gemini Design system with glassmorphism.
  */
 
 'use client'
@@ -38,26 +39,25 @@ const DayRow = ({ day, date, dateStr, meals, onMealClick }: DayRowProps) => {
   const isFutureDate = dayDate > today
 
   return (
-    <div className='mb-4 grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr]'>
-      <div className='flex flex-col justify-center rounded-md border-none bg-[#F5EFE7] p-4'>
-        <h2 className='text-foreground text-sm font-semibold tracking-wide uppercase'>
+    <div className='grid grid-cols-1 gap-4 xl:grid-cols-[110px_1fr_1fr_1fr]'>
+      {/* Day Column - Red badge */}
+      <div className='flex h-[72px] flex-col items-center justify-center rounded-md border-2 border-red-600 bg-red-600 p-3 text-center shadow-lg shadow-red-500/30'>
+        <span className='mb-1 text-[10px] font-bold tracking-wider text-white/80 uppercase'>
           {day}
-        </h2>
-        <p className='text-foreground text-2xl font-semibold'>{date}</p>
+        </span>
+        <span className='text-2xl font-bold text-white'>{date}</span>
       </div>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-        {meals.map((item, index) =>
-          item.meal ? (
-            <MealCard
-              key={`${dateStr}-${item.mealType}-${index}`}
-              meal={item.meal}
-              mealType={item.mealType}
-              onMealClick={onMealClick}
-              showSwapButton={isFutureDate}
-            />
-          ) : null
-        )}
-      </div>
+
+      {/* Meals */}
+      {meals.map((item, index) => (
+        <MealCard
+          key={`${dateStr}-${item.mealType}-${index}`}
+          meal={item.meal}
+          mealType={item.mealType}
+          onMealClick={onMealClick}
+          showSwapButton={isFutureDate}
+        />
+      ))}
     </div>
   )
 }
@@ -69,46 +69,54 @@ export function WeekTable({
 }: WeekTableProps) {
   return (
     <div className='space-y-4'>
-      {/* Column headings for the meal categories */}
-      <div className='mb-4 grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr] md:items-center'>
-        <div className='hidden flex-col justify-center rounded-md bg-[#F5EFE7] px-5 py-4 text-slate-900 md:flex'>
-          {monthHeader ? (
-            <span className='text-lg leading-tight font-semibold'>
-              {monthHeader.primary}
-            </span>
-          ) : null}
+      {/* Column Headers (Desktop) */}
+      <div className='hidden gap-4 px-1 xl:grid xl:grid-cols-[110px_1fr_1fr_1fr]'>
+        {/* Month header spacer */}
+        <div className='flex flex-col items-center justify-center'>
+          {monthHeader && (
+            <>
+              <span className='text-sm font-bold text-gray-900'>
+                {monthHeader.primary}
+              </span>
+              {monthHeader.secondary && (
+                <span className='text-xs text-gray-500'>
+                  {monthHeader.secondary}
+                </span>
+              )}
+            </>
+          )}
         </div>
-        <div className='hidden grid-cols-3 gap-4 md:grid'>
-          <div className='flex items-center justify-center rounded-md bg-[#C8E6C9] px-6 py-3 text-base font-semibold text-slate-900'>
-            Śniadanie
-          </div>
-          <div className='flex items-center justify-center rounded-md bg-[#FFE082] px-6 py-3 text-base font-semibold text-slate-900'>
-            Obiad
-          </div>
-          <div className='flex items-center justify-center rounded-md bg-[#FFAB91] px-6 py-3 text-base font-semibold text-slate-900'>
-            Kolacja
-          </div>
-        </div>
+        <h4 className='rounded-[14px] border-2 border-gray-900 bg-gray-900 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
+          Śniadanie
+        </h4>
+        <h4 className='rounded-[14px] border-2 border-gray-900 bg-gray-900 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
+          Obiad
+        </h4>
+        <h4 className='rounded-[14px] border-2 border-gray-900 bg-gray-900 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
+          Kolacja
+        </h4>
       </div>
 
-      {weekPlan.days.map((day) => {
-        const meals = [
-          { meal: day.breakfast, mealType: 'breakfast' as const },
-          { meal: day.lunch, mealType: 'lunch' as const },
-          { meal: day.dinner, mealType: 'dinner' as const },
-        ]
+      <div className='space-y-4'>
+        {weekPlan.days.map((day) => {
+          const meals = [
+            { meal: day.breakfast, mealType: 'breakfast' as const },
+            { meal: day.lunch, mealType: 'lunch' as const },
+            { meal: day.dinner, mealType: 'dinner' as const },
+          ]
 
-        return (
-          <DayRow
-            key={day.date}
-            day={day.dayName}
-            date={String(day.dayNumber)}
-            dateStr={day.date}
-            meals={meals}
-            onMealClick={onMealClick}
-          />
-        )
-      })}
+          return (
+            <DayRow
+              key={day.date}
+              day={day.dayName}
+              date={String(day.dayNumber)}
+              dateStr={day.date}
+              meals={meals}
+              onMealClick={onMealClick}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }

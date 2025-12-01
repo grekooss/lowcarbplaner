@@ -2,87 +2,95 @@
 
 :root {
   /* Podstawowe kolory tła i tekstu */
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+  --background: #f3f4f6;
+  --foreground: #1f2937;
 
-  /* Primary Green */
-  --primary: #c3e672;
-  --primary-light: #d3f682;
-  --primary-dark: #a3c652;
-  --primary-hover: #93b642;
+  /* Primary Red (Accent) */
+  --primary: #dc2626;
+  --primary-light: #ef4444;
+  --primary-dark: #b91c1c;
+  --primary-hover: #c81e1e;
   --primary-foreground: #ffffff;
 
-  /* Secondary Brown */
-  --secondary: #f7a45c;
-  --secondary-light: #ffb46c;
-  --secondary-dark: #d7843c;
+  /* Secondary Gray */
+  --secondary: #6b7280;
+  --secondary-light: #9ca3af;
+  --secondary-dark: #4b5563;
   --secondary-foreground: #ffffff;
 
   /* Tertiary Orange */
-  --tertiary: #f9cd6a;
-  --tertiary-light: #ffdd7a;
-  --tertiary-dark: #d9ad4a;
+  --tertiary: #f97316;
+  --tertiary-light: #fb923c;
+  --tertiary-dark: #ea580c;
   --tertiary-foreground: #ffffff;
 
   /* Quaternary Gray */
-  --quaternary: #e1e1e3;
-  --quaternary-light: #f1f1f3;
-  --quaternary-dark: #c1c1c3;
-  --quaternary-foreground: #1a1a1a;
+  --quaternary: #e5e7eb;
+  --quaternary-light: #f3f4f6;
+  --quaternary-dark: #d1d5db;
+  --quaternary-foreground: #1f2937;
 
   /* Meal Category Colors */
-  --breakfast: #e8f5d8;
-  --breakfast-foreground: #101010;
-  --lunch: #fff4d6;
-  --lunch-foreground: #101010;
-  --snack: #ffe5d9;
-  --snack-foreground: #101010;
-  --dinner: #f0f0f0;
-  --dinner-foreground: #101010;
+  --breakfast: #fef3c7;
+  --breakfast-foreground: #92400e;
+  --lunch: #dcfce7;
+  --lunch-foreground: #166534;
+  --snack: #fce7f3;
+  --snack-foreground: #9d174d;
+  --dinner: #e0e7ff;
+  --dinner-foreground: #3730a3;
 
   /* Day Card Color */
-  --dayCard: #faefe3;
+  --dayCard: #dc2626;
 
   /* State Colors */
-  --success: #c3e672;
-  --warning: #ffd666;
-  --error: #ff5757;
-  --error-bg: #ffe5e5;
-  --error-hover: #e74c3c;
-  --info: #5dade2;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --error-bg: #fef2f2;
+  --error-hover: #dc2626;
+  --info: #3b82f6;
 
   /* Text Colors */
-  --text-main: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-muted: #999999;
-  --text-disabled: #b3b3b3;
-  --muted-foreground: #999999;
+  --text-main: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --text-disabled: #9ca3af;
+  --muted-foreground: #6b7280;
 
   /* Background Colors */
   --bg-main: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #f5f5f5;
-  --bg-card: #f8f4f1; /* Domyślny kolor dla kart/okien/kwadratów */
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-card: rgba(255, 255, 255, 0.4);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-bg-light: rgba(255, 255, 255, 0.6);
+  --glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   /* Border Colors */
-  --border: #e1e1e3;
-  --border-light: #f1f1f3;
+  --border: rgba(255, 255, 255, 0.8);
+  --border-light: rgba(255, 255, 255, 1);
   --border-focus: var(--primary);
 
   /* Shadows */
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover:
-    0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-hero: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-  --shadow-elevated:
-    0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --shadow-hero: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   /* Radius */
-  --radius-sm: 6px;
-  --radius: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 50%;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
 }
 
 @theme inline {
@@ -156,7 +164,7 @@
 
   /* Font Family */
   --font-sans:
-    var(--font-poppins), 'Poppins', system-ui, -apple-system, sans-serif;
+    var(--font-montserrat), 'Montserrat', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono);
 
   /* Spacing Scale (base 4px) */
@@ -232,4 +240,126 @@ html {
   background-color: #f8f4f1;
   border: none !important;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+/* Glassmorphism card styles */
+.card-glass {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid rgba(255, 255, 255, 1);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.card-glass-strong {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 1);
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+/* No scrollbar utility */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Text shadow for glassmorphism contrast */
+.text-glow-white {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Background image container */
+.bg-food-pattern {
+  background-image: url('https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=2532&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Animate utilities */
+.animate-in {
+  animation: animateIn 0.5s ease-out forwards;
+}
+
+@keyframes animateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-in-from-bottom-10 {
+  animation: slideInFromBottom 1s ease-out forwards;
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar - glassmorphism style */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #1f2937;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: var(--primary-dark);
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) rgba(255, 255, 255, 0.2);
 }

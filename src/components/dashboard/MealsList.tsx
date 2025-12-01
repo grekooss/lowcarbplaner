@@ -1,13 +1,12 @@
 /**
  * MealsList component
  *
- * Renders the meals for a selected day using the new vertical layout.
+ * Renders the meals for a selected day with stepper timeline design.
  */
 
 'use client'
 
 import { MealCard } from './MealCard'
-import { EmptyState } from './EmptyState'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
 interface MealsListProps {
@@ -31,35 +30,8 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   const lunch = mealsForDate.find((meal) => meal.meal_type === 'lunch')
   const dinner = mealsForDate.find((meal) => meal.meal_type === 'dinner')
 
-  // Jeśli nie ma posiłków dla wybranej daty, ale są jakieś posiłki w tablicy,
-  // to znaczy że ładujemy nowe dane - pokaż poprzednie posiłki
-  const hasAnyMeals = meals.length > 0
-  const hasMealsForOtherDates = hasAnyMeals && mealsForDate.length === 0
-
-  if (hasMealsForOtherDates) {
-    // Pokazujemy ostatnie dostępne posiłki zamiast pustego stanu
-    const fallbackMeals = meals.slice(0, 3)
-    return (
-      <section className='space-y-6 opacity-50 transition-opacity'>
-        <div className='flex items-center justify-between'>
-          <h2 className='text-xl font-semibold'>Posiłki</h2>
-        </div>
-        <div className='space-y-4'>
-          {fallbackMeals.map((meal) => (
-            <MealCard
-              key={meal.id}
-              meal={meal}
-              enableEatenCheckbox={false}
-              onRecipePreview={onRecipePreview}
-            />
-          ))}
-        </div>
-      </section>
-    )
-  }
-
   if (mealsForDate.length === 0) {
-    return <EmptyState date={date} />
+    return null
   }
 
   const orderedMeals = [breakfast, lunch, dinner].filter(
@@ -67,16 +39,13 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   )
 
   return (
-    <section className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-semibold'>Posiłki</h2>
-        <p className='text-muted-foreground text-sm'>
-          {mealsForDate.filter((meal) => meal.is_eaten).length} /{' '}
-          {mealsForDate.length} zjedzonych
-        </p>
-      </div>
+    <section className='relative'>
+      {/* Vertical Line - only show when we have stepper checkboxes */}
+      {isCurrentDate && orderedMeals.length > 1 && (
+        <div className='absolute top-6 -bottom-6 left-[19px] z-0 w-0.5 bg-white' />
+      )}
 
-      <div className='space-y-4'>
+      <div className='space-y-8'>
         {orderedMeals.map((meal) => (
           <MealCard
             key={meal.id}
@@ -89,7 +58,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
       </div>
 
       {mealsForDate.length > 0 && mealsForDate.length < 3 && (
-        <div className='text-muted-foreground text-sm'>
+        <div className='mt-6 ml-16 text-sm text-gray-500'>
           Nie wszystkie posiłki zostały jeszcze zaplanowane na ten dzień.
         </div>
       )}
