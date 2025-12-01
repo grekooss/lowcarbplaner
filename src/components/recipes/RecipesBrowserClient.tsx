@@ -9,13 +9,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FeaturedRecipeCard } from './FeaturedRecipeCard'
 import { RecipeFilters } from './RecipeFilters'
 import { RecipesGrid } from './RecipesGrid'
 import { RecipeListItem } from './RecipeListItem'
+import { RecipeAdPlaceholder } from './RecipeAdPlaceholder'
 import { ViewToggle, type ViewMode } from './ViewToggle'
-import { SortSelect, type SortOption } from './SortSelect'
+import { SortSelect, type SortOption, type SortDirection } from './SortSelect'
 import { LoadMoreButton } from './LoadMoreButton'
 import { AuthPromptModal } from './AuthPromptModal'
 import { useRecipesFilter } from '@/lib/hooks/useRecipesFilter'
@@ -54,6 +56,7 @@ export function RecipesBrowserClient({
   // Stan lokalny dla widoku i sortowania
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [sortBy, setSortBy] = useState<SortOption>('calories')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   // Hooks dla state management
   const { filters, updateMealTypes, resetFilters } = useRecipesFilter({
@@ -76,6 +79,7 @@ export function RecipesBrowserClient({
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isFetching,
     isError,
     error,
   } = useRecipesQuery({
@@ -90,15 +94,21 @@ export function RecipesBrowserClient({
 
   // Sortowanie przepisów
   const sortedRecipes = [...allRecipes].sort((a, b) => {
+    const multiplier = sortDirection === 'asc' ? 1 : -1
+
     switch (sortBy) {
       case 'calories':
-        return (b.total_calories || 0) - (a.total_calories || 0)
+        return ((a.total_calories || 0) - (b.total_calories || 0)) * multiplier
       case 'protein':
-        return (b.total_protein_g || 0) - (a.total_protein_g || 0)
+        return (
+          ((a.total_protein_g || 0) - (b.total_protein_g || 0)) * multiplier
+        )
       case 'carbs':
-        return (a.total_carbs_g || 0) - (b.total_carbs_g || 0)
+        return ((a.total_carbs_g || 0) - (b.total_carbs_g || 0)) * multiplier
+      case 'fats':
+        return ((a.total_fats_g || 0) - (b.total_fats_g || 0)) * multiplier
       case 'name':
-        return a.name.localeCompare(b.name)
+        return a.name.localeCompare(b.name) * multiplier
       default:
         return 0
     }
@@ -132,17 +142,10 @@ export function RecipesBrowserClient({
 
   return (
     <>
-      <main className='container mx-auto space-y-8 px-4 py-8'>
-        <div className='space-y-2'>
-          <h1 className='text-3xl font-bold tracking-tight'>Przepisy</h1>
-          <p className='text-muted-foreground'>
-            Przeglądaj i odkrywaj pyszne przepisy niskowęglowodanowe
-          </p>
-        </div>
-
+      <main className='w-full space-y-6'>
         {/* Featured Recipe */}
         {featuredRecipe && (
-          <section className='w-full space-y-4'>
+          <section className='w-full'>
             <FeaturedRecipeCard
               recipe={featuredRecipe}
               onClick={handleRecipeClick}
@@ -151,14 +154,19 @@ export function RecipesBrowserClient({
         )}
 
         {/* Filters, Sort i View Toggle */}
-        <section className='w-full space-y-4'>
+        <section className='w-full'>
           <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
             <RecipeFilters
               selectedMealTypes={filters.meal_types}
               onChange={updateMealTypes}
             />
             <div className='flex flex-wrap items-center gap-3'>
-              <SortSelect value={sortBy} onChange={setSortBy} />
+              <SortSelect
+                value={sortBy}
+                direction={sortDirection}
+                onChange={setSortBy}
+                onDirectionChange={setSortDirection}
+              />
               <ViewToggle mode={viewMode} onChange={setViewMode} />
             </div>
           </div>
@@ -166,10 +174,13 @@ export function RecipesBrowserClient({
 
         {/* Recipes Grid/List */}
         <section className='w-full space-y-6'>
-          {isLoading && allRecipes.length === 0 ? (
-            // Initial loading
-            <div className='py-12 text-center'>
-              <p className='text-text-muted'>Ładowanie przepisów...</p>
+          {isLoading || (isFetching && !isFetchingNextPage) ? (
+            // Initial loading or filtering (not load more)
+            <div className='flex justify-center pt-16'>
+              <Loader2
+                className='h-14 w-14 animate-spin text-red-600'
+                strokeWidth={3}
+              />
             </div>
           ) : isError ? (
             // Error state
@@ -200,21 +211,30 @@ export function RecipesBrowserClient({
           ) : (
             <>
               {/* Grid lub List view */}
+              {/* Ukryj badge meal type gdy filtr jest aktywny */}
               {viewMode === 'grid' ? (
                 <RecipesGrid
                   recipes={sortedRecipes.slice(1)}
                   onRecipeClick={handleRecipeClick}
+                  hideMealTypeBadge={filters.meal_types.length > 0}
                 />
               ) : (
-                <div className='w-full space-y-4'>
-                  {sortedRecipes.slice(1).map((recipe) => (
-                    <RecipeListItem
-                      key={recipe.id}
-                      recipe={recipe}
-                      onClick={handleRecipeClick}
-                      onAddToMealPlan={handleAddToMealPlan}
-                      isAuthenticated={isAuthenticated ?? undefined}
-                    />
+                <div className='grid w-full grid-cols-1 gap-6'>
+                  {sortedRecipes.slice(1).map((recipe, index) => (
+                    <div key={recipe.id}>
+                      <RecipeListItem
+                        recipe={recipe}
+                        onClick={handleRecipeClick}
+                        onAddToMealPlan={handleAddToMealPlan}
+                        isAuthenticated={isAuthenticated ?? undefined}
+                        hideMealTypeBadge={filters.meal_types.length > 0}
+                      />
+                      {(index + 1) % 4 === 0 && (
+                        <div className='mt-6'>
+                          <RecipeAdPlaceholder variant='list' />
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}

@@ -48,14 +48,8 @@ export default async function ShoppingListPage() {
     : shoppingListResult.data || []
 
   return (
-    <div className='container mx-auto space-y-8 px-4 py-8'>
-      <div className='space-y-2'>
-        <h1 className='text-3xl font-bold tracking-tight'>Lista Zakupów</h1>
-        <p className='text-muted-foreground'>
-          {startDateStr} - {endDateStr}
-        </p>
-      </div>
+    <main className='w-full space-y-6'>
       <ShoppingListClient initialShoppingList={shoppingList} />
-    </div>
+    </main>
   )
 }

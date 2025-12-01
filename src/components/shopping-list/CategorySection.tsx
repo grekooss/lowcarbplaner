@@ -21,11 +21,6 @@ interface CategorySectionProps {
  *
  * Sortuje produkty (odznaczone na górze, zaznaczone na dole)
  * i renderuje listę ShoppingListItem.
- *
- * @param category - Kategoria składników
- * @param items - Lista produktów w kategorii
- * @param purchasedItems - Stan zaznaczonych produktów
- * @param onTogglePurchased - Callback wywoływany przy toggle checkbox
  */
 export const CategorySection = ({
   category,
@@ -38,12 +33,11 @@ export const CategorySection = ({
   }, [items, purchasedItems, category])
 
   return (
-    <ul className='space-y-1 pt-2'>
+    <ul className='divide-y divide-gray-100'>
       {sortedItems.map((item) => (
         <ShoppingListItem
           key={getItemKey(category, item.name)}
           item={item}
-          category={category}
           isPurchased={item.isPurchased}
           onToggle={() => onTogglePurchased(category, item.name)}
         />

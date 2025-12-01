@@ -1,39 +1,31 @@
 /**
  * Komponent wyróżnionej karty przepisu (Featured/Hero)
  *
- * Duża karta prezentująca losowy/wyróżniony przepis w formie hero section.
- * Zawiera full-width image, nazwę, tagi, makro i CTA button.
+ * Mini karta w stylu dashboardu - zachowany layout z 3 kolumnami.
  */
 
 'use client'
 
 import Image from 'next/image'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { MacroCard } from '@/components/recipes/detail/MacroCard'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
-import { BarChart3, Clock, ListOrdered, Timer } from 'lucide-react'
-import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
+import {
+  BarChart3,
+  Clock,
+  ListOrdered,
+  Timer,
+  Flame,
+  Wheat,
+  Beef,
+  Droplet,
+} from 'lucide-react'
 
 interface FeaturedRecipeCardProps {
   recipe: RecipeDTO
   onClick: (recipeId: number) => void
 }
 
-/**
- * Komponent interaktywny featured recipe
- *
- * @example
- * ```tsx
- * <FeaturedRecipeCard
- *   recipe={featuredRecipe}
- *   onClick={(id) => handleRecipeClick(id)}
- * />
- * ```
- */
 export function FeaturedRecipeCard({
   recipe,
   onClick,
@@ -42,7 +34,6 @@ export function FeaturedRecipeCard({
     onClick(recipe.id)
   }
 
-  // Czasy przygotowania i gotowania są obecnie niedostępne w nowym formacie
   const prepTime = 0
   const cookTime = 0
   const totalSteps = Array.isArray(recipe.instructions)
@@ -52,145 +43,168 @@ export function FeaturedRecipeCard({
   const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
     easy: 'Łatwy',
     medium: 'Średni',
-    hard: 'Zaawansowany',
+    hard: 'Trudny',
   }
 
+  const calories = recipe.total_calories
+    ? Math.round(recipe.total_calories)
+    : null
+  const fats = recipe.total_fats_g ? Math.round(recipe.total_fats_g) : null
+  const carbs = recipe.total_carbs_g ? Math.round(recipe.total_carbs_g) : null
+  const protein = recipe.total_protein_g
+    ? Math.round(recipe.total_protein_g)
+    : null
+
   return (
-    <Card className='w-full border-0 bg-transparent shadow-none'>
-      <CardContent className='p-0'>
-        <div className='grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,0.85fr)]'>
-          <div
-            className='grid overflow-hidden rounded-2xl p-3 lg:h-[320px] lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:items-center'
-            style={{ backgroundColor: 'var(--bg-card)' }}
-          >
-            <div className='flex h-full flex-shrink-0 items-center justify-start pl-3'>
-              <div className='from-primary via-primary-light to-primary-dark relative aspect-square h-[calc(100%-24px)] overflow-hidden rounded-3xl bg-gradient-to-br'>
-                {recipe.image_url ? (
-                  <Image
-                    src={recipe.image_url}
-                    alt={recipe.name}
-                    fill
-                    className='object-cover'
-                    priority
-                    sizes='(max-width: 1024px) 100vw, 320px'
-                  />
-                ) : (
-                  <RecipeImagePlaceholder recipeName={recipe.name} />
-                )}
-              </div>
+    <div className='flex flex-col gap-6 rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl lg:flex-row'>
+      {/* Image Section */}
+      <div className='flex-shrink-0 lg:w-64'>
+        <div className='relative h-48 w-full overflow-hidden rounded-md bg-white/60 lg:h-full lg:min-h-[280px]'>
+          {recipe.image_url ? (
+            <Image
+              src={recipe.image_url}
+              alt={recipe.name}
+              fill
+              className='object-cover grayscale-[10%]'
+              priority
+              sizes='(max-width: 1024px) 100vw, 256px'
+            />
+          ) : (
+            <RecipeImagePlaceholder recipeName={recipe.name} />
+          )}
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className='flex flex-1 flex-col justify-center'>
+        {primaryMealType && (
+          <div className='mb-3'>
+            <span className='rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase'>
+              {MEAL_TYPE_LABELS[primaryMealType]}
+            </span>
+          </div>
+        )}
+
+        <h3 className='mb-6 text-2xl leading-tight font-bold text-gray-800'>
+          {recipe.name}
+        </h3>
+
+        <div className='mb-6 grid max-w-md grid-cols-2 gap-x-8 gap-y-4'>
+          <div className='flex items-center gap-3'>
+            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
+              <BarChart3 className='h-4 w-4' />
             </div>
-
-            <div className='flex h-full flex-1 flex-col gap-3 lg:justify-between'>
-              <div className='space-y-3'>
-                <h2 className='text-3xl font-bold tracking-tight text-gray-900'>
-                  {recipe.name}
-                </h2>
-
-                {primaryMealType && (
-                  <Badge className={getMealTypeBadgeClasses(primaryMealType)}>
-                    {MEAL_TYPE_LABELS[primaryMealType]}
-                  </Badge>
-                )}
-              </div>
-
-              <div className='mt-auto space-y-3'>
-                <div className='grid grid-cols-2 gap-2.5'>
-                  <div className='flex items-center gap-3'>
-                    <div className='rounded-sm bg-white p-3'>
-                      <BarChart3 className='h-5 w-5 text-gray-600' />
-                    </div>
-                    <div className='space-y-0.5'>
-                      <p className='text-xs text-gray-600'>Trudność</p>
-                      <p className='text-sm font-semibold text-gray-900'>
-                        {difficultyLabel[recipe.difficulty_level]}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className='flex items-center gap-3'>
-                    <div className='rounded-sm bg-white p-3'>
-                      <Clock className='h-5 w-5 text-gray-600' />
-                    </div>
-                    <div className='space-y-0.5'>
-                      <p className='text-xs text-gray-600'>
-                        Czas przygotowania
-                      </p>
-                      <p className='text-sm font-semibold text-gray-900'>
-                        {prepTime > 0 ? `${prepTime} min` : '—'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className='flex items-center gap-3'>
-                    <div className='rounded-sm bg-white p-3'>
-                      <Timer className='h-5 w-5 text-gray-600' />
-                    </div>
-                    <div className='space-y-0.5'>
-                      <p className='text-xs text-gray-600'>Czas gotowania</p>
-                      <p className='text-sm font-semibold text-gray-900'>
-                        {cookTime > 0 ? `${cookTime} min` : '—'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className='flex items-center gap-3'>
-                    <div className='rounded-sm bg-white p-3'>
-                      <ListOrdered className='h-5 w-5 text-gray-600' />
-                    </div>
-                    <div className='space-y-0.5'>
-                      <p className='text-xs text-gray-600'>Liczba kroków</p>
-                      <p className='text-sm font-semibold text-gray-900'>
-                        {totalSteps > 0 ? `${totalSteps}` : '—'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className='pr-3 pb-3'>
-                  <Button
-                    size='lg'
-                    className='w-full bg-[color:var(--primary)] text-black hover:bg-[color:var(--primary-hover)]'
-                    onClick={handleClick}
-                  >
-                    Zobacz przepis
-                  </Button>
-                </div>
-              </div>
+            <div>
+              <p className='text-xs font-bold text-gray-400 uppercase'>
+                Trudność
+              </p>
+              <p className='text-sm font-bold text-gray-900'>
+                {difficultyLabel[recipe.difficulty_level]}
+              </p>
             </div>
           </div>
 
-          <div className='flex flex-col gap-3 lg:h-[320px] lg:justify-center'>
-            <MacroCard
-              label='Kalorie'
-              value={recipe.total_calories}
-              unit='kcal'
-              variant='calories'
-              size='compact'
-            />
-            <MacroCard
-              label='Tłuszcze'
-              value={recipe.total_fats_g}
-              unit='g'
-              variant='fat'
-              size='compact'
-            />
-            <MacroCard
-              label='Węglowodany'
-              value={recipe.total_carbs_g}
-              unit='g'
-              variant='carbs'
-              size='compact'
-            />
-            <MacroCard
-              label='Białko'
-              value={recipe.total_protein_g}
-              unit='g'
-              variant='protein'
-              size='compact'
-            />
+          <div className='flex items-center gap-3'>
+            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
+              <Clock className='h-4 w-4' />
+            </div>
+            <div>
+              <p className='text-xs font-bold text-gray-400 uppercase'>
+                Przygotowanie
+              </p>
+              <p className='text-sm font-bold text-gray-900'>
+                {prepTime > 0 ? `${prepTime} min` : '—'}
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
+              <Timer className='h-4 w-4' />
+            </div>
+            <div>
+              <p className='text-xs font-bold text-gray-400 uppercase'>
+                Gotowanie
+              </p>
+              <p className='text-sm font-bold text-gray-900'>
+                {cookTime > 0 ? `${cookTime} min` : '—'}
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
+              <ListOrdered className='h-4 w-4' />
+            </div>
+            <div>
+              <p className='text-xs font-bold text-gray-400 uppercase'>Kroki</p>
+              <p className='text-sm font-bold text-gray-900'>
+                {totalSteps > 0 ? `${totalSteps}` : '—'}
+              </p>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <button
+          onClick={handleClick}
+          className='w-full rounded-sm bg-red-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-red-500/20 transition-all hover:bg-red-700 sm:w-auto'
+        >
+          Zobacz przepis
+        </button>
+      </div>
+
+      {/* Quick Nutrition Panel */}
+      <div className='flex flex-col gap-2 lg:w-32'>
+        <div className='rounded-sm bg-red-600 px-2.5 py-2 shadow-sm shadow-red-500/20'>
+          <p className='mb-1 text-center text-xs font-bold text-white uppercase'>
+            Kalorie
+          </p>
+          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-white'>
+            <Flame className='h-4 w-4' />
+            {calories ?? '—'}{' '}
+            <span className='text-xs font-medium text-white'>kcal</span>
+          </p>
+        </div>
+
+        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
+          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
+            Węglowodany
+          </p>
+          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-gray-800'>
+            <span className='flex h-5 w-5 items-center justify-center rounded-sm bg-orange-500'>
+              <Wheat className='h-3 w-3 text-white' />
+            </span>
+            {carbs ?? '—'}{' '}
+            <span className='text-xs font-medium text-gray-500'>g</span>
+          </p>
+        </div>
+
+        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
+          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
+            Białko
+          </p>
+          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-gray-800'>
+            <span className='flex h-5 w-5 items-center justify-center rounded-sm bg-blue-500'>
+              <Beef className='h-3 w-3 text-white' />
+            </span>
+            {protein ?? '—'}{' '}
+            <span className='text-xs font-medium text-gray-500'>g</span>
+          </p>
+        </div>
+
+        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
+          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
+            Tłuszcze
+          </p>
+          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-gray-800'>
+            <span className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-500'>
+              <Droplet className='h-3 w-3 text-white' />
+            </span>
+            {fats ?? '—'}{' '}
+            <span className='text-xs font-medium text-gray-500'>g</span>
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

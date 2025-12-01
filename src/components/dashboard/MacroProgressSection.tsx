@@ -91,12 +91,12 @@ export function MacroProgressSection({
     <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-1'>
       {/* Calorie Balance Card */}
       <div className='h-full rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
-        <h3 className='mb-2 text-lg font-bold text-gray-800'>Bilans kalorii</h3>
-        <p className='mb-6 text-sm text-gray-500'>
+        <h3 className='mb-1 text-lg font-bold text-gray-800'>Bilans kalorii</h3>
+        <p className='mb-2 text-sm text-gray-500'>
           {eatenMealsCount} / {meals.length} posiłków zjedzonych
         </p>
 
-        <div className='relative flex h-64 items-center justify-center'>
+        <div className='relative flex h-56 items-center justify-center'>
           <ResponsiveContainer width='100%' height='100%'>
             <PieChart>
               <Pie
@@ -119,13 +119,16 @@ export function MacroProgressSection({
               </Pie>
             </PieChart>
           </ResponsiveContainer>
-          <div className='absolute inset-0 flex flex-col items-center justify-center'>
-            <Flame className='mb-2 h-8 w-8 text-red-500' />
+          <div className='absolute inset-0 flex flex-col items-center justify-center pb-4'>
+            <Flame className='h-6 w-6 text-red-600' />
+            <span className='mb-1 text-sm font-bold text-red-600'>kcal</span>
             <div className='flex items-baseline gap-1'>
               <span className='text-4xl font-bold text-gray-800'>
                 {Math.round(caloriesConsumed)}
               </span>
-              <span className='text-lg font-bold text-gray-500'>kcal</span>
+              <span className='text-lg text-gray-400'>
+                / {Math.round(caloriesTarget)}
+              </span>
             </div>
             <span className='mt-1 text-xs font-bold tracking-wide text-gray-400 uppercase'>
               zjedzonych

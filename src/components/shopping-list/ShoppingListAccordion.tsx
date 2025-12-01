@@ -25,17 +25,12 @@ interface ShoppingListAccordionProps {
  * - Domyślnie wszystkie kategorie są rozwinięte
  * - Auto-collapse gdy wszystkie produkty w kategorii są odhaczone
  * - Używa shadcn/ui Accordion z type="multiple"
- *
- * @param shoppingList - Lista kategorii ze składnikami z API
- * @param purchasedItems - Stan zaznaczonych produktów
- * @param onTogglePurchased - Callback wywoływany przy toggle checkbox
  */
 export const ShoppingListAccordion = ({
   shoppingList,
   purchasedItems,
   onTogglePurchased,
 }: ShoppingListAccordionProps) => {
-  // State dla otwartych kategorii
   const [openCategories, setOpenCategories] = useState<string[]>([])
 
   // Inicjalizacja: rozwiń wszystkie kategorie przy pierwszym renderze
@@ -48,12 +43,10 @@ export const ShoppingListAccordion = ({
   useEffect(() => {
     const updatedOpenCategories = shoppingList
       .filter((categoryData) => {
-        // Sprawdź czy wszystkie produkty w kategorii są kupione
         const allPurchased = categoryData.items.every((item) => {
           const key = `${categoryData.category}__${item.name}`
           return purchasedItems[key] === true
         })
-        // Jeśli wszystkie kupione, usuń z otwartych
         return !allPurchased
       })
       .map((cat) => cat.category)
@@ -61,102 +54,113 @@ export const ShoppingListAccordion = ({
     setOpenCategories(updatedOpenCategories)
   }, [purchasedItems, shoppingList])
 
+  // Render single category card
+  const renderCategoryCard = (
+    categoryData: ShoppingListResponseDTO[number]
+  ) => {
+    const categoryLabel = INGREDIENT_CATEGORY_LABELS[categoryData.category]
+    const itemCount = categoryData.items.length
+
+    const purchasedCount = categoryData.items.filter((item) => {
+      const key = `${categoryData.category}__${item.name}`
+      return purchasedItems[key] === true
+    }).length
+
+    const allPurchased = purchasedCount === itemCount
+
+    return (
+      <AccordionItem
+        key={categoryData.category}
+        value={categoryData.category}
+        className='rounded-2xl border-2 border-white bg-white/40 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl'
+      >
+        <AccordionTrigger className='px-6 py-4 hover:no-underline'>
+          <div className='flex w-full items-center justify-between pr-4'>
+            <span
+              className={`text-lg font-bold ${allPurchased ? 'text-gray-400' : 'text-gray-800'}`}
+            >
+              {categoryLabel}
+            </span>
+            <span
+              className={`rounded-sm px-2.5 py-1 text-xs font-bold ${
+                allPurchased
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              {purchasedCount} / {itemCount}
+            </span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className='px-6 pb-4'>
+          <CategorySection
+            category={categoryData.category}
+            items={categoryData.items}
+            purchasedItems={purchasedItems}
+            onTogglePurchased={onTogglePurchased}
+          />
+        </AccordionContent>
+      </AccordionItem>
+    )
+  }
+
+  // Split categories into two columns for desktop - balanced by item count
+  const { leftColumn, rightColumn } = (() => {
+    const totalItems = shoppingList.reduce(
+      (sum, cat) => sum + cat.items.length,
+      0
+    )
+    const targetPerColumn = totalItems / 2
+
+    let leftItems = 0
+    let splitIndex = 0
+
+    for (let i = 0; i < shoppingList.length; i++) {
+      const category = shoppingList[i]
+      if (!category) continue
+      const categoryItems = category.items.length
+      // Check if adding this category keeps us closer to target
+      if (leftItems + categoryItems <= targetPerColumn || i === 0) {
+        leftItems += categoryItems
+        splitIndex = i + 1
+      } else {
+        // Check if current split is better than adding one more
+        const withoutCurrent = Math.abs(leftItems - targetPerColumn)
+        const withCurrent = Math.abs(
+          leftItems + categoryItems - targetPerColumn
+        )
+        if (withCurrent < withoutCurrent) {
+          leftItems += categoryItems
+          splitIndex = i + 1
+        }
+        break
+      }
+    }
+
+    return {
+      leftColumn: shoppingList.slice(0, splitIndex),
+      rightColumn: shoppingList.slice(splitIndex),
+    }
+  })()
+
   return (
-    <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
+    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
       <Accordion
         type='multiple'
         value={openCategories}
         onValueChange={setOpenCategories}
-        className='w-full space-y-4 lg:col-span-1'
+        className='flex w-full flex-col gap-6'
       >
-        {shoppingList
-          .slice(0, Math.ceil(shoppingList.length / 2))
-          .map((categoryData) => {
-            const categoryLabel =
-              INGREDIENT_CATEGORY_LABELS[categoryData.category]
-            const itemCount = categoryData.items.length
-
-            // Oblicz ile produktów jest kupionych
-            const purchasedCount = categoryData.items.filter((item) => {
-              const key = `${categoryData.category}__${item.name}`
-              return purchasedItems[key] === true
-            }).length
-
-            return (
-              <AccordionItem
-                key={categoryData.category}
-                value={categoryData.category}
-                className='card-soft rounded-3xl border-0 px-6 py-4 shadow-sm'
-              >
-                <AccordionTrigger className='hover:no-underline'>
-                  <div className='flex w-full items-center justify-between pr-4'>
-                    <span className='text-foreground text-lg font-semibold'>
-                      {categoryLabel}
-                    </span>
-                    <span className='text-muted-foreground text-sm font-medium'>
-                      {purchasedCount}/{itemCount}
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <CategorySection
-                    category={categoryData.category}
-                    items={categoryData.items}
-                    purchasedItems={purchasedItems}
-                    onTogglePurchased={onTogglePurchased}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })}
+        {leftColumn.map(renderCategoryCard)}
       </Accordion>
 
       <Accordion
         type='multiple'
         value={openCategories}
         onValueChange={setOpenCategories}
-        className='w-full space-y-4 lg:col-span-1'
+        className='flex w-full flex-col gap-6'
       >
-        {shoppingList
-          .slice(Math.ceil(shoppingList.length / 2))
-          .map((categoryData) => {
-            const categoryLabel =
-              INGREDIENT_CATEGORY_LABELS[categoryData.category]
-            const itemCount = categoryData.items.length
-
-            // Oblicz ile produktów jest kupionych
-            const purchasedCount = categoryData.items.filter((item) => {
-              const key = `${categoryData.category}__${item.name}`
-              return purchasedItems[key] === true
-            }).length
-
-            return (
-              <AccordionItem
-                key={categoryData.category}
-                value={categoryData.category}
-                className='card-soft rounded-3xl border-0 px-6 py-4 shadow-sm'
-              >
-                <AccordionTrigger className='hover:no-underline'>
-                  <div className='flex w-full items-center justify-between pr-4'>
-                    <span className='text-foreground text-lg font-semibold'>
-                      {categoryLabel}
-                    </span>
-                    <span className='text-muted-foreground text-sm font-medium'>
-                      {purchasedCount}/{itemCount}
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <CategorySection
-                    category={categoryData.category}
-                    items={categoryData.items}
-                    purchasedItems={purchasedItems}
-                    onTogglePurchased={onTogglePurchased}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })}
+        {rightColumn.map(renderCategoryCard)}
       </Accordion>
     </div>
   )

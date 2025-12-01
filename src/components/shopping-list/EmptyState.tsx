@@ -1,5 +1,4 @@
-import { ShoppingBasket } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ShoppingBasket, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -10,18 +9,24 @@ import Link from 'next/link'
  */
 export const EmptyState = () => {
   return (
-    <div className='flex flex-col items-center justify-center px-4 py-16 text-center'>
-      <div className='bg-muted mb-6 rounded-full p-6'>
-        <ShoppingBasket className='text-muted-foreground h-12 w-12' />
+    <div className='flex flex-col items-center justify-center rounded-2xl border-2 border-white bg-white/40 px-6 py-16 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl'>
+      <div className='mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100'>
+        <ShoppingBasket className='h-10 w-10 text-gray-400' />
       </div>
-      <h3 className='mb-2 text-xl font-semibold'>Brak produktów na liście</h3>
-      <p className='text-muted-foreground mb-6 max-w-md'>
+      <h3 className='mb-2 text-xl font-bold text-gray-800'>
+        Brak produktów na liście
+      </h3>
+      <p className='mb-8 max-w-md text-gray-500'>
         Wygeneruj plan posiłków, aby stworzyć listę zakupów na nadchodzący
         tydzień.
       </p>
-      <Button asChild>
-        <Link href='/dashboard'>Przejdź do planu posiłków</Link>
-      </Button>
+      <Link
+        href='/dashboard'
+        className='inline-flex items-center gap-2 rounded-sm bg-red-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-red-500/20 transition-all hover:bg-red-700'
+      >
+        Przejdź do planu posiłków
+        <ArrowRight className='h-4 w-4' />
+      </Link>
     </div>
   )
 }

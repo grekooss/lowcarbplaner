@@ -6,7 +6,7 @@
 
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { CalendarStrip } from './CalendarStrip'
 import { MacroProgressSection } from './MacroProgressSection'
 import { MealsList } from './MealsList'
@@ -72,12 +72,24 @@ export function DashboardClient({
     ? formatLocalDate(normalizedSelectedDate)
     : ''
 
+  // Śledź poprzednią datę aby rozróżnić zmianę daty od refetch po zmianie statusu posiłku
+  const prevDateRef = useRef(selectedDateStr)
+  const isDateChanging = prevDateRef.current !== selectedDateStr
+
   const {
     data: meals,
     isLoading,
+    isFetching,
     error,
     refetch,
   } = usePlannedMealsQuery(selectedDateStr, selectedDateStr)
+
+  // Aktualizuj poprzednią datę gdy dane zostaną załadowane
+  useEffect(() => {
+    if (!isFetching) {
+      prevDateRef.current = selectedDateStr
+    }
+  }, [isFetching, selectedDateStr])
 
   // Sprawdź kompletność tygodniowego planu
   const { data: weekCheck, isLoading: isCheckingWeek } = useWeekMealsCheck()
@@ -225,22 +237,21 @@ export function DashboardClient({
         </div>
 
         {/* Column 1 continued - meals list */}
-        <div className='relative xl:col-span-2'>
-          {isGenerating && (
-            <div className='absolute top-4 right-4 z-10'>
-              <div className='flex items-center gap-2 rounded-full border-2 border-white bg-white/90 px-4 py-2 text-sm shadow-lg backdrop-blur-xl'>
-                <Loader2 className='h-4 w-4 animate-spin text-red-600' />
-                <span className='font-medium text-gray-700'>
-                  Generowanie planu...
-                </span>
-              </div>
+        <div className='xl:col-span-2'>
+          {isFetching && !isLoading && isDateChanging ? (
+            <div className='flex h-16 items-start justify-center'>
+              <Loader2
+                className='h-14 w-14 animate-spin text-red-600'
+                strokeWidth={3}
+              />
             </div>
+          ) : (
+            <MealsList
+              meals={displayMeals}
+              date={selectedDateStr}
+              onRecipePreview={handleRecipePreview}
+            />
           )}
-          <MealsList
-            meals={displayMeals}
-            date={selectedDateStr}
-            onRecipePreview={handleRecipePreview}
-          />
         </div>
       </div>
 

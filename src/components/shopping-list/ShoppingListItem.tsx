@@ -1,8 +1,7 @@
 'use client'
 
-import { Checkbox } from '@/components/ui/checkbox'
+import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Enums } from '@/types/database.types'
 
 interface ShoppingListItemProps {
   item: {
@@ -11,7 +10,6 @@ interface ShoppingListItemProps {
     unit: string
     isPurchased: boolean
   }
-  category: Enums<'ingredient_category_enum'>
   isPurchased: boolean
   onToggle: () => void
 }
@@ -21,20 +19,12 @@ interface ShoppingListItemProps {
  *
  * Wyświetla checkbox, nazwę składnika, ilość i jednostkę.
  * Produkt zaznaczony (zakupiony) jest wizualnie przekreślony.
- *
- * @param item - Dane produktu z flagą isPurchased
- * @param category - Kategoria składnika
- * @param isPurchased - Stan zaznaczenia (czy zakupiony)
- * @param onToggle - Callback wywoływany przy toggle checkbox
  */
 export const ShoppingListItem = ({
   item,
-  category,
   isPurchased,
   onToggle,
 }: ShoppingListItemProps) => {
-  const itemId = `${category}__${item.name}`
-
   // Format amount: remove unnecessary decimals (.00)
   const formatAmount = (amount: number): string => {
     const rounded = Math.round(amount * 100) / 100
@@ -42,42 +32,58 @@ export const ShoppingListItem = ({
   }
 
   return (
-    <li className='flex items-start gap-3 py-2'>
-      <Checkbox
-        id={itemId}
-        checked={isPurchased}
-        onCheckedChange={onToggle}
-        className='mt-1'
-      />
-      <label
-        htmlFor={itemId}
+    <li
+      className={cn(
+        'group flex cursor-pointer items-center gap-4 rounded-lg px-3 py-3 transition-all duration-200',
+        isPurchased ? 'bg-red-50/50' : 'hover:bg-gray-50/50'
+      )}
+      onClick={onToggle}
+      role='button'
+      tabIndex={0}
+      aria-pressed={isPurchased}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onToggle()
+        }
+      }}
+    >
+      {/* Custom Checkbox */}
+      <div
         className={cn(
-          'flex-1 cursor-pointer select-none',
-          'transition-all duration-200'
+          'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200',
+          isPurchased
+            ? 'border-red-500 bg-red-500'
+            : 'border-gray-300 bg-white group-hover:border-red-600'
         )}
       >
-        <div className='flex items-baseline justify-between gap-2'>
-          <span
-            className={cn(
-              'font-medium',
-              isPurchased && 'line-through opacity-60'
-            )}
-          >
-            {item.name}
-          </span>
-          <span
-            className={cn(
-              'text-foreground whitespace-nowrap',
-              isPurchased && 'opacity-60'
-            )}
-          >
-            <span className='text-lg font-semibold'>
-              {formatAmount(item.total_amount)}
-            </span>{' '}
-            <span className='text-sm'>{item.unit}</span>
-          </span>
-        </div>
-      </label>
+        {isPurchased && (
+          <Check className='h-4 w-4 text-white' strokeWidth={3} />
+        )}
+      </div>
+
+      {/* Item Name */}
+      <span
+        className={cn(
+          'flex-1 text-base font-medium transition-all duration-200',
+          isPurchased ? 'text-gray-400 line-through' : 'text-gray-800'
+        )}
+      >
+        {item.name}
+      </span>
+
+      {/* Amount */}
+      <div
+        className={cn(
+          'flex items-baseline gap-1 whitespace-nowrap transition-all duration-200',
+          isPurchased ? 'opacity-50' : ''
+        )}
+      >
+        <span className='text-lg font-bold text-gray-800'>
+          {formatAmount(item.total_amount)}
+        </span>
+        <span className='text-sm text-gray-500'>{item.unit}</span>
+      </div>
     </li>
   )
 }

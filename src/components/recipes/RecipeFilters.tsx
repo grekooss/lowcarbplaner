@@ -41,7 +41,7 @@ export function RecipeFilters({
 
   return (
     <div
-      className='flex flex-wrap gap-1 rounded-full bg-slate-100 p-1'
+      className='no-scrollbar flex gap-3 overflow-x-auto'
       role='group'
       aria-label='Filtruj przepisy według typu posiłku'
     >
@@ -50,10 +50,10 @@ export function RecipeFilters({
           key={type}
           type='button'
           onClick={() => handleSelect(type)}
-          className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+          className={`rounded-sm border-2 px-4 py-2 text-sm font-bold tracking-wider uppercase transition-all ${
             isSelected(type)
-              ? 'bg-lime-300 text-gray-900'
-              : 'text-slate-600 hover:text-gray-900'
+              ? 'border-red-600 bg-red-600 text-white shadow-sm shadow-red-500/20'
+              : 'border-transparent bg-white text-gray-800 hover:border-red-600 hover:bg-white hover:text-red-600'
           }`}
         >
           {type === 'all' ? 'Wszystkie' : MEAL_TYPE_LABELS[type]}

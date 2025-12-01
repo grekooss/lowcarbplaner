@@ -71,8 +71,8 @@ export function CalendarStrip({
   const yearLabel = selectedDate.getFullYear()
 
   return (
-    <section className='flex flex-col gap-6 rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
-      <div className='flex flex-col items-center gap-1 px-1'>
+    <section className='flex flex-col gap-3 rounded-3xl border-2 border-white bg-white/40 px-6 py-4 shadow-sm backdrop-blur-xl'>
+      <div className='flex flex-col items-center px-1'>
         <h2 className='text-2xl font-bold tracking-tight text-gray-800'>
           {monthLabel}{' '}
           <span className='text-lg text-gray-500'>{yearLabel}</span>

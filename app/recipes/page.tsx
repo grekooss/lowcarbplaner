@@ -25,7 +25,7 @@ interface RecipesBrowserPageProps {
 export const metadata: Metadata = {
   title: 'Przepisy niskowęglowodanowe | LowCarbPlaner',
   description:
-    'Przeglądaj przepisy niskowęglowodanowe. Automatyczne planowanie posiłków i śledzenie makroskładników dla diety low-carb.',
+    'Przeglądaj przepisy niskowęglowodanowe. Automatyczne planowanie posiłków i śledzenie makroskładników dla diety niskowęglowodanowej.',
   openGraph: {
     title: 'Przepisy niskowęglowodanowe | LowCarbPlaner',
     description:

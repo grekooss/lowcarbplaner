@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   CalendarRange,
   Utensils,
-  ShoppingBag,
+  ShoppingCart,
   Menu,
   X,
   User,
@@ -47,7 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: 'Lista zakupów',
     href: '/shopping-list',
-    icon: ShoppingBag,
+    icon: ShoppingCart,
     requiresAuth: true,
   },
 ]
@@ -67,7 +67,7 @@ const getViewInfo = (pathname: string) => {
   if (pathname.startsWith('/recipes')) {
     return {
       title: 'Przepisy',
-      subtitle: 'Przeglądaj i odkrywaj pyszne przepisy low-carb',
+      subtitle: 'Przeglądaj i odkrywaj pyszne przepisy niskowęglowodanowe',
     }
   }
   if (pathname.startsWith('/shopping-list')) {

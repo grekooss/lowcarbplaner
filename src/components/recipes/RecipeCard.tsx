@@ -1,27 +1,22 @@
 /**
- * Komponent karty przepisu
+ * Komponent karty przepisu w widoku siatki
  *
- * Styl inspirowany kartami z hero widoku – duże zdjęcie/placeholder, sekcja informacyjna
- * oraz pionowy stack kart makro. Całość utrzymana w pastelowej kolorystyce nawiązującej
- * do referencyjnych zrzutów ekranu.
+ * Styl zgodny z RecipeListItem – glassmorphism z białym tłem.
  */
 
 'use client'
 
 import Image from 'next/image'
-import { Flame, Wheat, Beef, Droplet, BarChart3 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
-import { MacroSummaryRow } from './MacroSummaryRow'
-import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
 interface RecipeCardProps {
   recipe: RecipeDTO
   onClick: (recipeId: number) => void
+  /** Ukryj badge z typem posiłku (gdy filtr jest aktywny) */
+  hideMealTypeBadge?: boolean
 }
 
 const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
@@ -30,7 +25,26 @@ const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
   hard: 'Trudny',
 }
 
-export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
+const getDifficultyColor = (difficulty: RecipeDTO['difficulty_level']) => {
+  switch (difficulty) {
+    case 'easy':
+      return 'bg-green-500'
+    case 'medium':
+      return 'bg-orange-500'
+    case 'hard':
+      return 'bg-red-600'
+    default:
+      return 'bg-gray-300'
+  }
+}
+
+export function RecipeCard({
+  recipe,
+  onClick,
+  hideMealTypeBadge = false,
+}: RecipeCardProps) {
+  const handleClick = () => onClick(recipe.id)
+
   const calories =
     recipe.total_calories !== null && recipe.total_calories !== undefined
       ? Math.round(recipe.total_calories)
@@ -48,87 +62,85 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
       ? Math.round(recipe.total_fats_g)
       : null
 
-  const macroItems = [
-    {
-      icon: Flame,
-      text: calories !== null ? `${calories} kcal` : '—',
-    },
-    {
-      icon: Wheat,
-      text: carbs !== null ? `${carbs} g` : '—',
-    },
-    {
-      icon: Beef,
-      text: protein !== null ? `${protein} g` : '—',
-    },
-    {
-      icon: Droplet,
-      text: fats !== null ? `${fats} g` : '—',
-    },
-  ]
-
-  const handleActivate = () => onClick(recipe.id)
-
   return (
-    <Card
-      className='focus-visible:ring-primary/40 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-3xl border-0 bg-[var(--bg-card)] transition-transform duration-200 ease-out hover:scale-[1.02] hover:shadow-[0_12px_28px_rgba(36,25,15,0.1)] focus-visible:ring-2 focus-visible:outline-none'
+    <div
+      className='group flex h-full cursor-pointer flex-col rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01]'
+      onClick={handleClick}
       role='button'
       tabIndex={0}
       aria-label={`Zobacz przepis ${recipe.name}`}
-      onClick={handleActivate}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          handleActivate()
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleClick()
         }
       }}
     >
-      <div className='from-primary via-primary-light to-primary-dark relative mx-4 mt-4 h-40 overflow-hidden rounded-3xl bg-gradient-to-br sm:h-48'>
+      {/* Image */}
+      <div className='relative mb-4 h-40 w-full overflow-hidden rounded-md bg-white/60'>
         {recipe.image_url ? (
           <Image
             src={recipe.image_url}
             alt={recipe.name}
             fill
-            className='object-cover transition-none'
-            sizes='(max-width: 768px) 100vw, 300px'
+            className='object-cover grayscale-[10%]'
+            sizes='(max-width: 768px) 100vw, 350px'
           />
         ) : (
           <RecipeImagePlaceholder recipeName={recipe.name} />
         )}
       </div>
 
-      <CardContent className='flex flex-1 flex-col gap-3.5 px-4 pt-3 pb-4'>
-        <div className='flex flex-wrap items-center gap-1.5'>
-          {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
-            <Badge className={getMealTypeBadgeClasses(recipe.meal_types[0])}>
+      {/* Badges Row */}
+      <div className='mb-3 flex flex-wrap items-center gap-2'>
+        {/* Meal Type Badge - ukryty gdy filtr jest aktywny */}
+        {!hideMealTypeBadge &&
+          recipe.meal_types.length > 0 &&
+          recipe.meal_types[0] && (
+            <span className='rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase'>
               {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
-            </Badge>
+            </span>
           )}
 
-          <div className='flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600'>
-            <BarChart3 className='h-4 w-4 text-slate-600' />
-            {difficultyLabel[recipe.difficulty_level]}
-          </div>
+        {/* Calories Badge */}
+        <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-500/20'>
+          <Flame className='h-3.5 w-3.5' /> {calories ?? '—'} kcal
         </div>
 
-        <h3 className='line-clamp-2 text-xl leading-tight font-semibold text-slate-900'>
-          {recipe.name}
-        </h3>
-
-        <MacroSummaryRow items={macroItems} />
-
-        <div className='mt-auto pt-1.5'>
-          <Button
-            className='bg-primary text-text-main hover:bg-primary-hover w-full rounded-full px-5 text-sm font-semibold'
-            onClick={(event) => {
-              event.stopPropagation()
-              handleActivate()
-            }}
-          >
-            Zobacz przepis
-          </Button>
+        {/* Difficulty Badge */}
+        <div className='flex items-center gap-1.5 rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase'>
+          <span
+            className={`h-3 w-1 rounded-full ${getDifficultyColor(recipe.difficulty_level)}`}
+          />
+          {difficultyLabel[recipe.difficulty_level]}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Title */}
+      <h4 className='mb-4 line-clamp-2 text-lg leading-tight font-bold text-gray-800'>
+        {recipe.name}
+      </h4>
+
+      {/* Macros Row */}
+      <div className='mt-auto flex flex-wrap items-center gap-4 text-sm font-medium text-black'>
+        {/* Carbs */}
+        <div className='flex items-center gap-2' title='Węglowodany'>
+          <Wheat className='h-5 w-5 text-gray-900' />
+          <span className='font-bold text-gray-700'>{carbs ?? '—'}g</span>
+        </div>
+
+        {/* Protein */}
+        <div className='flex items-center gap-2' title='Białko'>
+          <Beef className='h-5 w-5 text-gray-900' />
+          <span className='font-bold text-gray-700'>{protein ?? '—'}g</span>
+        </div>
+
+        {/* Fat */}
+        <div className='flex items-center gap-2' title='Tłuszcze'>
+          <Droplet className='h-5 w-5 text-gray-900' />
+          <span className='font-bold text-gray-700'>{fats ?? '—'}g</span>
+        </div>
+      </div>
+    </div>
   )
 }

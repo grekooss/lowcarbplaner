@@ -179,15 +179,15 @@ export function MealCard({
                 {showSwapButton && (
                   <Button
                     variant='ghost'
-                    size='icon-sm'
+                    size='icon'
                     onClick={(e) => {
                       e.stopPropagation()
                       setSwapDialogOpen(true)
                     }}
                     aria-label='Zmień przepis'
-                    className='absolute top-1/2 left-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1 text-gray-500 opacity-0 shadow-sm transition-all group-hover:opacity-100 hover:bg-white hover:text-red-600'
+                    className='absolute top-1/2 left-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-gray-500 opacity-0 shadow-sm transition-all group-hover:opacity-100 hover:bg-white hover:text-red-600'
                   >
-                    <RefreshCw className='h-3.5 w-3.5' />
+                    <RefreshCw className='h-5 w-5' />
                   </Button>
                 )}
               </div>

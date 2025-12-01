@@ -29,16 +29,16 @@ interface ViewToggleProps {
  */
 export function ViewToggle({ mode, onChange }: ViewToggleProps) {
   return (
-    <div className='bg-primary flex items-center gap-1 rounded-md p-1'>
+    <div className='flex h-[38px] items-center gap-1 rounded-sm border border-white bg-white px-1.5'>
       <Button
         variant='ghost'
         size='icon-sm'
         onClick={() => onChange('grid')}
         aria-label='Widok siatki'
-        className={`rounded-md transition-colors ${
+        className={`h-7 w-7 rounded-sm transition-all ${
           mode === 'grid'
-            ? 'bg-slate-100 text-gray-900 shadow-sm'
-            : 'hover:bg-primary/80 text-gray-700 hover:text-gray-900'
+            ? 'bg-red-600 text-white shadow-sm shadow-red-500/20 hover:bg-red-600'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
         }`}
       >
         <Grid3x3 className='h-4 w-4' />
@@ -48,10 +48,10 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
         size='icon-sm'
         onClick={() => onChange('list')}
         aria-label='Widok listy'
-        className={`rounded-md transition-colors ${
+        className={`h-7 w-7 rounded-sm transition-all ${
           mode === 'list'
-            ? 'bg-slate-100 text-gray-900 shadow-sm'
-            : 'hover:bg-primary/80 text-gray-700 hover:text-gray-900'
+            ? 'bg-red-600 text-white shadow-sm shadow-red-500/20 hover:bg-red-600'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
         }`}
       >
         <List className='h-4 w-4' />
