@@ -168,7 +168,8 @@ export type RecipeDTO = {
   difficulty_level: Enums<'difficulty_level_enum'>
   average_rating: number | null
   reviews_count: number
-  health_score: number | null
+  prep_time_minutes: number | null
+  cook_time_minutes: number | null
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null

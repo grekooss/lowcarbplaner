@@ -111,7 +111,7 @@ export function IngredientEditor({
         data-testid='ingredients-list'
         className='space-y-3 rounded-xl border bg-white p-4'
       >
-        {recipe.ingredients.map((ingredient, index) => (
+        {recipe.ingredients.map((ingredient) => (
           <EditableIngredientRow
             key={ingredient.id}
             ingredient={ingredient}
@@ -119,7 +119,6 @@ export function IngredientEditor({
             onAmountChange={updateIngredientAmount}
             onIncrement={incrementAmount}
             onDecrement={decrementAmount}
-            index={index}
           />
         ))}
       </div>

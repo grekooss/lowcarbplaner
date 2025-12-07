@@ -143,7 +143,8 @@ function transformRecipeToDTO(recipe: {
   difficulty_level: unknown
   average_rating: number | null
   reviews_count: number
-  health_score: number | null
+  prep_time_min: number | null
+  cook_time_min: number | null
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
@@ -193,7 +194,8 @@ function transformRecipeToDTO(recipe: {
     difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
     average_rating: recipe.average_rating,
     reviews_count: recipe.reviews_count,
-    health_score: recipe.health_score,
+    prep_time_minutes: recipe.prep_time_min,
+    cook_time_minutes: recipe.cook_time_min,
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
@@ -251,7 +253,8 @@ export async function getRecipes(
         difficulty_level,
         average_rating,
         reviews_count,
-        health_score,
+        prep_time_min,
+        cook_time_min,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -370,7 +373,8 @@ export async function getRecipeById(
         difficulty_level,
         average_rating,
         reviews_count,
-        health_score,
+        prep_time_min,
+        cook_time_min,
         total_calories,
         total_protein_g,
         total_carbs_g,

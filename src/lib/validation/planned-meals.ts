@@ -114,19 +114,15 @@ export const updatePlannedMealBodySchema = z.discriminatedUnion('action', [
     recipe_id: integerIdSchema,
   }),
 
-  // Wariant 3: Modyfikacja składników
+  // Wariant 3: Modyfikacja składników (pusta tablica = reset do oryginalnych wartości)
   z.object({
     action: z.literal('modify_ingredients'),
-    ingredient_overrides: z
-      .array(
-        z.object({
-          ingredient_id: integerIdSchema,
-          new_amount: z
-            .number()
-            .positive('new_amount musi być liczbą dodatnią'),
-        })
-      )
-      .min(1, 'Wymagany co najmniej jeden element w ingredient_overrides'),
+    ingredient_overrides: z.array(
+      z.object({
+        ingredient_id: integerIdSchema,
+        new_amount: z.number().positive('new_amount musi być liczbą dodatnią'),
+      })
+    ),
   }),
 ])
 

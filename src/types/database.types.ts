@@ -296,14 +296,15 @@ export type Database = {
       recipes: {
         Row: {
           average_rating: number | null
+          cook_time_min: number | null
           created_at: string
           difficulty_level: Database['public']['Enums']['difficulty_level_enum']
-          health_score: number | null
           id: number
           image_url: string | null
           instructions: Json
           meal_types: Database['public']['Enums']['meal_type_enum'][]
           name: string
+          prep_time_min: number | null
           reviews_count: number
           tags: string[] | null
           total_calories: number | null
@@ -314,14 +315,15 @@ export type Database = {
         }
         Insert: {
           average_rating?: number | null
+          cook_time_min?: number | null
           created_at?: string
           difficulty_level?: Database['public']['Enums']['difficulty_level_enum']
-          health_score?: number | null
           id?: number
           image_url?: string | null
           instructions: Json
           meal_types: Database['public']['Enums']['meal_type_enum'][]
           name: string
+          prep_time_min?: number | null
           reviews_count?: number
           tags?: string[] | null
           total_calories?: number | null
@@ -332,14 +334,15 @@ export type Database = {
         }
         Update: {
           average_rating?: number | null
+          cook_time_min?: number | null
           created_at?: string
           difficulty_level?: Database['public']['Enums']['difficulty_level_enum']
-          health_score?: number | null
           id?: number
           image_url?: string | null
           instructions?: Json
           meal_types?: Database['public']['Enums']['meal_type_enum'][]
           name?: string
+          prep_time_min?: number | null
           reviews_count?: number
           tags?: string[] | null
           total_calories?: number | null

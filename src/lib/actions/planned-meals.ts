@@ -51,7 +51,8 @@ function transformRecipeToDTO(recipe: {
   difficulty_level: unknown
   average_rating?: number | null
   reviews_count?: number
-  health_score?: number | null
+  prep_time_min?: number | null
+  cook_time_min?: number | null
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
@@ -97,7 +98,8 @@ function transformRecipeToDTO(recipe: {
     difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
     average_rating: recipe.average_rating ?? null,
     reviews_count: recipe.reviews_count ?? 0,
-    health_score: recipe.health_score ?? null,
+    prep_time_minutes: recipe.prep_time_min ?? null,
+    cook_time_minutes: recipe.cook_time_min ?? null,
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
@@ -223,6 +225,8 @@ export async function getPlannedMeals(
           tags,
           image_url,
           difficulty_level,
+          prep_time_min,
+          cook_time_min,
           total_calories,
           total_protein_g,
           total_carbs_g,
@@ -412,6 +416,8 @@ async function markMealAsEaten(
         tags,
         image_url,
         difficulty_level,
+        prep_time_min,
+        cook_time_min,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -549,6 +555,8 @@ async function swapMealRecipe(
         tags,
         image_url,
         difficulty_level,
+        prep_time_min,
+        cook_time_min,
         total_calories,
         total_protein_g,
         total_carbs_g,
@@ -663,10 +671,13 @@ async function modifyMealIngredients(
     // Frontend shows warning at ±15% but allows changes
   }
 
-  // 3. Update
+  // 3. Update (pusta tablica = null, czyli reset do oryginalnych wartości)
   const { data, error } = await supabase
     .from('planned_meals')
-    .update({ ingredient_overrides: JSON.parse(JSON.stringify(overrides)) })
+    .update({
+      ingredient_overrides:
+        overrides.length > 0 ? JSON.parse(JSON.stringify(overrides)) : null,
+    })
     .eq('id', mealId)
     .select(
       `
@@ -684,6 +695,8 @@ async function modifyMealIngredients(
         tags,
         image_url,
         difficulty_level,
+        prep_time_min,
+        cook_time_min,
         total_calories,
         total_protein_g,
         total_carbs_g,

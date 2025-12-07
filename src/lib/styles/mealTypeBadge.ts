@@ -3,14 +3,14 @@ import { cn } from '@/lib/utils'
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | string | null
 
 const badgeTheme: Record<string, { bg: string; text: string }> = {
-  breakfast: { bg: 'bg-primary', text: 'text-black' },
-  lunch: { bg: 'bg-tertiary', text: 'text-black' },
-  dinner: { bg: 'bg-secondary', text: 'text-black' },
-  snack: { bg: 'bg-[#FFE5D9]', text: 'text-black' },
+  breakfast: { bg: 'bg-white', text: 'text-black' },
+  lunch: { bg: 'bg-white', text: 'text-black' },
+  dinner: { bg: 'bg-white', text: 'text-black' },
+  snack: { bg: 'bg-white', text: 'text-black' },
 }
 
 const baseClasses =
-  'inline-flex min-w-[96px] items-center justify-center rounded-[16px] px-4 py-1.5 text-sm font-semibold'
+  'inline-flex items-center justify-center rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-gray-800'
 
 export const getMealTypeBadgeClasses = (mealType: MealType) => {
   const theme = (mealType && badgeTheme[mealType]) || {

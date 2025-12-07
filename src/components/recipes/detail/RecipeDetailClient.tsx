@@ -6,10 +6,12 @@
 
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import {
   ArrowLeft,
   Star,
@@ -17,12 +19,19 @@ import {
   Timer,
   BarChart3,
   ListOrdered,
+  Flame,
+  Wheat,
+  Beef,
+  Droplet,
+  Check,
+  Save,
+  Loader2,
 } from 'lucide-react'
 import { InstructionsList } from './InstructionsList'
-import { MacroCard } from './MacroCard'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
+import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipeDetailClientProps {
@@ -50,6 +59,12 @@ interface RecipeDetailClientProps {
     carbs_g: number
     fats_g: number
   }
+  // Save button props (for Dashboard editing)
+  hasChanges?: boolean
+  isSaving?: boolean
+  onSave?: () => void
+  saveError?: string | null
+  isSaveSuccessful?: boolean
 }
 
 /**
@@ -65,23 +80,44 @@ export function RecipeDetailClient({
   incrementAmount,
   decrementAmount,
   adjustedNutrition,
+  hasChanges = false,
+  isSaving = false,
+  onSave,
+  saveError,
+  isSaveSuccessful = false,
 }: RecipeDetailClientProps) {
   const router = useRouter()
+  // Track checked ingredients (local state, resets on modal close)
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(
+    new Set()
+  )
 
   const handleBack = () => {
     router.back()
+  }
+
+  const toggleIngredient = (ingredientId: number) => {
+    setCheckedIngredients((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(ingredientId)) {
+        newSet.delete(ingredientId)
+      } else {
+        newSet.add(ingredientId)
+      }
+      return newSet
+    })
   }
 
   // Oblicz total steps z instrukcji
   const totalSteps = Array.isArray(recipe.instructions)
     ? recipe.instructions.length
     : 0
-  // Prep time i cook time są obecnie niedostępne w nowym formacie
-  const prepTime = 0
-  const cookTime = 0
+  // Prep time i cook time pobierane z bazy danych
+  const prepTime = recipe.prep_time_minutes ?? 0
+  const cookTime = recipe.cook_time_minutes ?? 0
 
   return (
-    <div className='mx-auto max-w-[1440px] space-y-6 px-4 py-6 md:px-6 lg:px-8'>
+    <div className='mx-auto max-w-[1440px] space-y-6 px-2 py-6 md:px-3 lg:px-4'>
       {/* Przycisk powrotu - tylko gdy showBackButton = true */}
       {showBackButton && (
         <Button
@@ -96,11 +132,11 @@ export function RecipeDetailClient({
       )}
 
       {/* Layout 3 kolumny */}
-      <div className='grid gap-6 lg:grid-cols-[320px_1fr_380px]'>
+      <div className='grid gap-6 lg:grid-cols-[320px_1fr_420px]'>
         {/* LEWA KOLUMNA - Zdjęcie + Metadata */}
-        <div className='rounded-3xl bg-[#F5EFE7] p-6'>
-          {/* Zdjęcie przepisu - pełna szerokość, wychodzi poza padding */}
-          <div className='relative -mx-6 -mt-6 mb-4 aspect-square w-[calc(100%+3rem)] overflow-hidden rounded-t-3xl'>
+        <div className='h-fit rounded-[20px] border-2 border-white bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]'>
+          {/* Zdjęcie przepisu */}
+          <div className='relative mb-4 aspect-square w-full overflow-hidden rounded-[12px]'>
             {recipe.image_url ? (
               <Image
                 src={recipe.image_url}
@@ -115,61 +151,68 @@ export function RecipeDetailClient({
             )}
           </div>
 
-          {/* Metadata grid */}
-          <div className='space-y-3'>
+          {/* Metadata grid 2x2 */}
+          <div className='grid grid-cols-2 gap-3'>
             {/* Difficulty */}
-            <div className='flex items-center gap-3'>
-              <div className='rounded-lg bg-green-100 p-2.5'>
-                <BarChart3 className='h-5 w-5 text-green-600' />
+            <div className='flex items-center gap-2'>
+              <div className='rounded-[8px] bg-white p-2 shadow-sm'>
+                <BarChart3 className='size-4 text-[var(--text-main)]' />
               </div>
-              <div className='space-y-0.5'>
-                <p className='text-muted-foreground text-xs'>Trudność</p>
-                <p className='text-sm font-semibold'>
+              <div className='space-y-0'>
+                <p className='text-[10px] text-[var(--text-muted)] uppercase'>
+                  Trudność
+                </p>
+                <p className='text-xs font-semibold text-[var(--text-main)]'>
                   {recipe.difficulty_level === 'easy'
-                    ? 'Medium'
+                    ? 'Łatwy'
                     : recipe.difficulty_level === 'medium'
-                      ? 'Medium'
-                      : 'Hard'}
+                      ? 'Średni'
+                      : 'Trudny'}
                 </p>
               </div>
             </div>
 
-            {/* Total Steps */}
-            <div className='flex items-center gap-3'>
-              <div className='rounded-lg bg-green-100 p-2.5'>
-                <ListOrdered className='h-5 w-5 text-green-600' />
-              </div>
-              <div className='space-y-0.5'>
-                <p className='text-muted-foreground text-xs'>Kroki</p>
-                <p className='text-sm font-semibold'>
-                  {totalSteps > 0 ? `${totalSteps}` : '—'}
-                </p>
-              </div>
-            </div>
             {/* Prep Time */}
-            <div className='flex items-center gap-3'>
-              <div className='rounded-lg bg-green-100 p-2.5'>
-                <Clock className='h-5 w-5 text-green-600' />
+            <div className='flex items-center gap-2'>
+              <div className='rounded-[8px] bg-white p-2 shadow-sm'>
+                <Clock className='size-4 text-[var(--text-main)]' />
               </div>
-              <div className='space-y-0.5'>
-                <p className='text-muted-foreground text-xs'>
-                  Czas przygotowania
+              <div className='space-y-0'>
+                <p className='text-[10px] text-[var(--text-muted)] uppercase'>
+                  Przygotowanie
                 </p>
-                <p className='text-sm font-semibold'>
+                <p className='text-xs font-semibold text-[var(--text-main)]'>
                   {prepTime > 0 ? `${prepTime} min` : '—'}
                 </p>
               </div>
             </div>
 
             {/* Cook Time */}
-            <div className='flex items-center gap-3'>
-              <div className='rounded-lg bg-green-100 p-2.5'>
-                <Timer className='h-5 w-5 text-green-600' />
+            <div className='flex items-center gap-2'>
+              <div className='rounded-[8px] bg-white p-2 shadow-sm'>
+                <Timer className='size-4 text-[var(--text-main)]' />
               </div>
-              <div className='space-y-0.5'>
-                <p className='text-muted-foreground text-xs'>Czas gotowania</p>
-                <p className='text-sm font-semibold'>
+              <div className='space-y-0'>
+                <p className='text-[10px] text-[var(--text-muted)] uppercase'>
+                  Gotowanie
+                </p>
+                <p className='text-xs font-semibold text-[var(--text-main)]'>
                   {cookTime > 0 ? `${cookTime} min` : '—'}
+                </p>
+              </div>
+            </div>
+
+            {/* Total Steps */}
+            <div className='flex items-center gap-2'>
+              <div className='rounded-[8px] bg-white p-2 shadow-sm'>
+                <ListOrdered className='size-4 text-[var(--text-main)]' />
+              </div>
+              <div className='space-y-0'>
+                <p className='text-[10px] text-[var(--text-muted)] uppercase'>
+                  Kroki
+                </p>
+                <p className='text-xs font-semibold text-[var(--text-main)]'>
+                  {totalSteps > 0 ? `${totalSteps}` : '—'}
                 </p>
               </div>
             </div>
@@ -177,14 +220,13 @@ export function RecipeDetailClient({
 
           {/* Reviews */}
           {recipe.average_rating && recipe.reviews_count > 0 && (
-            <div className='space-y-2'>
-              <h3 className='text-sm font-semibold'>Reviews</h3>
+            <div className='mt-4 space-y-2'>
               <div className='flex items-center gap-2'>
                 <div className='flex items-center gap-1'>
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
+                      className={`size-4 ${
                         i < Math.round(recipe.average_rating ?? 0)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'fill-gray-200 text-gray-200'
@@ -192,15 +234,60 @@ export function RecipeDetailClient({
                     />
                   ))}
                 </div>
-                <span className='text-xs font-medium'>
+                <span className='text-sm font-semibold text-[var(--text-main)]'>
                   {recipe.average_rating.toFixed(1)}/5
                 </span>
-                <span className='text-muted-foreground text-xs'>
-                  · {recipe.reviews_count} Reviews
+                <span className='text-xs text-[var(--text-muted)]'>
+                  ({recipe.reviews_count} reviews)
                 </span>
               </div>
             </div>
           )}
+
+          {/* Macro Badges - jedna linia */}
+          <div className='mt-4 flex flex-wrap items-center gap-3 text-sm font-medium'>
+            {/* Calories Badge */}
+            <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-500/20'>
+              <Flame className='h-3.5 w-3.5' />
+              {Math.round(
+                adjustedNutrition?.calories ?? recipe.total_calories ?? 0
+              )}{' '}
+              kcal
+            </div>
+
+            {/* Carbs */}
+            <div className='flex items-center gap-1.5' title='Węglowodany'>
+              <Wheat className='h-4 w-4 text-gray-900' />
+              <span className='font-bold text-gray-700'>
+                {Math.round(
+                  adjustedNutrition?.carbs_g ?? recipe.total_carbs_g ?? 0
+                )}
+                g
+              </span>
+            </div>
+
+            {/* Protein */}
+            <div className='flex items-center gap-1.5' title='Białko'>
+              <Beef className='h-4 w-4 text-gray-900' />
+              <span className='font-bold text-gray-700'>
+                {Math.round(
+                  adjustedNutrition?.protein_g ?? recipe.total_protein_g ?? 0
+                )}
+                g
+              </span>
+            </div>
+
+            {/* Fat */}
+            <div className='flex items-center gap-1.5' title='Tłuszcze'>
+              <Droplet className='h-4 w-4 text-gray-900' />
+              <span className='font-bold text-gray-700'>
+                {Math.round(
+                  adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
+                )}
+                g
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* ŚRODKOWA KOLUMNA - Tytuł + Directions */}
@@ -209,10 +296,7 @@ export function RecipeDetailClient({
           <div className='space-y-3'>
             <h2 className='text-2xl font-bold'>{recipe.name}</h2>
             {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
-              <Badge
-                variant='secondary'
-                className='rounded-full bg-yellow-400 px-4 py-1.5 text-sm font-medium text-gray-900 hover:bg-yellow-500'
-              >
+              <Badge className={getMealTypeBadgeClasses(recipe.meal_types[0])}>
                 {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
               </Badge>
             )}
@@ -227,93 +311,160 @@ export function RecipeDetailClient({
 
         {/* PRAWA KOLUMNA - Składniki + Makro */}
         <div className='space-y-6'>
-          {/* Ingredients */}
-          <div className='space-y-3'>
-            <h3 className='font-semibold'>Składniki</h3>
+          {/* Ingredients - Panel style like image card */}
+          <div className='rounded-[20px] border-2 border-white bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]'>
+            {/* Header with title and save button */}
+            <div className='mb-3 flex items-center justify-between'>
+              <h3 className='font-semibold'>Składniki</h3>
+              {enableIngredientEditing &&
+                hasChanges &&
+                !isSaveSuccessful &&
+                onSave && (
+                  <Button
+                    onClick={onSave}
+                    disabled={isSaving}
+                    size='sm'
+                    className='gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-red-500/20 hover:bg-red-700'
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className='h-3.5 w-3.5 animate-spin' />
+                        Zapisywanie...
+                      </>
+                    ) : (
+                      <>
+                        <Save className='h-3.5 w-3.5' />
+                        Zapisz zmiany
+                      </>
+                    )}
+                  </Button>
+                )}
+              {isSaveSuccessful && (
+                <span className='text-xs font-bold text-red-600'>
+                  ✓ Zapisano
+                </span>
+              )}
+            </div>
+            {saveError && (
+              <p className='mb-3 text-xs font-medium text-red-600'>
+                {saveError}
+              </p>
+            )}
             {enableIngredientEditing && (
-              <p className='text-muted-foreground text-xs'>
+              <p className='text-muted-foreground mb-3 text-xs'>
                 Dostosuj gramatury składników (ostrzeżenie przy &gt;15%)
               </p>
             )}
-            <div data-testid='ingredients-list' className='space-y-2'>
+            <div data-testid='ingredients-list'>
               {enableIngredientEditing &&
               getIngredientAmount &&
               updateIngredientAmount &&
               incrementAmount &&
               decrementAmount ? (
-                // Editable mode - Dashboard
-                recipe.ingredients.map((ingredient, idx) => (
-                  <EditableIngredientRow
-                    key={ingredient.id}
-                    ingredient={ingredient}
-                    currentAmount={getIngredientAmount(ingredient.id)}
-                    isAutoAdjusted={
-                      isAutoAdjusted ? isAutoAdjusted(ingredient.id) : false
-                    }
-                    onAmountChange={updateIngredientAmount}
-                    onIncrement={incrementAmount}
-                    onDecrement={decrementAmount}
-                    index={idx}
-                  />
-                ))
+                // Editable mode - Dashboard (with checkboxes)
+                <ul className='divide-y divide-gray-100'>
+                  {recipe.ingredients.map((ingredient) => (
+                    <EditableIngredientRow
+                      key={ingredient.id}
+                      ingredient={ingredient}
+                      currentAmount={getIngredientAmount(ingredient.id)}
+                      isAutoAdjusted={
+                        isAutoAdjusted ? isAutoAdjusted(ingredient.id) : false
+                      }
+                      onAmountChange={updateIngredientAmount}
+                      onIncrement={incrementAmount}
+                      onDecrement={decrementAmount}
+                      isChecked={checkedIngredients.has(ingredient.id)}
+                      onToggleChecked={toggleIngredient}
+                    />
+                  ))}
+                </ul>
               ) : (
-                // Read-only mode - MealPlan / Recipes
-                <>
-                  {recipe.ingredients.map((ingredient, idx) => {
+                // Read-only mode - MealPlan / Recipes (Shopping list style with checkboxes)
+                <ul className='divide-y divide-gray-100'>
+                  {recipe.ingredients.map((ingredient) => {
                     // Show adjusted amount if available, otherwise original
                     const displayAmount = getIngredientAmount
                       ? getIngredientAmount(ingredient.id)
                       : ingredient.amount
 
+                    // Format amount: remove unnecessary decimals (.00)
+                    const formatAmount = (amount: number): string => {
+                      const rounded = Math.round(amount * 100) / 100
+                      return rounded % 1 === 0
+                        ? rounded.toFixed(0)
+                        : rounded.toFixed(2)
+                    }
+
+                    const isChecked = checkedIngredients.has(ingredient.id)
+
                     return (
-                      <div
+                      <li
                         key={ingredient.id}
-                        className='flex items-start gap-3'
+                        className={cn(
+                          'group flex cursor-pointer items-center gap-4 rounded-lg px-3 py-3 transition-all duration-200',
+                          isChecked ? 'bg-red-50/50' : 'hover:bg-gray-50/50'
+                        )}
+                        onClick={() => toggleIngredient(ingredient.id)}
+                        role='button'
+                        tabIndex={0}
+                        aria-pressed={isChecked}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            toggleIngredient(ingredient.id)
+                          }
+                        }}
                       >
-                        <div className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium'>
-                          {idx + 1}
+                        {/* Custom Checkbox */}
+                        <div
+                          className={cn(
+                            'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200',
+                            isChecked
+                              ? 'border-red-500 bg-red-500'
+                              : 'border-gray-300 bg-white group-hover:border-red-600'
+                          )}
+                        >
+                          {isChecked && (
+                            <Check
+                              className='h-4 w-4 text-white'
+                              strokeWidth={3}
+                            />
+                          )}
                         </div>
-                        <p className='pt-0.5 text-sm'>
-                          {displayAmount} {ingredient.unit} {ingredient.name}
-                        </p>
-                      </div>
+
+                        {/* Item Name */}
+                        <span
+                          className={cn(
+                            'flex-1 text-base font-medium transition-all duration-200',
+                            isChecked
+                              ? 'text-gray-400 line-through'
+                              : 'text-gray-800'
+                          )}
+                        >
+                          {ingredient.name}
+                        </span>
+
+                        {/* Amount */}
+                        <div
+                          className={cn(
+                            'flex items-baseline gap-1 whitespace-nowrap transition-all duration-200',
+                            isChecked ? 'opacity-50' : ''
+                          )}
+                        >
+                          <span className='text-lg font-bold text-gray-800'>
+                            {formatAmount(displayAmount)}
+                          </span>
+                          <span className='text-sm text-gray-500'>
+                            {ingredient.unit}
+                          </span>
+                        </div>
+                      </li>
                     )
                   })}
-                </>
+                </ul>
               )}
             </div>
-          </div>
-
-          {/* 4 Macro Cards (kolorowe) */}
-          <div className='grid grid-cols-2 gap-3'>
-            <MacroCard
-              label='Calories'
-              value={adjustedNutrition?.calories ?? recipe.total_calories}
-              unit='kcal'
-              variant='calories'
-              size='compact'
-            />
-            <MacroCard
-              label='Fats'
-              value={adjustedNutrition?.fats_g ?? recipe.total_fats_g}
-              unit='gr'
-              variant='fat'
-              size='compact'
-            />
-            <MacroCard
-              label='Carbs'
-              value={adjustedNutrition?.carbs_g ?? recipe.total_carbs_g}
-              unit='gr'
-              variant='carbs'
-              size='compact'
-            />
-            <MacroCard
-              label='Protein'
-              value={adjustedNutrition?.protein_g ?? recipe.total_protein_g}
-              unit='gr'
-              variant='protein'
-              size='compact'
-            />
           </div>
         </div>
       </div>

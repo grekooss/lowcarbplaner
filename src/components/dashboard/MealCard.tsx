@@ -246,7 +246,7 @@ export function MealCard({
                   meal.ingredient_overrides.some(
                     (override) => !override.auto_adjusted
                   ) && (
-                    <div className='mt-3 text-xs font-semibold text-amber-600'>
+                    <div className='mt-3 text-xs font-semibold text-[var(--primary)]'>
                       Zmienione składniki w tym posiłku
                     </div>
                   )}

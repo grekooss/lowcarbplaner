@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -114,8 +114,30 @@ export function RecipesBrowserClient({
     }
   })
 
-  // Featured recipe - pierwszy przepis z listy (lub można losowy)
-  const featuredRecipe = sortedRecipes[0] || initialData.results[0]
+  // Losowy indeks dla featured recipe - losowany raz przy renderze (używamy initialData)
+  const [featuredRandomId] = useState(() => {
+    const recipes = initialData.results
+    if (recipes.length === 0) return null
+    const randomIndex = Math.floor(Math.random() * recipes.length)
+    const recipe = recipes[randomIndex]
+    return recipe?.id ?? null
+  })
+
+  // Featured recipe - znajdź przepis po ID w aktualnej liście
+  const featuredRecipe = useMemo(() => {
+    if (!featuredRandomId) return sortedRecipes[0] || null
+    return (
+      sortedRecipes.find((r) => r.id === featuredRandomId) ||
+      sortedRecipes[0] ||
+      null
+    )
+  }, [sortedRecipes, featuredRandomId])
+
+  // Przepisy do wyświetlenia w siatce (bez featured)
+  const recipesForGrid = useMemo(() => {
+    if (!featuredRecipe) return sortedRecipes
+    return sortedRecipes.filter((r) => r.id !== featuredRecipe.id)
+  }, [sortedRecipes, featuredRecipe])
 
   // Handle recipe click - TYMCZASOWO WYŁĄCZONE - zawsze nawiguj
   const handleRecipeClick = (recipeId: number) => {
@@ -214,13 +236,13 @@ export function RecipesBrowserClient({
               {/* Ukryj badge meal type gdy filtr jest aktywny */}
               {viewMode === 'grid' ? (
                 <RecipesGrid
-                  recipes={sortedRecipes.slice(1)}
+                  recipes={recipesForGrid}
                   onRecipeClick={handleRecipeClick}
                   hideMealTypeBadge={filters.meal_types.length > 0}
                 />
               ) : (
                 <div className='grid w-full grid-cols-1 gap-6'>
-                  {sortedRecipes.slice(1).map((recipe, index) => (
+                  {recipesForGrid.map((recipe, index) => (
                     <div key={recipe.id}>
                       <RecipeListItem
                         recipe={recipe}

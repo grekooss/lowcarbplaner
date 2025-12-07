@@ -129,7 +129,7 @@ export function useIngredientEditor({
       if (diffPercent > 15) {
         return {
           valid: true,
-          warning: `⚠️ Duża zmiana (${diffPercent.toFixed(1)}%) - może to zaburzyć proporcje przepisu`,
+          warning: `Duża zmiana (${diffPercent.toFixed(1)}%) - może to zaburzyć proporcje przepisu`,
         }
       }
 
