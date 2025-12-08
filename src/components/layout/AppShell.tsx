@@ -243,41 +243,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <nav className='space-y-2'>{renderNavLinks()}</nav>
                 </div>
 
-                {/* System */}
-                <div>
-                  <h3
-                    className='mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'
-                    style={textShadowStyle}
-                  >
-                    System
-                  </h3>
-                  <div className='space-y-1'>
-                    <Link
-                      href='/profile'
-                      className='flex items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
+                {/* System - only show when logged in */}
+                {user && (
+                  <div>
+                    <h3
+                      className='mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'
+                      style={textShadowStyle}
                     >
-                      <Settings
-                        className='h-5 w-5 text-white'
-                        style={{
-                          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-                        }}
-                      />
-                      <span style={textShadowStyle}>Ustawienia</span>
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className='flex w-full items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
-                    >
-                      <LogOut
-                        className='h-5 w-5 text-white'
-                        style={{
-                          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-                        }}
-                      />
-                      <span style={textShadowStyle}>Wyloguj</span>
-                    </button>
+                      System
+                    </h3>
+                    <div className='space-y-1'>
+                      <Link
+                        href='/profile'
+                        className='flex items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
+                      >
+                        <Settings
+                          className='h-5 w-5 text-white'
+                          style={{
+                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                          }}
+                        />
+                        <span style={textShadowStyle}>Ustawienia</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className='flex w-full items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
+                      >
+                        <LogOut
+                          className='h-5 w-5 text-white'
+                          style={{
+                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                          }}
+                        />
+                        <span style={textShadowStyle}>Wyloguj</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </aside>
 
@@ -326,75 +328,79 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <Menu className='h-6 w-6 text-gray-600' />
                   </button>
 
-                  {/* View Title with Red Bar */}
-                  <div className='flex items-center gap-3'>
-                    <div className='hidden h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:block' />
-                    <div className='flex flex-col justify-center'>
-                      <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:text-3xl'>
-                        {getViewInfo(pathname).title}
-                      </h1>
-                      <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>
-                        {getViewInfo(pathname).subtitle}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* User Menu */}
-                <div className='relative' ref={headerMenuRef}>
-                  <button
-                    onClick={() => {
-                      if (user) {
-                        setHeaderMenuOpen(!headerMenuOpen)
-                      } else {
-                        router.push('/auth?tab=login')
-                      }
-                    }}
-                    className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-4 pl-1 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90'
-                  >
-                    {user ? (
-                      <>
-                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-600'>
-                          <UserCircle className='h-5 w-5 text-white' />
-                        </div>
-                        <span className='text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900'>
-                          Witaj {displayName}
-                        </span>
-                        <ChevronDown className='h-4 w-4 text-gray-500' />
-                      </>
-                    ) : (
-                      <>
-                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
-                          <User className='h-4 w-4 text-gray-500' />
-                        </div>
-                        <span className='text-sm font-bold text-gray-700'>
-                          Zaloguj się
-                        </span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {user && headerMenuOpen && (
-                    <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
-                      <Link
-                        href='/profile'
-                        className='flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
-                        onClick={() => setHeaderMenuOpen(false)}
-                      >
-                        <Settings className='h-4 w-4 text-gray-500' />
-                        <span>Ustawienia profilu</span>
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className='flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
-                      >
-                        <LogOut className='h-4 w-4' />
-                        <span>Wyloguj się</span>
-                      </button>
+                  {/* View Title with Red Bar - hide when auth modal is open */}
+                  {!pathname.includes('/auth') && (
+                    <div className='flex items-center gap-3'>
+                      <div className='hidden h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:block' />
+                      <div className='flex flex-col justify-center'>
+                        <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:text-3xl'>
+                          {getViewInfo(pathname).title}
+                        </h1>
+                        <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>
+                          {getViewInfo(pathname).subtitle}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
+
+                {/* User Menu - hide login button when auth modal is open */}
+                {(user || !pathname.includes('/auth')) && (
+                  <div className='relative' ref={headerMenuRef}>
+                    <button
+                      onClick={() => {
+                        if (user) {
+                          setHeaderMenuOpen(!headerMenuOpen)
+                        } else {
+                          router.push('/auth?tab=login')
+                        }
+                      }}
+                      className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-4 pl-1 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90'
+                    >
+                      {user ? (
+                        <>
+                          <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-600'>
+                            <UserCircle className='h-5 w-5 text-white' />
+                          </div>
+                          <span className='text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900'>
+                            Witaj {displayName}
+                          </span>
+                          <ChevronDown className='h-4 w-4 text-gray-500' />
+                        </>
+                      ) : (
+                        <>
+                          <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
+                            <User className='h-4 w-4 text-gray-500' />
+                          </div>
+                          <span className='text-sm font-bold text-gray-700'>
+                            Zaloguj się
+                          </span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {user && headerMenuOpen && (
+                      <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
+                        <Link
+                          href='/profile'
+                          className='flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                          onClick={() => setHeaderMenuOpen(false)}
+                        >
+                          <Settings className='h-4 w-4 text-gray-500' />
+                          <span>Ustawienia profilu</span>
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className='flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
+                        >
+                          <LogOut className='h-4 w-4' />
+                          <span>Wyloguj się</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </header>
 
               {/* Page Content */}

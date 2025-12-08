@@ -79,7 +79,7 @@ export function RegisterForm({
       {/* General error from auth */}
       {error && (
         <div
-          className='bg-destructive/10 text-destructive rounded-md p-3 text-sm'
+          className='rounded-md bg-red-50 p-3 text-sm text-red-600'
           role='alert'
           aria-live='polite'
         >
@@ -98,12 +98,13 @@ export function RegisterForm({
           disabled={isLoading}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'register-email-error' : undefined}
+          className='bg-white'
           {...register('email')}
         />
         {errors.email && (
           <p
             id='register-email-error'
-            className='text-destructive text-sm'
+            className='text-sm text-red-600'
             role='alert'
           >
             {errors.email.message}
@@ -125,7 +126,7 @@ export function RegisterForm({
             aria-describedby={
               errors.password ? 'register-password-error' : undefined
             }
-            className='pr-10'
+            className='bg-white pr-10'
             {...register('password')}
           />
           <button
@@ -150,7 +151,7 @@ export function RegisterForm({
         {errors.password && (
           <p
             id='register-password-error'
-            className='text-destructive text-sm'
+            className='text-sm text-red-600'
             role='alert'
           >
             {errors.password.message}
@@ -175,7 +176,7 @@ export function RegisterForm({
             aria-describedby={
               errors.confirmPassword ? 'confirm-password-error' : undefined
             }
-            className='pr-10'
+            className='bg-white pr-10'
             {...register('confirmPassword')}
           />
           <button
@@ -200,7 +201,7 @@ export function RegisterForm({
         {errors.confirmPassword && (
           <p
             id='confirm-password-error'
-            className='text-destructive text-sm'
+            className='text-sm text-red-600'
             role='alert'
           >
             {errors.confirmPassword.message}

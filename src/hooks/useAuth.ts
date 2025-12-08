@@ -162,13 +162,27 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
 
   /**
    * Wysyłka email z linkiem do resetowania hasła
+   * Sprawdza najpierw czy email istnieje w bazie
+   * @returns true jeśli email został wysłany, false w przypadku błędu
    */
   const resetPassword = useCallback(
-    async (email: string) => {
+    async (email: string): Promise<boolean> => {
       setIsLoading(true)
       setError(null)
 
       try {
+        // Sprawdź czy użytkownik z takim emailem istnieje (używamy RPC aby ominąć RLS)
+         
+        const { data: emailExists, error: checkError } = await (
+          supabase.rpc as any
+        )('check_email_exists', { check_email: email })
+
+        if (checkError) throw checkError
+
+        if (!emailExists) {
+          throw new Error('Nie znaleziono konta z tym adresem email')
+        }
+
         const { error: authError } = await supabase.auth.resetPasswordForEmail(
           email,
           {
@@ -182,12 +196,14 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
           description:
             'Sprawdź swoją skrzynkę i kliknij w link resetujący hasło.',
         })
+        return true
       } catch (err: any) {
         const errorMessage = translateAuthError(err.message)
         setError(errorMessage)
         toast.error('Błąd', {
           description: errorMessage,
         })
+        return false
       } finally {
         setIsLoading(false)
       }

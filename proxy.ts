@@ -1,5 +1,5 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy
  *
  * Handles authentication and route protection:
  * - Updates Supabase auth session from cookies
@@ -11,7 +11,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Create response object
@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
-  // Create Supabase client for middleware
+  // Create Supabase client for proxy
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

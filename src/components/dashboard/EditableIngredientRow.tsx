@@ -159,15 +159,15 @@ export function EditableIngredientRow({
           <div
             className={cn(
               'flex items-center gap-1 transition-all duration-200',
-              isChecked ? 'opacity-50' : ''
+              isChecked ? 'pointer-events-none opacity-50' : ''
             )}
           >
             {/* Minus button */}
             <button
               type='button'
               onClick={handleDecrement}
-              disabled={currentAmount <= 0}
-              className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:opacity-50'
+              disabled={currentAmount <= 0 || isChecked}
+              className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50'
             >
               <Minus className='h-3.5 w-3.5 text-gray-600' />
             </button>
@@ -178,8 +178,9 @@ export function EditableIngredientRow({
                 type='number'
                 value={localValue}
                 onChange={handleInputChange}
+                disabled={isChecked}
                 className={cn(
-                  'h-auto w-14 [appearance:textfield] border-0 bg-transparent p-0 text-center text-lg font-bold text-gray-800 shadow-none focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                  'h-auto w-14 [appearance:textfield] border-0 bg-transparent p-0 text-center text-lg font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
                   error && 'text-red-500'
                 )}
                 step='1'
@@ -194,7 +195,8 @@ export function EditableIngredientRow({
             <button
               type='button'
               onClick={handleIncrement}
-              className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600'
+              disabled={isChecked}
+              className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50'
             >
               <Plus className='h-3.5 w-3.5 text-gray-600' />
             </button>

@@ -39,7 +39,7 @@ export function GoalStep({ value, onChange }: GoalStepProps) {
         {GOALS.map((goal) => (
           <div
             key={goal}
-            className='flex items-start space-x-3 rounded-3xl bg-white p-4 shadow-sm transition-colors hover:opacity-80'
+            className='hover:border-primary flex items-start space-x-3 rounded-3xl border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
           >
             <RadioGroupItem value={goal} id={goal} className='mt-1' />
             <Label htmlFor={goal} className='flex-1 cursor-pointer font-normal'>

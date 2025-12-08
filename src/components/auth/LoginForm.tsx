@@ -69,7 +69,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
       {/* General error from auth */}
       {error && (
         <div
-          className='bg-destructive/10 text-destructive rounded-md p-3 text-sm'
+          className='rounded-md bg-red-50 p-3 text-sm text-red-600'
           role='alert'
           aria-live='polite'
         >
@@ -84,14 +84,16 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
           id='email'
           type='email'
           autoComplete='email'
+          autoFocus
           placeholder='twoj@email.com'
           disabled={isLoading}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'email-error' : undefined}
+          className='bg-white'
           {...register('email')}
         />
         {errors.email && (
-          <p id='email-error' className='text-destructive text-sm' role='alert'>
+          <p id='email-error' className='text-sm text-red-600' role='alert'>
             {errors.email.message}
           </p>
         )}
@@ -109,7 +111,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
             disabled={isLoading}
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? 'password-error' : undefined}
-            className='pr-10'
+            className='bg-white pr-10'
             {...register('password')}
           />
           <button
@@ -132,11 +134,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
           </button>
         </div>
         {errors.password && (
-          <p
-            id='password-error'
-            className='text-destructive text-sm'
-            role='alert'
-          >
+          <p id='password-error' className='text-sm text-red-600' role='alert'>
             {errors.password.message}
           </p>
         )}
@@ -146,7 +144,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
       <div className='flex justify-end'>
         <Link
           href='/auth/forgot-password'
-          className='text-primary focus:ring-ring rounded text-sm hover:underline focus:ring-2 focus:ring-offset-2 focus:outline-none'
+          className='text-foreground text-sm font-bold transition-transform hover:scale-105 focus:outline-none'
           tabIndex={isLoading ? -1 : 0}
         >
           Zapomniałem hasła

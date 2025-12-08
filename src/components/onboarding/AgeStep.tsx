@@ -3,12 +3,11 @@
 /**
  * AgeStep Component
  *
- * Step 2: Age input
+ * Step 2: Age input with slider
  * Collects user's age (18-100 years)
  */
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 
 interface AgeStepProps {
   value: number | null
@@ -17,16 +16,8 @@ interface AgeStepProps {
 }
 
 export function AgeStep({ value, onChange, error }: AgeStepProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    if (val === '') {
-      onChange(null)
-      return
-    }
-    const numVal = parseInt(val, 10)
-    if (!isNaN(numVal)) {
-      onChange(numVal)
-    }
+  const handleSliderChange = (values: number[]) => {
+    onChange(values[0] ?? null)
   }
 
   return (
@@ -40,28 +31,33 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
         </p>
       </div>
 
-      <div className='space-y-2'>
-        <Label htmlFor='age'>Wiek (lata)</Label>
-        <Input
-          id='age'
-          type='number'
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <span className='text-muted-foreground text-sm'>Wiek</span>
+          <span className='text-foreground text-2xl font-bold'>
+            {value ?? 30} <span className='text-base font-normal'>lat</span>
+          </span>
+        </div>
+        <Slider
+          value={[value ?? 30]}
+          onValueChange={handleSliderChange}
           min={18}
           max={100}
-          value={value ?? ''}
-          onChange={handleChange}
-          placeholder='np. 30'
-          className={error ? 'border-destructive' : ''}
+          step={1}
+          className='w-full'
+          aria-label='Wiek'
           aria-invalid={!!error}
           aria-describedby={error ? 'age-error' : undefined}
         />
+        <div className='text-muted-foreground flex justify-between text-xs'>
+          <span>18</span>
+          <span>100</span>
+        </div>
         {error && (
           <p id='age-error' className='text-destructive text-sm'>
             {error}
           </p>
         )}
-        <p className='text-muted-foreground text-xs'>
-          Musisz mieć co najmniej 18 lat
-        </p>
       </div>
     </div>
   )

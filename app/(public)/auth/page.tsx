@@ -7,7 +7,7 @@
 
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
-import { AuthClient } from '@/components/auth/AuthClient'
+import { AuthModal } from '@/components/auth/AuthModal'
 import type { Metadata } from 'next'
 import type { AuthMode } from '@/types/auth-view.types'
 
@@ -69,8 +69,10 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
   const redirectTo = params.redirect
 
   return (
-    <main className='flex min-h-screen items-center justify-center p-4'>
-      <AuthClient initialTab={initialTab} redirectTo={redirectTo} />
-    </main>
+    <AuthModal
+      initialTab={initialTab}
+      redirectTo={redirectTo}
+      isStandalonePage
+    />
   )
 }

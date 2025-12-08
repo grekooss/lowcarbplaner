@@ -3,12 +3,11 @@
 /**
  * HeightStep Component
  *
- * Step 4: Height input
+ * Step 4: Height input with slider
  * Collects user's height (140-250 cm)
  */
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 
 interface HeightStepProps {
   value: number | null
@@ -17,16 +16,8 @@ interface HeightStepProps {
 }
 
 export function HeightStep({ value, onChange, error }: HeightStepProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    if (val === '') {
-      onChange(null)
-      return
-    }
-    const numVal = parseInt(val, 10)
-    if (!isNaN(numVal)) {
-      onChange(numVal)
-    }
+  const handleSliderChange = (values: number[]) => {
+    onChange(values[0] ?? null)
   }
 
   return (
@@ -40,28 +31,33 @@ export function HeightStep({ value, onChange, error }: HeightStepProps) {
         </p>
       </div>
 
-      <div className='space-y-2'>
-        <Label htmlFor='height'>Wzrost (cm)</Label>
-        <Input
-          id='height'
-          type='number'
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <span className='text-muted-foreground text-sm'>Wzrost</span>
+          <span className='text-foreground text-2xl font-bold'>
+            {value ?? 170} <span className='text-base font-normal'>cm</span>
+          </span>
+        </div>
+        <Slider
+          value={[value ?? 170]}
+          onValueChange={handleSliderChange}
           min={140}
           max={250}
-          value={value ?? ''}
-          onChange={handleChange}
-          placeholder='np. 170'
-          className={error ? 'border-destructive' : ''}
+          step={1}
+          className='w-full'
+          aria-label='Wzrost'
           aria-invalid={!!error}
           aria-describedby={error ? 'height-error' : undefined}
         />
+        <div className='text-muted-foreground flex justify-between text-xs'>
+          <span>140 cm</span>
+          <span>250 cm</span>
+        </div>
         {error && (
           <p id='height-error' className='text-destructive text-sm'>
             {error}
           </p>
         )}
-        <p className='text-muted-foreground text-xs'>
-          Podaj wzrost w centymetrach
-        </p>
       </div>
     </div>
   )

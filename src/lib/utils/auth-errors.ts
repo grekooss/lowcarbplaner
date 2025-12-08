@@ -22,6 +22,8 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   'Database error saving new user': 'Błąd podczas tworzenia konta',
   'New password should be different from the old password':
     'Nowe hasło musi być inne niż poprzednie',
+  'Nie znaleziono konta z tym adresem email':
+    'Nie znaleziono konta z tym adresem email',
 }
 
 /**

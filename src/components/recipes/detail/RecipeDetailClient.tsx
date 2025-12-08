@@ -304,7 +304,7 @@ export function RecipeDetailClient({
 
           {/* Directions */}
           <div className='space-y-3'>
-            <h3 className='font-semibold'>Kroki</h3>
+            <h3 className='text-lg font-bold text-gray-800'>Kroki</h3>
             <InstructionsList instructions={recipe.instructions} />
           </div>
         </div>
@@ -315,7 +315,7 @@ export function RecipeDetailClient({
           <div className='rounded-[20px] border-2 border-white bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]'>
             {/* Header with title and save button */}
             <div className='mb-3 flex items-center justify-between'>
-              <h3 className='font-semibold'>Składniki</h3>
+              <h3 className='text-lg font-bold text-gray-800'>Składniki</h3>
               {enableIngredientEditing &&
                 hasChanges &&
                 !isSaveSuccessful &&

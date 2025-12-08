@@ -36,20 +36,24 @@ export function NavigationButtons({
   submitButtonText = 'Wygeneruj plan',
 }: NavigationButtonsProps) {
   return (
-    <div className='flex flex-col items-stretch justify-between gap-3 pt-4 sm:flex-row sm:items-center sm:gap-0 sm:pt-6'>
-      {/* Back Button */}
-      <Button
-        type='button'
-        variant='outline'
-        onClick={onBack}
-        disabled={!canGoBack || isLoading}
-        className='gap-2'
-        size='lg'
-      >
-        <ChevronLeft className='h-4 w-4' />
-        <span className='hidden sm:inline'>Wstecz</span>
-        <span className='sm:hidden'>Cofnij</span>
-      </Button>
+    <div className='flex flex-col items-stretch justify-between gap-2 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-3 py-2 shadow-[var(--shadow-card)] backdrop-blur-[16px] sm:flex-row sm:items-center sm:gap-0 sm:px-4 sm:py-3'>
+      {/* Back Button - hidden on first step */}
+      {canGoBack ? (
+        <Button
+          type='button'
+          variant='outline'
+          onClick={onBack}
+          disabled={isLoading}
+          className='gap-2'
+          size='lg'
+        >
+          <ChevronLeft className='h-4 w-4' />
+          <span className='hidden sm:inline'>Wstecz</span>
+          <span className='sm:hidden'>Cofnij</span>
+        </Button>
+      ) : (
+        <div />
+      )}
 
       {/* Next/Submit Button */}
       {isLastStep ? (

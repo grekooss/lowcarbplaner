@@ -19,8 +19,8 @@ import {
 } from '@/lib/validation/auth'
 
 interface ForgotPasswordFormProps {
-  /** Callback function to handle form submission */
-  onSubmit: (email: string) => Promise<void>
+  /** Callback function to handle form submission, returns true on success */
+  onSubmit: (email: string) => Promise<boolean>
   /** Loading state during form submission */
   isLoading: boolean
   /** Error message from authentication */
@@ -65,8 +65,10 @@ export function ForgotPasswordForm({
 
   const handleFormSubmit = async (data: ForgotPasswordFormData) => {
     setSuccess(false)
-    await onSubmit(data.email)
-    setSuccess(true)
+    const result = await onSubmit(data.email)
+    if (result) {
+      setSuccess(true)
+    }
   }
 
   // Show success message after submission
@@ -74,7 +76,7 @@ export function ForgotPasswordForm({
     return (
       <div className='space-y-4 text-center'>
         <div className='flex justify-center'>
-          <CheckCircle2 className='h-12 w-12 text-green-600' />
+          <CheckCircle2 className='h-12 w-12 text-red-600' />
         </div>
         <div className='space-y-2'>
           <h3 className='text-lg font-semibold'>Email wysłany!</h3>
@@ -91,7 +93,7 @@ export function ForgotPasswordForm({
       {/* General error from auth */}
       {error && (
         <div
-          className='bg-destructive/10 text-destructive rounded-md p-3 text-sm'
+          className='rounded-md bg-red-50 p-3 text-sm text-red-600'
           role='alert'
           aria-live='polite'
         >
@@ -110,12 +112,13 @@ export function ForgotPasswordForm({
           disabled={isLoading}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'forgot-email-error' : undefined}
+          className='bg-white'
           {...register('email')}
         />
         {errors.email && (
           <p
             id='forgot-email-error'
-            className='text-destructive text-sm'
+            className='text-sm text-red-600'
             role='alert'
           >
             {errors.email.message}

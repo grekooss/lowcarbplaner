@@ -22,7 +22,10 @@ interface StepperIndicatorProps {
 
 export function StepperIndicator({ steps }: StepperIndicatorProps) {
   return (
-    <nav aria-label='Progress' className='mb-6 md:mb-8'>
+    <nav
+      aria-label='Progress'
+      className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-3 py-2 shadow-[var(--shadow-card)] backdrop-blur-[16px] sm:px-4 sm:py-3 md:mb-5'
+    >
       {/* Mobile: Simplified progress bar */}
       <div className='md:hidden'>
         <div className='mb-2 flex items-center justify-between'>
@@ -33,7 +36,7 @@ export function StepperIndicator({ steps }: StepperIndicatorProps) {
             {steps.find((s) => s.isCurrent)?.title}
           </span>
         </div>
-        <div className='bg-muted relative h-2 overflow-hidden rounded-full'>
+        <div className='relative h-2 overflow-hidden rounded-full bg-white/60'>
           <div
             className='bg-primary absolute top-0 left-0 h-full transition-all duration-300'
             style={{
@@ -53,12 +56,12 @@ export function StepperIndicator({ steps }: StepperIndicatorProps) {
             {/* Step Circle */}
             <div className='flex flex-col items-center'>
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 shadow-sm transition-colors ${
                   step.isCompleted
                     ? 'border-primary bg-primary text-primary-foreground'
                     : step.isCurrent
-                      ? 'border-primary text-primary bg-white'
-                      : 'border-muted-foreground/30 text-muted-foreground bg-white'
+                      ? 'border-primary text-primary bg-white/80 backdrop-blur-sm'
+                      : 'text-muted-foreground border-white/60 bg-white/40 backdrop-blur-sm'
                 }`}
                 aria-current={step.isCurrent ? 'step' : undefined}
               >

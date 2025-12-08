@@ -59,11 +59,14 @@ export function OnboardingClient() {
   useEffect(() => {
     if (stepContentRef.current) {
       stepContentRef.current.focus()
-      // Scroll to top of step content on mobile
-      stepContentRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+      // Scroll to top of page only if not already visible
+      const rect = stepContentRef.current.getBoundingClientRect()
+      if (rect.top < 0) {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        })
+      }
     }
   }, [currentStep])
 
@@ -417,14 +420,14 @@ export function OnboardingClient() {
   }, [currentStep, formData.goal])
 
   return (
-    <div className='bg-background min-h-screen'>
-      <div className='container mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 md:py-12'>
-        {/* Header */}
-        <div className='mb-6 text-center sm:mb-8'>
-          <h1 className='text-foreground mb-2 text-2xl font-bold sm:text-3xl md:text-4xl'>
+    <div className='min-h-screen'>
+      <div className='container mx-auto max-w-3xl px-4 pb-4 sm:px-6 sm:pb-6 md:pb-8'>
+        {/* Header - glassmorphism card */}
+        <div className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-4 py-3 text-center shadow-[var(--shadow-glass)] backdrop-blur-[20px] sm:mb-5 sm:px-6 sm:py-4'>
+          <h1 className='text-foreground mb-1 text-xl font-bold sm:text-2xl md:text-3xl'>
             Rozpocznijmy Twoją podróż
           </h1>
-          <p className='text-muted-foreground px-4 text-sm sm:text-base'>
+          <p className='text-muted-foreground text-xs sm:text-sm'>
             Odpowiedz na kilka pytań, a my stworzymy dla Ciebie spersonalizowany
             plan żywieniowy
           </p>
@@ -433,10 +436,10 @@ export function OnboardingClient() {
         {/* Stepper */}
         {currentStep < 10 && <StepperIndicator steps={stepperSteps} />}
 
-        {/* Step Content */}
+        {/* Step Content - glassmorphism card */}
         <div
           ref={stepContentRef}
-          className='card-soft mb-4 rounded-3xl border-0 p-6 shadow-sm outline-none sm:mb-6 sm:p-8 md:p-10'
+          className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 p-4 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] outline-none sm:p-6 md:p-8'
           role='region'
           aria-label={`Krok ${currentStep} z ${totalSteps}`}
           aria-live='polite'
@@ -463,9 +466,9 @@ export function OnboardingClient() {
           />
         )}
 
-        {/* Error handling */}
+        {/* Error handling - glassmorphism */}
         {submitError && (
-          <div className='mt-6 rounded-lg bg-red-50 p-4 text-center'>
+          <div className='mt-6 rounded-[16px] border-2 border-red-200/50 bg-red-50/60 p-4 text-center backdrop-blur-[16px]'>
             <p className='text-destructive text-sm'>{submitError}</p>
           </div>
         )}

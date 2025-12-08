@@ -9,6 +9,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SocialAuthButtonProps {
   /** Callback function to handle OAuth login */
@@ -46,7 +47,7 @@ export function SocialAuthButton({
     <Button
       type='button'
       variant='outline'
-      className={className}
+      className={cn('border-white/60 bg-white hover:bg-white/80', className)}
       onClick={onLogin}
       disabled={isLoading}
       aria-label='Zaloguj się przez Google'

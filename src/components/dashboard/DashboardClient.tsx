@@ -72,6 +72,11 @@ export function DashboardClient({
     ? formatLocalDate(normalizedSelectedDate)
     : ''
 
+  // Sprawdź czy wybrana data to dzisiaj
+  const today = new Date()
+  const isToday =
+    formatLocalDate(normalizedSelectedDate) === formatLocalDate(today)
+
   // Śledź poprzednią datę aby rozróżnić zmianę daty od refetch po zmianie statusu posiłku
   const prevDateRef = useRef(selectedDateStr)
   const isDateChanging = prevDateRef.current !== selectedDateStr
@@ -233,6 +238,7 @@ export function DashboardClient({
           <MacroProgressSection
             meals={displayMeals}
             targetMacros={targetMacros}
+            isToday={isToday}
           />
         </div>
 

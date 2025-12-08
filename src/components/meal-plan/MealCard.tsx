@@ -97,7 +97,7 @@ export const MealCard = ({
           <span className='mb-0.5 block text-[9px] font-bold tracking-wider text-gray-400 uppercase xl:hidden'>
             {mealTypeLabels[mealType]}
           </span>
-          <p className='line-clamp-3 text-sm leading-snug font-bold text-gray-800'>
+          <p className='line-clamp-3 text-sm leading-snug font-semibold text-gray-800'>
             {meal.recipe.name}
           </p>
         </div>

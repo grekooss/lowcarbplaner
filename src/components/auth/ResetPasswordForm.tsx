@@ -103,7 +103,7 @@ export function ResetPasswordForm({
             aria-describedby={
               errors.password ? 'reset-password-error' : undefined
             }
-            className='pr-10'
+            className='bg-white pr-10'
             {...register('password')}
           />
           <button
@@ -155,7 +155,7 @@ export function ResetPasswordForm({
                 ? 'reset-confirm-password-error'
                 : undefined
             }
-            className='pr-10'
+            className='bg-white pr-10'
             {...register('confirmPassword')}
           />
           <button

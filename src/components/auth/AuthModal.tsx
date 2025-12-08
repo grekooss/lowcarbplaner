@@ -16,6 +16,8 @@ interface AuthModalProps {
   initialTab?: AuthMode
   /** Optional redirect path after successful login */
   redirectTo?: string
+  /** When true, closing navigates to home instead of back */
+  isStandalonePage?: boolean
 }
 
 /**
@@ -25,24 +27,34 @@ interface AuthModalProps {
 export function AuthModal({
   initialTab = 'login',
   redirectTo,
+  isStandalonePage = false,
 }: AuthModalProps) {
   const router = useRouter()
 
   const handleClose = (open: boolean) => {
     if (!open) {
-      router.back()
+      if (isStandalonePage) {
+        router.push('/')
+      } else {
+        router.back()
+      }
     }
   }
 
   return (
     <Dialog open={true} onOpenChange={handleClose}>
-      <DialogContent className='max-h-[90vh] max-w-md overflow-y-auto p-6'>
+      <DialogContent
+        constrainToMainPanel
+        className='max-h-[90vh] max-w-md overflow-y-auto rounded-[20px] border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px]'
+      >
         <VisuallyHidden>
           <DialogTitle>
             {initialTab === 'login' ? 'Logowanie' : 'Rejestracja'}
           </DialogTitle>
         </VisuallyHidden>
-        <AuthClient initialTab={initialTab} redirectTo={redirectTo} />
+        <div className='p-6'>
+          <AuthClient initialTab={initialTab} redirectTo={redirectTo} />
+        </div>
       </DialogContent>
     </Dialog>
   )

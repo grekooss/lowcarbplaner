@@ -14,7 +14,7 @@ const buttonVariants = cva(
           'bg-primary text-primary-foreground hover:bg-primary-dark active:bg-primary-hover rounded-[8px] shadow-sm hover:shadow-md active:shadow-none',
         // Secondary Button (Outlined)
         outline:
-          'border-border bg-background text-text-main hover:border-primary hover:text-primary active:border-primary-dark active:bg-breakfast-bg hover:bg-breakfast-bg rounded-[8px] border-[1.5px]',
+          'border-border text-text-main hover:border-primary hover:text-primary active:border-primary-dark rounded-[8px] border-[1.5px] bg-white hover:bg-white active:bg-white',
         // Ghost Button
         ghost:
           'text-text-secondary hover:bg-bg-tertiary active:bg-border rounded-[8px] bg-transparent',

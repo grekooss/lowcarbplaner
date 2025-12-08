@@ -30,7 +30,7 @@ export function InstructionStep({ step, description }: InstructionStepProps) {
 
       {/* Opis kroku */}
       <div className='flex-1 pt-1'>
-        <p className='text-sm leading-relaxed'>{description}</p>
+        <p className='text-base leading-relaxed font-medium'>{description}</p>
       </div>
     </div>
   )
