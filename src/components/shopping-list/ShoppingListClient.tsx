@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { CheckCircle2, Circle } from 'lucide-react'
+import { CheckCircle2, Circle, Loader2 } from 'lucide-react'
 import { ShoppingListAccordion } from './ShoppingListAccordion'
 import { EmptyState } from './EmptyState'
 import { cleanupPurchasedState } from '@/types/shopping-list-view.types'
@@ -69,6 +69,15 @@ export const ShoppingListClient = ({
     const purchasedCount = Object.values(purchasedItems).filter(Boolean).length
     return { totalItems, purchasedCount }
   }, [initialShoppingList, purchasedItems])
+
+  // Show spinner during hydration
+  if (!isHydrated) {
+    return (
+      <div className='flex min-h-[60vh] items-center justify-center'>
+        <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+      </div>
+    )
+  }
 
   if (initialShoppingList.length === 0) {
     return <EmptyState />

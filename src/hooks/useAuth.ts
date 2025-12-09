@@ -109,16 +109,17 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
 
         // Supabase może automatycznie zalogować po rejestracji
         if (data.user && data.session) {
-          // Przekieruj do onboardingu
-          router.push('/onboarding')
+          // Przekieruj do przepisów
+          router.push('/recipes')
           toast.success('Konto utworzone', {
             description: 'Witaj w LowCarbPlaner!',
           })
         } else {
-          // Wymaga potwierdzenia email
+          // Wymaga potwierdzenia email - zamknij modal i przekieruj do przepisów
           toast.success('Sprawdź swoją skrzynkę', {
             description: 'Wysłaliśmy link aktywacyjny na Twój email.',
           })
+          router.push('/recipes')
         }
       } catch (err: any) {
         const errorMessage = translateAuthError(err.message)
@@ -172,7 +173,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
 
       try {
         // Sprawdź czy użytkownik z takim emailem istnieje (używamy RPC aby ominąć RLS)
-         
+
         const { data: emailExists, error: checkError } = await (
           supabase.rpc as any
         )('check_email_exists', { check_email: email })

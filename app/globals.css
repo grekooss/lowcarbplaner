@@ -363,3 +363,48 @@ html {
   scrollbar-width: thin;
   scrollbar-color: var(--primary) rgba(255, 255, 255, 0.2);
 }
+
+/* Mobile/Tablet Ad Panel - Orientation-based layout */
+/* Portrait mode (default) - column layout, show bottom ad */
+.ad-layout-container {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+.ad-panel-landscape {
+  display: none !important;
+}
+
+.ad-panel-portrait {
+  display: flex !important;
+}
+
+/* Landscape mode - row layout, show right side ad */
+@media screen and (orientation: landscape) {
+  .ad-layout-container {
+    flex-direction: row !important;
+    align-items: stretch !important;
+  }
+
+  .ad-panel-landscape {
+    display: flex !important;
+  }
+
+  .ad-panel-portrait {
+    display: none !important;
+  }
+}
+
+/* Hide mobile ads on 2xl screens (desktop has its own ad panel) */
+@media screen and (min-width: 1536px) {
+  .ad-layout-container {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .ad-panel-landscape,
+  .ad-panel-portrait {
+    display: none !important;
+  }
+}

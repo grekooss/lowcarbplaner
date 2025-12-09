@@ -73,7 +73,7 @@ export function SortSelect({
         </button>
       </div>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className='group flex h-auto w-[180px] items-center gap-2 rounded-sm rounded-l-none border border-l-0 border-white bg-white px-4 py-2 text-sm font-bold tracking-wider text-gray-800 uppercase shadow-none focus:ring-0 data-[state=open]:ring-0'>
+        <SelectTrigger className='group flex h-auto w-[180px] items-center gap-2 rounded-sm rounded-l-none border border-l-0 border-white bg-white px-4 py-2 text-sm font-bold tracking-wider text-gray-800 uppercase shadow-none focus:border-white focus:ring-0 data-[state=open]:border-white data-[state=open]:ring-0'>
           <SelectValue placeholder='Sortuj' className='text-center' />
         </SelectTrigger>
         <SelectContent
@@ -88,7 +88,7 @@ export function SortSelect({
               key={option.value}
               value={option.value}
               textValue={option.label}
-              className='cursor-pointer rounded-sm px-4 py-2 text-sm font-bold tracking-wider text-gray-600 uppercase focus:bg-red-50 focus:text-red-600 data-[state=checked]:bg-red-600 data-[state=checked]:text-white'
+              className='cursor-pointer rounded-sm px-4 py-2 text-sm font-bold tracking-wider text-gray-600 uppercase outline-none focus:bg-red-50 focus:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 data-[state=checked]:bg-red-600 data-[state=checked]:text-white'
             >
               {option.label}
             </SelectItem>

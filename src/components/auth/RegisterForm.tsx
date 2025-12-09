@@ -7,7 +7,6 @@
 
 'use client'
 
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
@@ -25,6 +24,10 @@ interface RegisterFormProps {
   isLoading: boolean
   /** Error message from authentication */
   error: string | null
+  /** Whether to show password (controlled by parent) */
+  showPassword: boolean
+  /** Callback to toggle password visibility */
+  onTogglePassword: () => void
 }
 
 /**
@@ -53,10 +56,9 @@ export function RegisterForm({
   onSubmit,
   isLoading,
   error,
+  showPassword,
+  onTogglePassword,
 }: RegisterFormProps) {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
   const {
     register,
     handleSubmit,
@@ -131,12 +133,12 @@ export function RegisterForm({
           />
           <button
             type='button'
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={onTogglePassword}
             disabled={isLoading}
             className={cn(
               'absolute top-1/2 right-2 -translate-y-1/2',
-              'hover:bg-muted rounded p-1',
-              'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              'rounded p-1',
+              'focus:outline-none',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}
             aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
@@ -168,7 +170,7 @@ export function RegisterForm({
         <div className='relative'>
           <Input
             id='confirm-password'
-            type={showConfirmPassword ? 'text' : 'password'}
+            type={showPassword ? 'text' : 'password'}
             autoComplete='new-password'
             placeholder='••••••••'
             disabled={isLoading}
@@ -181,17 +183,17 @@ export function RegisterForm({
           />
           <button
             type='button'
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={onTogglePassword}
             disabled={isLoading}
             className={cn(
               'absolute top-1/2 right-2 -translate-y-1/2',
-              'hover:bg-muted rounded p-1',
-              'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              'rounded p-1',
+              'focus:outline-none',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}
-            aria-label={showConfirmPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+            aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
           >
-            {showConfirmPassword ? (
+            {showPassword ? (
               <EyeOff className='text-muted-foreground h-4 w-4' />
             ) : (
               <Eye className='text-muted-foreground h-4 w-4' />

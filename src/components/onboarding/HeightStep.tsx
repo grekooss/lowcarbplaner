@@ -7,6 +7,7 @@
  * Collects user's height (140-210 cm)
  */
 
+import { useEffect } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 
@@ -20,6 +21,13 @@ export function HeightStep({ value, onChange, error }: HeightStepProps) {
   const MIN = 140
   const MAX = 210
   const DEFAULT = 170
+
+  // Initialize with default value if null
+  useEffect(() => {
+    if (value === null) {
+      onChange(DEFAULT)
+    }
+  }, [value, onChange])
 
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)

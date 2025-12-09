@@ -7,6 +7,7 @@
 
 'use client'
 
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { X } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -47,6 +48,7 @@ export function AuthClient({
 }: AuthClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [showPassword, setShowPassword] = useState(false)
   const {
     login,
     register,
@@ -110,7 +112,13 @@ export function AuthClient({
 
         {/* Login Tab */}
         <TabsContent value='login' className='mt-6'>
-          <LoginForm onSubmit={login} isLoading={isLoading} error={error} />
+          <LoginForm
+            onSubmit={login}
+            isLoading={isLoading}
+            error={error}
+            showPassword={showPassword}
+            onTogglePassword={() => setShowPassword(!showPassword)}
+          />
         </TabsContent>
 
         {/* Register Tab */}
@@ -119,6 +127,8 @@ export function AuthClient({
             onSubmit={register}
             isLoading={isLoading}
             error={error}
+            showPassword={showPassword}
+            onTogglePassword={() => setShowPassword(!showPassword)}
           />
         </TabsContent>
       </Tabs>

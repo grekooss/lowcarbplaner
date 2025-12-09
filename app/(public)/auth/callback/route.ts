@@ -3,11 +3,15 @@
  *
  * Handles OAuth callback from providers (Google)
  * Exchanges authorization code for session and redirects appropriately
+ *
+ * IMPORTANT: This route handler must properly set cookies in the response
+ * for the session to persist after redirect.
  */
 
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/database.types'
 
 /**
  * GET handler dla OAuth callback
@@ -36,16 +40,36 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth', origin))
   }
 
-  try {
-    const supabase = await createServerClient()
+  // Create a response object that we can modify cookies on
+  const response = NextResponse.next({
+    request,
+  })
 
-    // Exchange code for session
+  // Create Supabase client that can set cookies on the response
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
+  try {
+    // Exchange code for session - this sets the auth cookies
     const { error: exchangeError } =
       await supabase.auth.exchangeCodeForSession(code)
 
     if (exchangeError) {
       console.error('OAuth callback error:', exchangeError)
-      // Redirect to auth page with error
       return NextResponse.redirect(new URL('/auth?error=oauth_failed', origin))
     }
 
@@ -65,16 +89,26 @@ export async function GET(request: NextRequest) {
       .eq('id', user.id)
       .maybeSingle()
 
-    // Redirect based on profile completion
+    // Build redirect response with cookies from the response object
+    let redirectUrl: URL
     if (!profile?.disclaimer_accepted_at) {
-      // New user - redirect to onboarding (ignore redirect param)
-      return NextResponse.redirect(new URL('/onboarding', origin))
+      // New user - redirect to onboarding
+      redirectUrl = new URL('/onboarding', origin)
     } else {
       // Existing user - redirect to requested page or home
       // Validate redirect to prevent open redirect attacks
-      const redirectUrl = redirect.startsWith('/') ? redirect : '/'
-      return NextResponse.redirect(new URL(redirectUrl, origin))
+      const targetPath = redirect.startsWith('/') ? redirect : '/'
+      redirectUrl = new URL(targetPath, origin)
     }
+
+    // Create redirect response and copy all cookies from the response object
+    // Preserve original cookie options set by Supabase
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+
+    return redirectResponse
   } catch (error) {
     console.error('Unexpected error in OAuth callback:', error)
     return NextResponse.redirect(new URL('/auth?error=unexpected', origin))

@@ -112,8 +112,8 @@ export function ResetPasswordForm({
             disabled={isLoading}
             className={cn(
               'absolute top-1/2 right-2 -translate-y-1/2',
-              'hover:bg-muted rounded p-1',
-              'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              'rounded p-1',
+              'focus:outline-none',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}
             aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
@@ -164,8 +164,8 @@ export function ResetPasswordForm({
             disabled={isLoading}
             className={cn(
               'absolute top-1/2 right-2 -translate-y-1/2',
-              'hover:bg-muted rounded p-1',
-              'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              'rounded p-1',
+              'focus:outline-none',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}
             aria-label={showConfirmPassword ? 'Ukryj hasło' : 'Pokaż hasło'}

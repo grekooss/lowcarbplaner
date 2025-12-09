@@ -162,6 +162,15 @@ export function RecipesBrowserClient({
     console.log('Add to meal plan:', recipeId)
   }
 
+  // Initial loading - show spinner for entire page
+  if (isLoading) {
+    return (
+      <main className='flex min-h-[60vh] items-center justify-center'>
+        <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+      </main>
+    )
+  }
+
   return (
     <>
       <main className='w-full space-y-6'>
@@ -196,8 +205,8 @@ export function RecipesBrowserClient({
 
         {/* Recipes Grid/List */}
         <section className='w-full space-y-6'>
-          {isLoading || (isFetching && !isFetchingNextPage) ? (
-            // Initial loading or filtering (not load more)
+          {isFetching && !isFetchingNextPage ? (
+            // Filtering/refetching (not load more)
             <div className='flex justify-center pt-16'>
               <Loader2
                 className='h-14 w-14 animate-spin text-red-600'

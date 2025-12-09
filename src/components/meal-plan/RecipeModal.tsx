@@ -84,8 +84,8 @@ export const RecipeModal = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid='recipe-modal'
-        constrainToMainPanel
-        className='max-h-[85vh] w-[calc(100%-2rem)] max-w-[1340px] overflow-y-auto rounded-[20px] border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px]'
+        coverMainPanel
+        className='overflow-y-auto rounded-2xl border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md md:rounded-3xl'
       >
         <VisuallyHidden>
           <DialogTitle>{meal.recipe.name}</DialogTitle>

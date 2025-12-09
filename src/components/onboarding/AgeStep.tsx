@@ -7,6 +7,7 @@
  * Collects user's age (18-100 years)
  */
 
+import { useEffect } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 
@@ -20,6 +21,13 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
   const MIN = 18
   const MAX = 100
   const DEFAULT = 30
+
+  // Initialize with default value if null
+  useEffect(() => {
+    if (value === null) {
+      onChange(DEFAULT)
+    }
+  }, [value, onChange])
 
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)

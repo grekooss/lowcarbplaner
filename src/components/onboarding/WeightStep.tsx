@@ -7,6 +7,7 @@
  * Collects user's current weight (40-150 kg)
  */
 
+import { useEffect } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 
@@ -21,6 +22,13 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
   const MAX = 150
   const DEFAULT = 70
   const STEP = 0.1
+
+  // Initialize with default value if null
+  useEffect(() => {
+    if (value === null) {
+      onChange(DEFAULT)
+    }
+  }, [value, onChange])
 
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)

@@ -56,10 +56,10 @@ export function FeaturedRecipeCard({
     : null
 
   return (
-    <div className='flex flex-col gap-6 rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl lg:flex-row'>
-      {/* Image Section */}
-      <div className='flex-shrink-0 lg:w-64'>
-        <div className='relative h-48 w-full overflow-hidden rounded-md bg-white/60 lg:h-full lg:min-h-[280px]'>
+    <div className='flex gap-4 rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl lg:gap-6'>
+      {/* Image Section - 1/3 width on tablet landscape, fixed width on desktop */}
+      <div className='w-1/3 flex-shrink-0 lg:w-64'>
+        <div className='relative h-full min-h-[200px] w-full overflow-hidden rounded-md bg-white/60 lg:min-h-[280px]'>
           {recipe.image_url ? (
             <Image
               src={recipe.image_url}
@@ -67,7 +67,7 @@ export function FeaturedRecipeCard({
               fill
               className='object-cover grayscale-[10%]'
               priority
-              sizes='(max-width: 1024px) 100vw, 256px'
+              sizes='(max-width: 1024px) 33vw, 256px'
             />
           ) : (
             <RecipeImagePlaceholder recipeName={recipe.name} />
@@ -75,70 +75,98 @@ export function FeaturedRecipeCard({
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* Content Section - 2/3 width on tablet, flex-1 on desktop */}
       <div className='flex flex-1 flex-col justify-center'>
         {primaryMealType && (
-          <div className='mb-3'>
-            <span className='rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase'>
+          <div className='mb-2 lg:mb-3'>
+            <span className='rounded-sm border border-white bg-white px-2 py-0.5 text-xs font-bold tracking-wider text-gray-800 uppercase lg:px-2.5 lg:py-1'>
               {MEAL_TYPE_LABELS[primaryMealType]}
             </span>
           </div>
         )}
 
-        <h3 className='mb-6 text-2xl leading-tight font-bold text-gray-800'>
+        <h3 className='mb-3 text-lg leading-tight font-bold text-gray-800 lg:mb-4 lg:text-2xl'>
           {recipe.name}
         </h3>
 
-        <div className='mb-6 grid max-w-md grid-cols-2 gap-x-8 gap-y-4'>
-          <div className='flex items-center gap-3'>
-            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
-              <BarChart3 className='h-4 w-4' />
+        {/* Inline Nutrition - visible on tablet, hidden on desktop */}
+        <div className='mb-4 flex flex-wrap items-center gap-4 lg:hidden'>
+          <span className='inline-flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-500/20'>
+            <Flame className='h-3.5 w-3.5' />
+            {calories ?? '—'} kcal
+          </span>
+          <div className='flex items-center gap-2' title='Węglowodany'>
+            <Wheat className='h-4 w-4 text-gray-900' />
+            <span className='text-sm font-bold text-gray-700'>
+              {carbs ?? '—'}g
+            </span>
+          </div>
+          <div className='flex items-center gap-2' title='Białko'>
+            <Beef className='h-4 w-4 text-gray-900' />
+            <span className='text-sm font-bold text-gray-700'>
+              {protein ?? '—'}g
+            </span>
+          </div>
+          <div className='flex items-center gap-2' title='Tłuszcze'>
+            <Droplet className='h-4 w-4 text-gray-900' />
+            <span className='text-sm font-bold text-gray-700'>
+              {fats ?? '—'}g
+            </span>
+          </div>
+        </div>
+
+        <div className='mb-4 grid grid-cols-2 gap-x-4 gap-y-2 lg:mb-6 lg:max-w-md lg:gap-x-8 lg:gap-y-4'>
+          <div className='flex items-center gap-2 lg:gap-3'>
+            <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
+              <BarChart3 className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
             </div>
             <div>
-              <p className='text-xs font-bold text-gray-400 uppercase'>
+              <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
                 Trudność
               </p>
-              <p className='text-sm font-bold text-gray-900'>
+              <p className='text-xs font-bold text-gray-900 lg:text-sm'>
                 {difficultyLabel[recipe.difficulty_level]}
               </p>
             </div>
           </div>
 
-          <div className='flex items-center gap-3'>
-            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
-              <Clock className='h-4 w-4' />
+          <div className='flex items-center gap-2 lg:gap-3'>
+            <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
+              <Clock className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
             </div>
             <div>
-              <p className='text-xs font-bold text-gray-400 uppercase'>
+              <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
                 Przygotowanie
               </p>
-              <p className='text-sm font-bold text-gray-900'>
+              <p className='text-xs font-bold text-gray-900 lg:text-sm'>
                 {prepTime > 0 ? `${prepTime} min` : '—'}
               </p>
             </div>
           </div>
 
-          <div className='flex items-center gap-3'>
-            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
-              <Timer className='h-4 w-4' />
+          <div className='flex items-center gap-2 lg:gap-3'>
+            <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
+              <Timer className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
             </div>
             <div>
-              <p className='text-xs font-bold text-gray-400 uppercase'>
+              <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
                 Gotowanie
               </p>
-              <p className='text-sm font-bold text-gray-900'>
+              <p className='text-xs font-bold text-gray-900 lg:text-sm'>
                 {cookTime > 0 ? `${cookTime} min` : '—'}
               </p>
             </div>
           </div>
 
-          <div className='flex items-center gap-3'>
-            <div className='rounded-sm border border-white bg-white p-2 text-gray-600'>
-              <ListOrdered className='h-4 w-4' />
+          <div className='flex items-center gap-2 lg:gap-3'>
+            <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
+              <ListOrdered className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
             </div>
             <div>
-              <p className='text-xs font-bold text-gray-400 uppercase'>Kroki</p>
-              <p className='text-sm font-bold text-gray-900'>
+              <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
+                Kroki
+              </p>
+              <p className='text-xs font-bold text-gray-900 lg:text-sm'>
                 {totalSteps > 0 ? `${totalSteps}` : '—'}
               </p>
             </div>
@@ -147,14 +175,14 @@ export function FeaturedRecipeCard({
 
         <button
           onClick={handleClick}
-          className='w-full rounded-sm bg-red-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-red-500/20 transition-all hover:bg-red-700 sm:w-auto'
+          className='w-full rounded-sm bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-red-500/20 transition-all hover:bg-red-700 lg:w-auto lg:px-6 lg:py-2.5'
         >
           Zobacz przepis
         </button>
       </div>
 
-      {/* Quick Nutrition Panel */}
-      <div className='flex flex-col gap-2 lg:w-32'>
+      {/* Quick Nutrition Panel - hidden on tablet landscape, visible on desktop */}
+      <div className='hidden flex-col gap-2 lg:flex lg:w-32'>
         <div className='rounded-sm bg-red-600 px-2.5 py-2 shadow-sm shadow-red-500/20'>
           <p className='mb-1 text-center text-xs font-bold text-white uppercase'>
             Kalorie

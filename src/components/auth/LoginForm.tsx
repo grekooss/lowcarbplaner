@@ -7,7 +7,6 @@
 
 'use client'
 
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
@@ -25,6 +24,10 @@ interface LoginFormProps {
   isLoading: boolean
   /** Error message from authentication */
   error: string | null
+  /** Whether to show password (controlled by parent) */
+  showPassword: boolean
+  /** Callback to toggle password visibility */
+  onTogglePassword: () => void
 }
 
 /**
@@ -48,9 +51,13 @@ interface LoginFormProps {
  * />
  * ```
  */
-export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
-  const [showPassword, setShowPassword] = useState(false)
-
+export function LoginForm({
+  onSubmit,
+  isLoading,
+  error,
+  showPassword,
+  onTogglePassword,
+}: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -79,21 +86,24 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
 
       {/* Email field */}
       <div className='space-y-2'>
-        <Label htmlFor='email'>Email</Label>
+        <Label htmlFor='login-email'>Email</Label>
         <Input
-          id='email'
+          id='login-email'
           type='email'
           autoComplete='email'
-          autoFocus
           placeholder='twoj@email.com'
           disabled={isLoading}
           aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? 'email-error' : undefined}
+          aria-describedby={errors.email ? 'login-email-error' : undefined}
           className='bg-white'
           {...register('email')}
         />
         {errors.email && (
-          <p id='email-error' className='text-sm text-red-600' role='alert'>
+          <p
+            id='login-email-error'
+            className='text-sm text-red-600'
+            role='alert'
+          >
             {errors.email.message}
           </p>
         )}
@@ -101,27 +111,29 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
 
       {/* Password field */}
       <div className='space-y-2'>
-        <Label htmlFor='password'>Hasło</Label>
+        <Label htmlFor='login-password'>Hasło</Label>
         <div className='relative'>
           <Input
-            id='password'
+            id='login-password'
             type={showPassword ? 'text' : 'password'}
             autoComplete='current-password'
             placeholder='••••••••'
             disabled={isLoading}
             aria-invalid={!!errors.password}
-            aria-describedby={errors.password ? 'password-error' : undefined}
+            aria-describedby={
+              errors.password ? 'login-password-error' : undefined
+            }
             className='bg-white pr-10'
             {...register('password')}
           />
           <button
             type='button'
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={onTogglePassword}
             disabled={isLoading}
             className={cn(
               'absolute top-1/2 right-2 -translate-y-1/2',
-              'hover:bg-muted rounded p-1',
-              'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              'rounded p-1',
+              'focus:outline-none',
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}
             aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
@@ -134,7 +146,11 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
           </button>
         </div>
         {errors.password && (
-          <p id='password-error' className='text-sm text-red-600' role='alert'>
+          <p
+            id='login-password-error'
+            className='text-sm text-red-600'
+            role='alert'
+          >
             {errors.password.message}
           </p>
         )}

@@ -55,7 +55,11 @@ const NAV_ITEMS: NavItem[] = [
 const textShadowStyle = { textShadow: '0 1px 3px rgba(0,0,0,0.3)' }
 
 const getViewInfo = (pathname: string) => {
-  if (pathname === '/dashboard' || pathname === '/') {
+  // Root path - will redirect, show nothing
+  if (pathname === '/') {
+    return { title: '', subtitle: '' }
+  }
+  if (pathname === '/dashboard') {
     return { title: 'Panel dzienny', subtitle: 'Śledź swoje posiłki i kalorie' }
   }
   if (pathname.startsWith('/meal-plan')) {
@@ -213,11 +217,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main Container Wrapper for Panel + Ads */}
-        <div className='relative z-30 flex h-full w-full max-w-[1800px] items-center justify-center gap-6 p-2 lg:p-10'>
+        <div className='ad-layout-container relative z-30 flex h-full w-full max-w-[1800px] gap-4 p-2 lg:gap-6 lg:p-10'>
           {/* Main Glass Panel */}
-          <div className='flex h-full w-full flex-1 overflow-hidden rounded-2xl border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md md:rounded-3xl lg:rounded-3xl'>
-            {/* Sidebar - Desktop */}
-            <aside className='hidden h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white lg:flex'>
+          <div
+            data-main-panel
+            className='flex h-full w-full flex-1 overflow-hidden rounded-2xl border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md md:rounded-3xl lg:rounded-3xl'
+          >
+            {/* Sidebar - Desktop only (xl+) */}
+            <aside className='hidden h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white xl:flex'>
               {/* Logo */}
               <div className='mb-10 flex items-center gap-3 px-2'>
                 <div className='rounded-lg bg-red-600 p-1.5 shadow-lg shadow-red-500/30'>
@@ -283,10 +290,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </aside>
 
-            {/* Mobile Sidebar Overlay */}
+            {/* Mobile/Tablet Sidebar Overlay */}
             {mobileNavOpen && (
               <div
-                className='fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden'
+                className='fixed inset-0 z-50 bg-black/20 backdrop-blur-sm xl:hidden'
                 onClick={() => setMobileNavOpen(false)}
               >
                 <div
@@ -322,26 +329,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <header className='mb-6 flex items-center justify-between'>
                 <div className='flex items-center gap-4'>
                   <button
-                    className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 lg:hidden'
+                    className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 xl:hidden'
                     onClick={() => setMobileNavOpen(true)}
                   >
                     <Menu className='h-6 w-6 text-gray-600' />
                   </button>
 
-                  {/* View Title with Red Bar - hide when auth modal is open */}
-                  {!pathname.includes('/auth') && (
-                    <div className='flex items-center gap-3'>
-                      <div className='hidden h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:block' />
-                      <div className='flex flex-col justify-center'>
-                        <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:text-3xl'>
-                          {getViewInfo(pathname).title}
-                        </h1>
-                        <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>
-                          {getViewInfo(pathname).subtitle}
-                        </p>
+                  {/* View Title with Red Bar - hide when auth modal is open or on root path */}
+                  {!pathname.includes('/auth') &&
+                    getViewInfo(pathname).title && (
+                      <div className='flex items-center gap-3'>
+                        <div className='hidden h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:block' />
+                        <div className='flex flex-col justify-center'>
+                          <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:text-3xl'>
+                            {getViewInfo(pathname).title}
+                          </h1>
+                          <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>
+                            {getViewInfo(pathname).subtitle}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
 
                 {/* User Menu - hide login button when auth modal is open */}
@@ -355,7 +363,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           router.push('/auth?tab=login')
                         }
                       }}
-                      className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-4 pl-1 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90'
+                      className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-1.5 pl-1.5 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90 sm:pr-4 sm:pl-1'
                     >
                       {user ? (
                         <>
@@ -372,7 +380,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
                             <User className='h-4 w-4 text-gray-500' />
                           </div>
-                          <span className='text-sm font-bold text-gray-700'>
+                          <span className='hidden text-sm font-bold text-gray-700 sm:block'>
                             Zaloguj się
                           </span>
                         </>
@@ -408,8 +416,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </main>
           </div>
 
-          {/* Global Right Side Ad Panel (Visible on Large Screens) */}
-          <div className='hidden h-full w-80 2xl:flex'>
+          {/* Global Right Side Ad Panel (Visible on Large Screens - Desktop) */}
+          <div className='hidden h-full w-80 flex-shrink-0 2xl:flex'>
             <div className='group flex h-full w-full flex-col rounded-2xl border-2 border-white bg-white/20 p-6 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 md:rounded-3xl lg:rounded-3xl'>
               <h3 className='mb-6 text-lg font-bold text-gray-800'>Reklama</h3>
               <div className='flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50'>
@@ -420,6 +428,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className='text-xs font-medium text-gray-500'>
                   Treść sponsorowana
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Ad Panel - Landscape (Right Side) */}
+          <div className='ad-panel-landscape h-full w-48 flex-shrink-0 pr-[env(safe-area-inset-right,8px)] md:w-56'>
+            <div className='group flex h-full w-full flex-col rounded-2xl border-2 border-white bg-white/20 p-3 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 md:p-4'>
+              <h3 className='mb-3 text-xs font-bold text-gray-800 md:mb-4 md:text-sm'>
+                Reklama
+              </h3>
+              <div className='flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50'>
+                <MonitorPlay className='h-8 w-8 text-gray-600 transition-colors group-hover:text-red-500 md:h-10 md:w-10' />
+                <div className='text-base font-bold text-gray-700 transition-colors group-hover:text-red-600 md:text-lg'>
+                  Google Ads
+                </div>
+                <span className='text-[10px] font-medium text-gray-500'>
+                  Treść sponsorowana
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Ad Panel - Portrait (Bottom) */}
+          <div className='ad-panel-portrait h-24 w-full flex-shrink-0 pb-[env(safe-area-inset-bottom,8px)] md:h-28'>
+            <div className='group flex h-full w-full flex-col rounded-2xl border-2 border-white bg-white/20 p-2 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 md:p-3'>
+              <div className='flex h-full w-full cursor-pointer flex-row items-center justify-center gap-3 rounded-xl border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50 md:gap-4'>
+                <MonitorPlay className='h-7 w-7 text-gray-600 transition-colors group-hover:text-red-500 md:h-8 md:w-8' />
+                <div className='flex flex-col items-start'>
+                  <div className='text-sm font-bold text-gray-700 transition-colors group-hover:text-red-600 md:text-base'>
+                    Google Ads
+                  </div>
+                  <span className='text-[10px] font-medium text-gray-500'>
+                    Treść sponsorowana
+                  </span>
+                </div>
               </div>
             </div>
           </div>
