@@ -3,11 +3,12 @@
 /**
  * AgeStep Component
  *
- * Step 2: Age input with slider
+ * Step 2: Age input with slider and editable input
  * Collects user's age (18-100 years)
  */
 
 import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
 
 interface AgeStepProps {
   value: number | null
@@ -16,8 +17,25 @@ interface AgeStepProps {
 }
 
 export function AgeStep({ value, onChange, error }: AgeStepProps) {
+  const MIN = 18
+  const MAX = 100
+  const DEFAULT = 30
+
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value
+    if (inputValue === '') {
+      onChange(null)
+      return
+    }
+    const numValue = parseInt(inputValue, 10)
+    if (!isNaN(numValue)) {
+      const clampedValue = Math.min(MAX, Math.max(MIN, numValue))
+      onChange(clampedValue)
+    }
   }
 
   return (
@@ -34,15 +52,43 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
           <span className='text-muted-foreground text-sm'>Wiek</span>
-          <span className='text-foreground text-2xl font-bold'>
-            {value ?? 30} <span className='text-base font-normal'>lat</span>
-          </span>
+          <div className='flex items-center gap-2'>
+            <div className='flex flex-col'>
+              <button
+                type='button'
+                onClick={() => onChange(Math.min(MAX, (value ?? DEFAULT) + 1))}
+                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                aria-label='Zwiększ wiek'
+              >
+                ▲
+              </button>
+              <button
+                type='button'
+                onClick={() => onChange(Math.max(MIN, (value ?? DEFAULT) - 1))}
+                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                aria-label='Zmniejsz wiek'
+              >
+                ▼
+              </button>
+            </div>
+            <Input
+              type='number'
+              value={value ?? DEFAULT}
+              onChange={handleInputChange}
+              min={MIN}
+              max={MAX}
+              className='h-10 w-20 [appearance:textfield] text-center text-xl font-bold [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+              aria-label='Wiek'
+              aria-invalid={!!error}
+            />
+            <span className='text-foreground text-base font-normal'>lat</span>
+          </div>
         </div>
         <Slider
-          value={[value ?? 30]}
+          value={[value ?? DEFAULT]}
           onValueChange={handleSliderChange}
-          min={18}
-          max={100}
+          min={MIN}
+          max={MAX}
           step={1}
           className='w-full'
           aria-label='Wiek'
@@ -50,8 +96,8 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
           aria-describedby={error ? 'age-error' : undefined}
         />
         <div className='text-muted-foreground flex justify-between text-xs'>
-          <span>18</span>
-          <span>100</span>
+          <span>{MIN}</span>
+          <span>{MAX}</span>
         </div>
         {error && (
           <p id='age-error' className='text-destructive text-sm'>

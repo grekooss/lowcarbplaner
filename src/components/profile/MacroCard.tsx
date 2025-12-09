@@ -2,53 +2,111 @@
  * MacroCard component
  *
  * Displays a single macro nutrient with icon, value and unit
+ * Colorful cards matching recipe detail style
  */
 
+import { Card } from '@/components/ui/card'
 import { Flame, Beef, Wheat, Droplet } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
-const ICONS = {
-  flame: Flame,
-  beef: Beef,
-  wheat: Wheat,
-  droplet: Droplet,
-}
-
-const COLOR_CLASSES = {
-  orange: 'text-orange-500 bg-orange-50',
-  red: 'text-red-500 bg-red-50',
-  yellow: 'text-yellow-500 bg-yellow-50',
-  blue: 'text-blue-500 bg-blue-50',
-}
 
 interface MacroCardProps {
   label: string
   value: number
   unit: string
-  icon: 'flame' | 'beef' | 'wheat' | 'droplet'
-  color: 'orange' | 'red' | 'yellow' | 'blue'
+  variant: 'calories' | 'carbs' | 'protein' | 'fat'
 }
 
-export const MacroCard = ({
-  label,
-  value,
-  unit,
-  icon,
-  color,
-}: MacroCardProps) => {
-  const Icon = ICONS[icon]
+const variantStyles = {
+  calories: {
+    bg: 'bg-[color:var(--primary)]',
+    border: 'border-[color:var(--primary)]',
+    icon: 'text-white',
+    textColor: 'text-white',
+    labelColor: 'text-white/80',
+    noIconBg: true,
+    Icon: Flame,
+  },
+  carbs: {
+    bg: 'bg-white',
+    border: 'border-white',
+    iconBg: 'bg-[color:var(--tertiary)]',
+    icon: 'text-white',
+    textColor: 'text-slate-900',
+    labelColor: 'text-slate-600',
+    Icon: Wheat,
+  },
+  protein: {
+    bg: 'bg-white',
+    border: 'border-white',
+    iconBg: 'bg-blue-500',
+    icon: 'text-white',
+    textColor: 'text-slate-900',
+    labelColor: 'text-slate-600',
+    Icon: Beef,
+  },
+  fat: {
+    bg: 'bg-white',
+    border: 'border-white',
+    iconBg: 'bg-green-500',
+    icon: 'text-white',
+    textColor: 'text-slate-900',
+    labelColor: 'text-slate-600',
+    Icon: Droplet,
+  },
+}
+
+export const MacroCard = ({ label, value, unit, variant }: MacroCardProps) => {
+  const styles = variantStyles[variant]
+  const Icon = styles.Icon
+  const noIconBg = 'noIconBg' in styles && styles.noIconBg
+  const iconBg = 'iconBg' in styles ? styles.iconBg : ''
 
   return (
-    <div className='flex items-center gap-4 rounded-lg border p-4'>
-      <div className={cn('rounded-full p-3', COLOR_CLASSES[color])}>
-        <Icon className='h-6 w-6' />
-      </div>
-      <div>
-        <div className='text-2xl font-bold'>{Math.round(value)}</div>
-        <div className='text-muted-foreground text-sm'>
-          {unit} {label}
+    <Card
+      className={`${styles.bg} ${styles.border} flex flex-1 ${noIconBg ? 'items-center gap-2.5 p-2.5 pl-6' : 'items-center justify-center gap-2.5 p-2.5'} border-2 shadow-none`}
+    >
+      {noIconBg ? (
+        <>
+          <div className={`flex items-center justify-center ${styles.icon}`}>
+            <Icon className='h-8 w-8' />
+          </div>
+          <div className='flex flex-col'>
+            <p className={`text-xs font-bold uppercase ${styles.labelColor}`}>
+              {label}
+            </p>
+            <p className='flex items-baseline gap-1'>
+              <span className={`text-xl font-bold ${styles.textColor}`}>
+                {Math.round(value)}
+              </span>
+              <span className={`text-xs font-bold ${styles.labelColor}`}>
+                {unit}
+              </span>
+            </p>
+          </div>
+        </>
+      ) : (
+        <div className='flex flex-col items-start'>
+          <p
+            className={`text-xs font-bold uppercase ${styles.labelColor} mb-1`}
+          >
+            {label}
+          </p>
+          <div className='flex items-center gap-2'>
+            <div
+              className={`rounded ${iconBg} p-1.5 shadow-none ${styles.icon}`}
+            >
+              <Icon className='h-4 w-4' />
+            </div>
+            <p className='flex items-baseline gap-1'>
+              <span className={`text-xl font-bold ${styles.textColor}`}>
+                {Math.round(value)}
+              </span>
+              <span className={`text-xs font-bold ${styles.labelColor}`}>
+                {unit}
+              </span>
+            </p>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </Card>
   )
 }

@@ -227,7 +227,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className='text-xl font-bold tracking-tight'
                   style={textShadowStyle}
                 >
-                  LowCarb
+                  LowCarbPlaner
                 </span>
               </div>
 
@@ -299,7 +299,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         <Hexagon className='h-5 w-5 fill-current text-white' />
                       </div>
                       <span className='text-xl font-bold text-gray-800'>
-                        LowCarb
+                        LowCarbPlaner
                       </span>
                     </div>
                     <button

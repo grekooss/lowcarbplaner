@@ -25,7 +25,6 @@ import { WeightStep } from './WeightStep'
 import { HeightStep } from './HeightStep'
 import { ActivityLevelStep } from './ActivityLevelStep'
 import { GoalStep } from './GoalStep'
-import { WeightLossRateStep } from './WeightLossRateStep'
 import { SummaryStep } from './SummaryStep'
 import { DisclaimerStep } from './DisclaimerStep'
 import { StepperIndicator } from './StepperIndicator'
@@ -43,6 +42,8 @@ const INITIAL_FORM_DATA: OnboardingFormData = {
   disclaimer_accepted: false,
 }
 
+const TOTAL_STEPS = 8
+
 export function OnboardingClient() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
@@ -51,9 +52,6 @@ export function OnboardingClient() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const stepContentRef = useRef<HTMLDivElement>(null)
-
-  // Calculate total steps based on goal
-  const totalSteps = formData.goal === 'weight_loss' ? 9 : 8
 
   // Focus management: Focus step content when step changes
   useEffect(() => {
@@ -105,15 +103,15 @@ export function OnboardingClient() {
     formData.height_cm >= 140 &&
     formData.height_cm <= 250
   const isStep5Valid = formData.activity_level !== null
-  const isStep6Valid = formData.goal !== null
-  const isStep7Valid =
-    formData.goal === 'weight_maintenance' ||
-    (formData.weight_loss_rate_kg_week !== null &&
-      weightLossOptions.find(
-        (opt) => opt.value === formData.weight_loss_rate_kg_week
-      )?.isDisabled === false)
-  const isStep8Valid = true // Summary step is always valid
-  const isStep9Valid = formData.disclaimer_accepted === true
+  const isStep6Valid =
+    formData.goal !== null &&
+    (formData.goal === 'weight_maintenance' ||
+      (formData.weight_loss_rate_kg_week !== null &&
+        weightLossOptions.find(
+          (opt) => opt.value === formData.weight_loss_rate_kg_week
+        )?.isDisabled === false))
+  const isStep7Valid = true // Summary step is always valid
+  const isStep8Valid = formData.disclaimer_accepted === true
 
   // Check if current step is valid
   const isCurrentStepValid = useCallback(() => {
@@ -134,8 +132,6 @@ export function OnboardingClient() {
         return isStep7Valid
       case 8:
         return isStep8Valid
-      case 9:
-        return isStep9Valid
       default:
         return false
     }
@@ -149,33 +145,21 @@ export function OnboardingClient() {
     isStep6Valid,
     isStep7Valid,
     isStep8Valid,
-    isStep9Valid,
   ])
 
   // Navigation handlers
   const handleNext = useCallback(() => {
     if (!isCurrentStepValid()) return
-
-    // Skip step 7 if goal is not weight loss
-    if (currentStep === 6 && formData.goal === 'weight_maintenance') {
-      setCurrentStep(8)
-    } else {
-      setCurrentStep((prev) => Math.min(prev + 1, totalSteps))
-    }
-  }, [currentStep, formData.goal, isCurrentStepValid, totalSteps])
+    setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS))
+  }, [isCurrentStepValid])
 
   const handleBack = useCallback(() => {
-    // Skip step 7 when going back if goal is not weight loss
-    if (currentStep === 8 && formData.goal === 'weight_maintenance') {
-      setCurrentStep(6)
-    } else {
-      setCurrentStep((prev) => Math.max(prev - 1, 1))
-    }
-  }, [currentStep, formData.goal])
+    setCurrentStep((prev) => Math.max(prev - 1, 1))
+  }, [])
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    if (!isStep9Valid || !calculatedTargets) {
+    if (!isStep8Valid || !calculatedTargets) {
       toast.error('Musisz zaakceptować oświadczenie przed kontynuowaniem.')
       return
     }
@@ -212,7 +196,7 @@ export function OnboardingClient() {
       )
       setIsSubmitting(false)
     }
-  }, [formData, calculatedTargets, isStep9Valid, router])
+  }, [formData, calculatedTargets, isStep8Valid, router])
 
   // Keyboard navigation
   useEffect(() => {
@@ -228,9 +212,7 @@ export function OnboardingClient() {
       // Enter key: proceed to next step if valid
       if (e.key === 'Enter' && isCurrentStepValid()) {
         e.preventDefault()
-        const isLastStep =
-          currentStep === 9 ||
-          (currentStep === 8 && formData.goal === 'weight_maintenance')
+        const isLastStep = currentStep === TOTAL_STEPS
         if (isLastStep) {
           handleSubmit()
         } else {
@@ -249,7 +231,6 @@ export function OnboardingClient() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [
     currentStep,
-    formData.goal,
     isCurrentStepValid,
     isSubmitting,
     handleNext,
@@ -321,24 +302,21 @@ export function OnboardingClient() {
                 updateField('weight_loss_rate_kg_week', null)
               }
             }}
+            weightLossRate={formData.weight_loss_rate_kg_week}
+            onWeightLossRateChange={(value) =>
+              updateField('weight_loss_rate_kg_week', value)
+            }
+            weightLossOptions={weightLossOptions}
           />
         )
       case 7:
-        return (
-          <WeightLossRateStep
-            value={formData.weight_loss_rate_kg_week}
-            onChange={(value) => updateField('weight_loss_rate_kg_week', value)}
-            options={weightLossOptions}
-          />
-        )
-      case 8:
         return (
           <SummaryStep
             formData={formData}
             calculatedTargets={calculatedTargets}
           />
         )
-      case 9:
+      case 8:
         return (
           <DisclaimerStep
             value={formData.disclaimer_accepted}
@@ -352,7 +330,7 @@ export function OnboardingClient() {
 
   // Generate stepper steps
   const stepperSteps = useMemo(() => {
-    const steps = [
+    return [
       {
         number: 1,
         title: 'Płeć',
@@ -389,35 +367,20 @@ export function OnboardingClient() {
         isCompleted: currentStep > 6,
         isCurrent: currentStep === 6,
       },
-    ]
-
-    // Add weight loss rate step only if goal is weight_loss
-    if (formData.goal === 'weight_loss') {
-      steps.push({
+      {
         number: 7,
-        title: 'Tempo',
+        title: 'Przegląd',
         isCompleted: currentStep > 7,
         isCurrent: currentStep === 7,
-      })
-    }
-
-    steps.push(
-      {
-        number: formData.goal === 'weight_loss' ? 8 : 7,
-        title: 'Przegląd',
-        isCompleted: currentStep > (formData.goal === 'weight_loss' ? 8 : 7),
-        isCurrent: currentStep === (formData.goal === 'weight_loss' ? 8 : 7),
       },
       {
-        number: formData.goal === 'weight_loss' ? 9 : 8,
+        number: 8,
         title: 'Zgoda',
-        isCompleted: currentStep > (formData.goal === 'weight_loss' ? 9 : 8),
-        isCurrent: currentStep === (formData.goal === 'weight_loss' ? 9 : 8),
-      }
-    )
-
-    return steps
-  }, [currentStep, formData.goal])
+        isCompleted: currentStep > 8,
+        isCurrent: currentStep === 8,
+      },
+    ]
+  }, [currentStep])
 
   return (
     <div className='min-h-screen'>
@@ -434,14 +397,16 @@ export function OnboardingClient() {
         </div>
 
         {/* Stepper */}
-        {currentStep < 10 && <StepperIndicator steps={stepperSteps} />}
+        {currentStep <= TOTAL_STEPS && (
+          <StepperIndicator steps={stepperSteps} />
+        )}
 
         {/* Step Content - glassmorphism card */}
         <div
           ref={stepContentRef}
           className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 p-4 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] outline-none sm:p-6 md:p-8'
           role='region'
-          aria-label={`Krok ${currentStep} z ${totalSteps}`}
+          aria-label={`Krok ${currentStep} z ${TOTAL_STEPS}`}
           aria-live='polite'
           tabIndex={-1}
         >
@@ -449,16 +414,13 @@ export function OnboardingClient() {
         </div>
 
         {/* Navigation */}
-        {currentStep < 10 && (
+        {currentStep <= TOTAL_STEPS && (
           <NavigationButtons
             currentStep={currentStep}
-            totalSteps={totalSteps}
+            totalSteps={TOTAL_STEPS}
             canGoBack={currentStep > 1}
             canGoNext={isCurrentStepValid()}
-            isLastStep={
-              currentStep === 9 ||
-              (currentStep === 8 && formData.goal === 'weight_maintenance')
-            }
+            isLastStep={currentStep === TOTAL_STEPS}
             isLoading={isSubmitting}
             onBack={handleBack}
             onNext={handleNext}

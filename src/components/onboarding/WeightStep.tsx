@@ -3,11 +3,12 @@
 /**
  * WeightStep Component
  *
- * Step 3: Weight input with slider
- * Collects user's current weight (40-200 kg)
+ * Step 3: Weight input with slider and editable input
+ * Collects user's current weight (40-150 kg)
  */
 
 import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
 
 interface WeightStepProps {
   value: number | null
@@ -16,8 +17,27 @@ interface WeightStepProps {
 }
 
 export function WeightStep({ value, onChange, error }: WeightStepProps) {
+  const MIN = 40
+  const MAX = 150
+  const DEFAULT = 70
+  const STEP = 0.1
+
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value
+    if (inputValue === '') {
+      onChange(null)
+      return
+    }
+    const numValue = parseFloat(inputValue)
+    if (!isNaN(numValue)) {
+      const clampedValue = Math.min(MAX, Math.max(MIN, numValue))
+      const roundedValue = Math.round(clampedValue * 10) / 10
+      onChange(roundedValue)
+    }
   }
 
   return (
@@ -32,24 +52,57 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
           <span className='text-muted-foreground text-sm'>Waga</span>
-          <span className='text-foreground text-2xl font-bold'>
-            {value ?? 70} <span className='text-base font-normal'>kg</span>
-          </span>
+          <div className='flex items-center gap-2'>
+            <div className='flex flex-col'>
+              <button
+                type='button'
+                onClick={() =>
+                  onChange(Math.min(MAX, (value ?? DEFAULT) + STEP))
+                }
+                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                aria-label='Zwiększ wagę'
+              >
+                ▲
+              </button>
+              <button
+                type='button'
+                onClick={() =>
+                  onChange(Math.max(MIN, (value ?? DEFAULT) - STEP))
+                }
+                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                aria-label='Zmniejsz wagę'
+              >
+                ▼
+              </button>
+            </div>
+            <Input
+              type='number'
+              value={(value ?? DEFAULT).toFixed(1)}
+              onChange={handleInputChange}
+              min={MIN}
+              max={MAX}
+              step={STEP}
+              className='h-10 w-24 [appearance:textfield] text-center text-xl font-bold [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+              aria-label='Waga'
+              aria-invalid={!!error}
+            />
+            <span className='text-foreground text-base font-normal'>kg</span>
+          </div>
         </div>
         <Slider
-          value={[value ?? 70]}
+          value={[value ?? DEFAULT]}
           onValueChange={handleSliderChange}
-          min={40}
-          max={200}
-          step={1}
+          min={MIN}
+          max={MAX}
+          step={STEP}
           className='w-full'
           aria-label='Waga'
           aria-invalid={!!error}
           aria-describedby={error ? 'weight-error' : undefined}
         />
         <div className='text-muted-foreground flex justify-between text-xs'>
-          <span>40 kg</span>
-          <span>200 kg</span>
+          <span>{MIN} kg</span>
+          <span>{MAX} kg</span>
         </div>
         {error && (
           <p id='weight-error' className='text-destructive text-sm'>

@@ -49,7 +49,9 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
             <Separator />
             <div className='flex justify-between'>
               <span className='text-muted-foreground'>Waga:</span>
-              <span className='font-medium'>{formData.weight_kg} kg</span>
+              <span className='font-medium'>
+                {formData.weight_kg?.toFixed(1)} kg
+              </span>
             </div>
             <Separator />
             <div className='flex justify-between'>

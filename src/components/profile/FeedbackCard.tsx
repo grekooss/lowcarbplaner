@@ -2,6 +2,7 @@
  * FeedbackCard component
  *
  * Form for submitting user feedback and bug reports
+ * Glassmorphism style
  */
 
 'use client'
@@ -62,9 +63,11 @@ export const FeedbackCard = () => {
   const isValid = content.trim().length >= MIN_LENGTH
 
   return (
-    <div className='card-soft rounded-3xl border-0 p-6 shadow-sm'>
+    <div className='rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 p-6 shadow-[var(--shadow-elevated)] backdrop-blur-[20px]'>
       <div className='mb-6'>
-        <h2 className='text-xl font-bold'>Zgłoś problem lub prześlij opinię</h2>
+        <h2 className='text-foreground text-xl font-bold'>
+          Zgłoś problem lub prześlij opinię
+        </h2>
         <p className='text-muted-foreground text-sm'>
           Pomóż nam ulepszyć aplikację - napisz o swoich doświadczeniach
         </p>
@@ -77,7 +80,7 @@ export const FeedbackCard = () => {
             onChange={(e) => setContent(e.target.value)}
             rows={5}
             maxLength={MAX_LENGTH}
-            className='resize-none'
+            className='focus:border-primary focus:ring-primary resize-none rounded-sm border-0 bg-white shadow-sm focus:ring-1'
           />
           <div className='text-muted-foreground flex justify-between text-xs'>
             <span>Minimum {MIN_LENGTH} znaków</span>

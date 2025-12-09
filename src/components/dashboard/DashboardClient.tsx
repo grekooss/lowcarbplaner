@@ -103,7 +103,17 @@ export function DashboardClient({
     mutate: generatePlan,
     isPending: isGenerating,
     error: generateError,
+    reset: resetGenerateError,
   } = useAutoGenerateMealPlan()
+
+  // Resetuj błąd generowania gdy zmienia się data
+  // (błąd MEAL_PLAN_EXISTS z jednego dnia nie powinien blokować widoku innych dni)
+  useEffect(() => {
+    if (generateError) {
+      resetGenerateError()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDateStr])
 
   // Użyj meals jeśli są dostępne, w przeciwnym razie initialMeals
   const displayMeals = meals ?? initialMeals
@@ -186,8 +196,13 @@ export function DashboardClient({
     return <DashboardSkeleton />
   }
 
-  // Obsługa błędów
-  if (error || generateError) {
+  // Sprawdź czy błąd generowania to "plan już istnieje" - to nie jest prawdziwy błąd
+  const isGenerateErrorIgnorable =
+    generateError instanceof Error &&
+    generateError.message.includes('już istnieje')
+
+  // Obsługa błędów (ignoruj błąd "plan już istnieje")
+  if (error || (generateError && !isGenerateErrorIgnorable)) {
     return (
       <div className='container mx-auto space-y-6 px-4 py-8'>
         <Alert variant='destructive'>
