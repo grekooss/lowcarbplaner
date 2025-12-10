@@ -29,32 +29,32 @@ interface ViewToggleProps {
  */
 export function ViewToggle({ mode, onChange }: ViewToggleProps) {
   return (
-    <div className='flex h-[38px] items-center gap-1 rounded-sm border border-white bg-white px-1.5'>
+    <div className='flex h-[34px] items-center gap-0.5 rounded-sm border border-white bg-white px-1'>
       <Button
         variant='ghost'
         size='icon-sm'
         onClick={() => onChange('grid')}
         aria-label='Widok siatki'
-        className={`h-7 w-7 rounded-sm transition-all ${
+        className={`h-6 w-6 rounded-sm transition-all ${
           mode === 'grid'
             ? 'bg-red-600 text-white shadow-sm shadow-red-500/20 hover:bg-red-600'
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
         }`}
       >
-        <Grid3x3 className='h-4 w-4' />
+        <Grid3x3 className='h-3.5 w-3.5' />
       </Button>
       <Button
         variant='ghost'
         size='icon-sm'
         onClick={() => onChange('list')}
         aria-label='Widok listy'
-        className={`h-7 w-7 rounded-sm transition-all ${
+        className={`h-6 w-6 rounded-sm transition-all ${
           mode === 'list'
             ? 'bg-red-600 text-white shadow-sm shadow-red-500/20 hover:bg-red-600'
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
         }`}
       >
-        <List className='h-4 w-4' />
+        <List className='h-3.5 w-3.5' />
       </Button>
     </div>
   )

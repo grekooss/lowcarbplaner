@@ -71,11 +71,11 @@ export function CalendarStrip({
   const yearLabel = selectedDate.getFullYear()
 
   return (
-    <section className='flex flex-col gap-3 rounded-3xl border-2 border-white bg-white/40 px-6 py-4 shadow-sm backdrop-blur-xl'>
+    <section className='flex flex-col gap-1 rounded-md border-2 border-white bg-white/40 px-3 py-2 shadow-sm backdrop-blur-xl sm:gap-2 sm:gap-3 sm:rounded-3xl sm:px-6 sm:py-3 sm:py-4'>
       <div className='flex flex-col items-center px-1'>
-        <h2 className='text-2xl font-bold tracking-tight text-gray-800'>
+        <h2 className='text-base font-bold tracking-tight text-gray-800 sm:text-2xl'>
           {monthLabel}{' '}
-          <span className='text-lg text-gray-500'>{yearLabel}</span>
+          <span className='text-xs text-gray-500 sm:text-lg'>{yearLabel}</span>
         </h2>
       </div>
 
@@ -91,7 +91,7 @@ export function CalendarStrip({
               onClick={() => onDateChange(day.date)}
               onKeyDown={(event) => handleKeyDown(event, day.date)}
               className={cn(
-                'flex h-16 flex-col items-center justify-center rounded-md border-2 transition-all',
+                'flex h-12 flex-col items-center justify-center rounded-sm border-2 transition-all sm:h-16 sm:rounded-md',
                 isSelected
                   ? 'border-red-600 bg-red-600 text-white shadow-lg shadow-red-500/30'
                   : 'border-transparent bg-white text-gray-600 hover:border-red-600 hover:bg-white hover:text-red-600',

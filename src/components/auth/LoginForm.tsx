@@ -72,11 +72,14 @@ export function LoginForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4'>
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className='space-y-2 sm:space-y-4'
+    >
       {/* General error from auth */}
       {error && (
         <div
-          className='rounded-md bg-red-50 p-3 text-sm text-red-600'
+          className='rounded-md bg-red-50 p-2 text-xs text-red-600 sm:p-3 sm:text-sm'
           role='alert'
           aria-live='polite'
         >
@@ -85,8 +88,10 @@ export function LoginForm({
       )}
 
       {/* Email field */}
-      <div className='space-y-2'>
-        <Label htmlFor='login-email'>Email</Label>
+      <div className='space-y-1 sm:space-y-2'>
+        <Label htmlFor='login-email' className='text-xs sm:text-sm'>
+          Email
+        </Label>
         <Input
           id='login-email'
           type='email'
@@ -95,13 +100,13 @@ export function LoginForm({
           disabled={isLoading}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'login-email-error' : undefined}
-          className='bg-white'
+          className='h-9 bg-white text-sm sm:h-10 sm:text-base'
           {...register('email')}
         />
         {errors.email && (
           <p
             id='login-email-error'
-            className='text-sm text-red-600'
+            className='text-xs text-red-600 sm:text-sm'
             role='alert'
           >
             {errors.email.message}
@@ -110,8 +115,10 @@ export function LoginForm({
       </div>
 
       {/* Password field */}
-      <div className='space-y-2'>
-        <Label htmlFor='login-password'>Hasło</Label>
+      <div className='space-y-1 sm:space-y-2'>
+        <Label htmlFor='login-password' className='text-xs sm:text-sm'>
+          Hasło
+        </Label>
         <div className='relative'>
           <Input
             id='login-password'
@@ -123,7 +130,7 @@ export function LoginForm({
             aria-describedby={
               errors.password ? 'login-password-error' : undefined
             }
-            className='bg-white pr-10'
+            className='h-9 bg-white pr-10 text-sm sm:h-10 sm:text-base'
             {...register('password')}
           />
           <button
@@ -148,7 +155,7 @@ export function LoginForm({
         {errors.password && (
           <p
             id='login-password-error'
-            className='text-sm text-red-600'
+            className='text-xs text-red-600 sm:text-sm'
             role='alert'
           >
             {errors.password.message}
@@ -160,7 +167,7 @@ export function LoginForm({
       <div className='flex justify-end'>
         <Link
           href='/auth/forgot-password'
-          className='text-foreground text-sm font-bold transition-transform hover:scale-105 focus:outline-none'
+          className='text-foreground text-xs font-bold transition-transform hover:scale-105 focus:outline-none sm:text-sm'
           tabIndex={isLoading ? -1 : 0}
         >
           Zapomniałem hasła
@@ -170,7 +177,7 @@ export function LoginForm({
       {/* Submit button */}
       <Button
         type='submit'
-        className='w-full'
+        className='h-9 w-full text-sm sm:h-10 sm:text-base'
         disabled={isLoading}
         aria-busy={isLoading}
       >

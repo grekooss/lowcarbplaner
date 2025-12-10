@@ -7,7 +7,7 @@
 
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { RecipeDetailClient } from '@/components/recipes/detail/RecipeDetailClient'
+import { RecipeDetailPage } from '@/components/recipes/detail/RecipeDetailPage'
 import { getRecipeById } from '@/lib/actions/recipes'
 
 interface RecipeDetailPageProps {
@@ -60,7 +60,7 @@ export async function generateMetadata({
  *
  * Pobiera pełne dane przepisu (SSR) i przekazuje do Client Component.
  */
-export default async function RecipeDetailPage({
+export default async function RecipeDetailRoute({
   params: paramsPromise,
 }: RecipeDetailPageProps) {
   const params = await paramsPromise
@@ -92,5 +92,5 @@ export default async function RecipeDetailPage({
 
   const recipe = result.data
 
-  return <RecipeDetailClient recipe={recipe} />
+  return <RecipeDetailPage recipe={recipe} />
 }

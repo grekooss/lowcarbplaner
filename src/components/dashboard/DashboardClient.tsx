@@ -15,6 +15,7 @@ import { useDashboardStore } from '@/lib/zustand/stores/useDashboardStore'
 import { usePlannedMealsQuery } from '@/hooks/usePlannedMealsQuery'
 import { useAutoGenerateMealPlan } from '@/hooks/useAutoGenerateMealPlan'
 import { useWeekMealsCheck } from '@/hooks/useWeekMealsCheck'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { PlannedMealDTO } from '@/types/dto.types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle, Loader2 } from 'lucide-react'
@@ -38,6 +39,7 @@ export function DashboardClient({
   initialDate,
 }: DashboardClientProps) {
   const { selectedDate, setSelectedDate } = useDashboardStore()
+  const isMobile = useIsMobile()
   const [recipeModal, setRecipeModal] = React.useState<{
     isOpen: boolean
     meal: PlannedMealDTO | null
@@ -238,8 +240,8 @@ export function DashboardClient({
   }
 
   return (
-    <div className='space-y-8'>
-      <div className='grid items-start gap-8 xl:grid-cols-3'>
+    <div className='space-y-3 sm:space-y-8'>
+      <div className='grid items-start gap-3 sm:gap-8 xl:grid-cols-3'>
         {/* Column 1 - calendar (spans 2 cols on xl) */}
         <div className='xl:col-span-2'>
           <CalendarStrip
@@ -254,6 +256,7 @@ export function DashboardClient({
             meals={displayMeals}
             targetMacros={targetMacros}
             isToday={isToday}
+            isMobile={isMobile}
           />
         </div>
 

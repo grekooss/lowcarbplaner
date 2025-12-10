@@ -77,11 +77,14 @@ export function ResetPasswordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4'>
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className='space-y-2 sm:space-y-4'
+    >
       {/* General error from auth */}
       {error && (
         <div
-          className='bg-destructive/10 text-destructive rounded-md p-3 text-sm'
+          className='bg-destructive/10 text-destructive rounded-md p-2 text-xs sm:p-3 sm:text-sm'
           role='alert'
           aria-live='polite'
         >
@@ -90,8 +93,10 @@ export function ResetPasswordForm({
       )}
 
       {/* Password field */}
-      <div className='space-y-2'>
-        <Label htmlFor='reset-password'>Nowe hasło</Label>
+      <div className='space-y-1 sm:space-y-2'>
+        <Label htmlFor='reset-password' className='text-xs sm:text-sm'>
+          Nowe hasło
+        </Label>
         <div className='relative'>
           <Input
             id='reset-password'
@@ -103,7 +108,7 @@ export function ResetPasswordForm({
             aria-describedby={
               errors.password ? 'reset-password-error' : undefined
             }
-            className='bg-white pr-10'
+            className='h-9 bg-white pr-10 text-sm sm:h-10 sm:text-base'
             {...register('password')}
           />
           <button
@@ -128,7 +133,7 @@ export function ResetPasswordForm({
         {errors.password && (
           <p
             id='reset-password-error'
-            className='text-destructive text-sm'
+            className='text-destructive text-xs sm:text-sm'
             role='alert'
           >
             {errors.password.message}
@@ -140,8 +145,10 @@ export function ResetPasswordForm({
       </div>
 
       {/* Confirm password field */}
-      <div className='space-y-2'>
-        <Label htmlFor='reset-confirm-password'>Potwierdź nowe hasło</Label>
+      <div className='space-y-1 sm:space-y-2'>
+        <Label htmlFor='reset-confirm-password' className='text-xs sm:text-sm'>
+          Potwierdź nowe hasło
+        </Label>
         <div className='relative'>
           <Input
             id='reset-confirm-password'
@@ -155,7 +162,7 @@ export function ResetPasswordForm({
                 ? 'reset-confirm-password-error'
                 : undefined
             }
-            className='bg-white pr-10'
+            className='h-9 bg-white pr-10 text-sm sm:h-10 sm:text-base'
             {...register('confirmPassword')}
           />
           <button
@@ -180,7 +187,7 @@ export function ResetPasswordForm({
         {errors.confirmPassword && (
           <p
             id='reset-confirm-password-error'
-            className='text-destructive text-sm'
+            className='text-destructive text-xs sm:text-sm'
             role='alert'
           >
             {errors.confirmPassword.message}
@@ -191,7 +198,7 @@ export function ResetPasswordForm({
       {/* Submit button */}
       <Button
         type='submit'
-        className='w-full'
+        className='h-9 w-full text-sm sm:h-10 sm:text-base'
         disabled={isLoading}
         aria-busy={isLoading}
       >

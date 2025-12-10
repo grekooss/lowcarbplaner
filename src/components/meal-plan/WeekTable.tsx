@@ -38,14 +38,24 @@ const DayRow = ({ day, date, dateStr, meals, onMealClick }: DayRowProps) => {
   dayDate.setHours(0, 0, 0, 0)
   const isFutureDate = dayDate > today
 
+  // Formatuj pełną datę
+  const month = dayDate.toLocaleDateString('pl-PL', { month: 'long' })
+  const year = dayDate.getFullYear()
+
   return (
-    <div className='grid grid-cols-1 gap-4 xl:grid-cols-[110px_1fr_1fr_1fr]'>
+    <div className='grid grid-cols-1 gap-4 xl:grid-cols-[80px_1fr_1fr_1fr]'>
       {/* Day Column - Red badge */}
-      <div className='flex h-[72px] flex-col items-center justify-center rounded-md border-2 border-red-600 bg-red-600 p-3 text-center shadow-lg shadow-red-500/30'>
-        <span className='mb-1 text-[10px] font-bold tracking-wider text-white/80 uppercase'>
-          {day}
-        </span>
-        <span className='text-2xl font-bold text-white'>{date}</span>
+      {/* Mobile/Tablet: full date info */}
+      <div className='flex items-center justify-center gap-1.5 rounded-md bg-red-600 px-4 py-2 text-white shadow-sm xl:hidden'>
+        <span className='font-semibold capitalize'>{day}</span>
+        <span className='font-bold'>{date}</span>
+        <span>{month}</span>
+        <span className='text-sm opacity-80'>{year}</span>
+      </div>
+      {/* Desktop: compact day + date only, stacked vertically */}
+      <div className='hidden w-20 flex-col items-center justify-center rounded-md bg-red-600 px-2 py-2 text-white shadow-sm xl:flex'>
+        <span className='text-[10px] font-medium'>{day}</span>
+        <span className='text-xl font-bold'>{date}</span>
       </div>
 
       {/* Meals */}
@@ -70,9 +80,9 @@ export function WeekTable({
   return (
     <div className='space-y-4'>
       {/* Column Headers (Desktop) */}
-      <div className='hidden gap-4 px-1 xl:grid xl:grid-cols-[110px_1fr_1fr_1fr]'>
-        {/* Month header spacer */}
-        <div className='flex flex-col items-center justify-center'>
+      <div className='hidden gap-4 xl:grid xl:grid-cols-[80px_1fr_1fr_1fr]'>
+        {/* Month header spacer - matches day column width */}
+        <div className='flex w-20 flex-col items-center justify-center'>
           {monthHeader && (
             <>
               <span className='text-sm font-bold text-gray-900'>

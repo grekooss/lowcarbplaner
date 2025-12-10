@@ -72,7 +72,7 @@ export const ShoppingListAccordion = ({
       <AccordionItem
         key={categoryData.category}
         value={categoryData.category}
-        className='rounded-2xl border-2 border-white bg-white/40 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl'
+        className='rounded-md border-2 border-white bg-white/40 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl'
       >
         <AccordionTrigger className='px-6 py-4 hover:no-underline'>
           <div className='flex w-full items-center justify-between pr-4'>

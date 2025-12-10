@@ -116,7 +116,7 @@ export function MealCard({
   return (
     <>
       <div className='relative z-10'>
-        <div className='flex gap-6'>
+        <div className='flex gap-3 sm:gap-6'>
           {/* Stepper Node */}
           {enableEatenCheckbox && (
             <div
@@ -128,7 +128,7 @@ export function MealCard({
             >
               <div
                 className={cn(
-                  'flex h-10 w-10 items-center justify-center rounded-full border-2 shadow-sm transition-all duration-300',
+                  'flex h-7 w-7 items-center justify-center rounded-full border-2 shadow-sm transition-all duration-300 sm:h-10 sm:w-10',
                   meal.is_eaten
                     ? 'border-red-600 bg-red-600'
                     : 'border-white bg-white group-hover:border-red-400',
@@ -136,7 +136,10 @@ export function MealCard({
                 )}
               >
                 {meal.is_eaten && (
-                  <Check className='h-5 w-5 text-white' strokeWidth={3} />
+                  <Check
+                    className='h-3.5 w-3.5 text-white sm:h-5 sm:w-5'
+                    strokeWidth={3}
+                  />
                 )}
               </div>
             </div>
@@ -145,8 +148,8 @@ export function MealCard({
           {/* Content */}
           <div className='flex-1'>
             {/* Stepper Label */}
-            <div className='mb-0 flex h-10 items-center gap-3'>
-              <h4 className='text-lg font-bold tracking-wider text-gray-800 uppercase'>
+            <div className='mb-0 flex h-7 items-center gap-3 sm:h-10'>
+              <h4 className='text-base font-bold tracking-wider text-gray-800 uppercase sm:text-lg'>
                 {MEAL_TYPE_LABELS[meal.meal_type]}
               </h4>
             </div>
@@ -155,7 +158,7 @@ export function MealCard({
             <div
               data-testid='meal-card'
               data-meal-type={meal.meal_type}
-              className='group mt-3 flex cursor-pointer flex-col gap-6 rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] md:flex-row'
+              className='group mt-3 flex cursor-pointer flex-col gap-6 rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] sm:rounded-2xl md:flex-row'
               role='button'
               tabIndex={0}
               onClick={handleCardClick}

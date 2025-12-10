@@ -87,7 +87,7 @@ export const ShoppingListClient = ({
     <>
       {/* Header Card - szerokość dopasowana do lewej kolumny gridu */}
       <section className='w-full lg:w-[calc((100%-24px)/2)]'>
-        <div className='flex items-center justify-center gap-6 rounded-2xl border-2 border-white bg-white/40 px-6 py-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl'>
+        <div className='flex items-center justify-center gap-6 rounded-md border-2 border-white bg-white/40 px-6 py-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl'>
           <div className='flex items-center gap-3'>
             <div className='flex h-8 w-8 items-center justify-center rounded-sm bg-red-600'>
               <Circle className='h-4 w-4 text-white' />

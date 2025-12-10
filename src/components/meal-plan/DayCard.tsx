@@ -4,7 +4,6 @@
  * DayCard - Karta pojedynczego dnia zawierająca 3 posiłki (widok mobile)
  */
 
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { MealCard } from './MealCard'
 import type { DayPlanViewModel } from '@/types/meal-plan-view.types'
 import type { PlannedMealDTO } from '@/types/dto.types'
@@ -16,27 +15,23 @@ interface DayCardProps {
 }
 
 export const DayCard = ({ day, onMealClick }: DayCardProps) => {
-  return (
-    <Card variant='hero' className='rounded-md border-none bg-[#F5EFE7]'>
-      <CardHeader className='pb-3'>
-        <div className='flex items-center justify-between'>
-          <div className='flex flex-col'>
-            <span className='text-muted-foreground text-xs font-semibold uppercase'>
-              {day.dayName}
-            </span>
-            <span className='text-foreground text-2xl font-semibold'>
-              {day.dayNumber}
-            </span>
-          </div>
-          {day.isToday && (
-            <span className='text-primary bg-primary/10 rounded-full px-2 py-1 text-xs font-semibold'>
-              Dziś
-            </span>
-          )}
-        </div>
-      </CardHeader>
+  // Formatuj pełną datę: "Środa 10 grudzień 2025"
+  const fullDate = new Date(day.date)
+  const month = fullDate.toLocaleDateString('pl-PL', { month: 'long' })
+  const year = fullDate.getFullYear()
 
-      <CardContent className='space-y-3'>
+  return (
+    <div className='space-y-3'>
+      {/* Czerwony button z dniem */}
+      <div className='flex items-center justify-center gap-1.5 rounded-md bg-red-600 py-2.5 text-white shadow-sm'>
+        <span className='font-semibold capitalize'>{day.dayName}</span>
+        <span className='font-bold'>{day.dayNumber}</span>
+        <span>{month}</span>
+        <span className='text-sm opacity-80'>{year}</span>
+      </div>
+
+      {/* Posiłki */}
+      <div className='space-y-3'>
         {/* Śniadanie */}
         {day.breakfast && (
           <MealCard
@@ -63,7 +58,7 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
             onMealClick={onMealClick}
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

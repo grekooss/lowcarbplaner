@@ -44,15 +44,15 @@ export function AuthModal({
   return (
     <Dialog open={true} onOpenChange={handleClose}>
       <DialogContent
-        constrainToMainPanel
-        className='max-h-[90vh] max-w-md overflow-y-auto rounded-[20px] border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px]'
+        coverMainPanelOnMobile
+        className='max-h-[90vh] overflow-y-auto rounded-lg border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] sm:max-w-sm sm:rounded-2xl lg:rounded-3xl'
       >
         <VisuallyHidden>
           <DialogTitle>
             {initialTab === 'login' ? 'Logowanie' : 'Rejestracja'}
           </DialogTitle>
         </VisuallyHidden>
-        <div className='p-6'>
+        <div className='p-4 sm:p-6'>
           <AuthClient initialTab={initialTab} redirectTo={redirectTo} />
         </div>
       </DialogContent>

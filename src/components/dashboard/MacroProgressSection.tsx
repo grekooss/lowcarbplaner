@@ -102,12 +102,14 @@ interface MacroProgressSectionProps {
     target_fats_g: number
   }
   isToday?: boolean
+  isMobile?: boolean
 }
 
 export function MacroProgressSection({
   meals,
   targetMacros,
   isToday = true,
+  isMobile = false,
 }: MacroProgressSectionProps) {
   const macros = useDailyMacros({
     meals,
@@ -214,72 +216,86 @@ export function MacroProgressSection({
     },
   ]
 
-  // Wariant dla dni innych niż dzisiaj - jeden wspólny panel
-  if (!isToday) {
+  // Wariant z jednym panelem i paskami postępu:
+  // - Dla dni innych niż dzisiaj: pokazuje wszystkie zaplanowane wartości
+  // - Dla dzisiaj na mobile: pokazuje wartości z posiłków oznaczonych jako zjedzone
+  const showSinglePanel = !isToday || isMobile
+
+  // Wybierz wartości do wyświetlenia w zależności od kontekstu
+  const displayCalories = isToday ? caloriesConsumed : plannedTotals.calories
+  const displayMacroRows = isToday ? macroRows : plannedMacroRows
+
+  if (showSinglePanel) {
     return (
-      <div className='h-full rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
-        <h3 className='mb-6 text-lg font-bold text-gray-800'>
+      <div className='h-full rounded-md border-2 border-white bg-white/40 p-3 shadow-sm backdrop-blur-xl sm:rounded-3xl sm:p-6'>
+        <h3 className='mb-3 text-sm font-bold text-gray-800 sm:mb-6 sm:text-lg'>
           Kalorie i makroskładniki
         </h3>
-        <div className='space-y-6'>
+        <div className='space-y-3 sm:space-y-6'>
           {/* Kalorie jako pasek postępu */}
           <div>
-            <div className='mb-2 flex items-end justify-between gap-2'>
-              <div className='flex min-w-0 flex-1 items-center gap-3'>
-                <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm bg-red-600'>
-                  <Flame className='h-4 w-4 text-white' />
+            <div className='mb-1 flex items-end justify-between gap-2 sm:mb-2'>
+              <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
+                <div className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-sm bg-red-600 sm:h-8 sm:w-8'>
+                  <Flame className='h-3 w-3 text-white sm:h-4 sm:w-4' />
                 </div>
-                <span className='truncate font-bold text-gray-700'>
+                <span className='truncate text-xs font-bold text-gray-700 sm:text-base'>
                   Kalorie
                 </span>
               </div>
               <div className='flex-shrink-0 text-right whitespace-nowrap'>
-                <span className='text-sm font-bold text-gray-800'>
-                  {Math.round(plannedTotals.calories)}
+                <span className='text-xs font-bold text-gray-800 sm:text-sm'>
+                  {Math.round(displayCalories)}
                 </span>
-                <span className='ml-1 text-xs text-gray-600'>
+                <span className='ml-1 text-[10px] text-gray-600 sm:text-xs'>
                   / {Math.round(caloriesTarget)} kcal
                 </span>
               </div>
             </div>
             <AnimatedProgressBar
-              value={plannedTotals.calories}
+              value={displayCalories}
               max={caloriesTarget}
               color={MACRO_COLORS.calories}
+              height={isMobile ? 8 : 12}
             />
           </div>
 
           {/* Makroskładniki */}
-          {plannedMacroRows.map((row) => {
+          {displayMacroRows.map((row) => {
             const targetValue = Math.max(row.target, 0)
             const Icon = row.icon
+            // Dla dzisiaj używamy consumed, dla innych dni value (plannedTotals)
+            const displayValue = 'consumed' in row ? row.consumed : row.value
 
             return (
               <div key={row.key}>
-                <div className='mb-2 flex items-end justify-between gap-2'>
-                  <div className='flex min-w-0 flex-1 items-center gap-3'>
+                <div className='mb-1 flex items-end justify-between gap-2 sm:mb-2'>
+                  <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
                     <div
-                      className={`h-8 w-8 rounded-sm ${row.bgColor} flex flex-shrink-0 items-center justify-center`}
+                      className={`h-6 w-6 rounded-sm sm:h-8 sm:w-8 ${row.bgColor} flex flex-shrink-0 items-center justify-center`}
                     >
-                      <Icon className={`h-4 w-4 ${row.iconColor}`} />
+                      <Icon
+                        className={`h-3 w-3 sm:h-4 sm:w-4 ${row.iconColor}`}
+                      />
                     </div>
-                    <span className='truncate font-bold text-gray-700'>
+                    <span className='truncate text-xs font-bold text-gray-700 sm:text-base'>
                       {row.label}
                     </span>
                   </div>
                   <div className='flex-shrink-0 text-right whitespace-nowrap'>
-                    <span className='text-sm font-bold text-gray-800'>
-                      {Math.round(row.value)}g
+                    <span className='text-xs font-bold text-gray-800 sm:text-sm'>
+                      {Math.round(displayValue)}g
                     </span>
-                    <span className='ml-1 text-xs text-gray-600'>
+                    <span className='ml-1 text-[10px] text-gray-600 sm:text-xs'>
                       / {Math.round(targetValue)}g
                     </span>
                   </div>
                 </div>
                 <AnimatedProgressBar
-                  value={row.value}
+                  value={displayValue}
                   max={targetValue}
                   color={MACRO_COLORS[row.key]}
+                  height={isMobile ? 8 : 12}
                 />
               </div>
             )
@@ -293,7 +309,7 @@ export function MacroProgressSection({
   return (
     <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-1'>
       {/* Calorie Balance Card */}
-      <div className='h-full rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
+      <div className='h-full rounded-md border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
         <h3 className='mb-1 text-lg font-bold text-gray-800'>Bilans kalorii</h3>
         <p className='mb-2 text-sm text-gray-500'>
           {eatenMealsCount} / {meals.length} posiłków zjedzonych
@@ -341,7 +357,7 @@ export function MacroProgressSection({
       </div>
 
       {/* Macro Breakdown Card */}
-      <div className='h-full rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
+      <div className='h-full rounded-md border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
         <h3 className='mb-6 text-lg font-bold text-gray-800'>Makroskładniki</h3>
         <div className='space-y-6'>
           {macroRows.map((row) => {

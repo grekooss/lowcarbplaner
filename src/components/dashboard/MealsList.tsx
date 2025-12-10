@@ -42,7 +42,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
     <section className='relative'>
       {/* Vertical Line - only show when we have stepper checkboxes */}
       {isCurrentDate && orderedMeals.length > 1 && (
-        <div className='absolute top-6 -bottom-6 left-[19px] z-0 w-0.5 bg-white' />
+        <div className='absolute top-4 -bottom-6 left-[13px] z-0 w-0.5 bg-white sm:top-6 sm:left-[19px]' />
       )}
 
       <div className='space-y-8'>

@@ -14,18 +14,33 @@ import type { NextRequest } from 'next/server'
 import type { Database } from '@/types/database.types'
 
 /**
- * GET handler dla OAuth callback
+ * GET handler dla OAuth callback i Email verification
  *
- * Flow:
+ * Flow OAuth:
  * 1. Użytkownik autoryzuje w Google
  * 2. Google przekierowuje na /auth/callback?code=...
  * 3. Exchange code na session (Supabase)
  * 4. Sprawdzenie czy profil istnieje
  * 5. Redirect na onboarding lub dashboard (lub custom redirect param)
+ *
+ * Flow Email verification (signup, recovery, email_change):
+ * 1. Użytkownik klika link z emaila
+ * 2. Supabase przekierowuje na /auth/callback?token_hash=...&type=...
+ * 3. Verify token i ustaw sesję
+ * 4. Redirect odpowiednio
  */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const token_hash = requestUrl.searchParams.get('token_hash')
+  const type = requestUrl.searchParams.get('type') as
+    | 'signup'
+    | 'recovery'
+    | 'email'
+    | 'email_change'
+    | 'magiclink'
+    | 'invite'
+    | null
   const redirect = requestUrl.searchParams.get('redirect') || '/'
 
   // Determine the origin to use for redirects
@@ -35,8 +50,8 @@ export async function GET(request: NextRequest) {
       ? 'http://localhost:3000'
       : requestUrl.origin
 
-  // If no code provided, redirect to auth page
-  if (!code) {
+  // If no code or token_hash provided, redirect to auth page
+  if (!code && !token_hash) {
     return NextResponse.redirect(new URL('/auth', origin))
   }
 
@@ -64,51 +79,122 @@ export async function GET(request: NextRequest) {
   )
 
   try {
-    // Exchange code for session - this sets the auth cookies
-    const { error: exchangeError } =
-      await supabase.auth.exchangeCodeForSession(code)
+    // Handle email verification (signup, recovery, email change, invite)
+    if (token_hash && type) {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash,
+        type,
+      })
 
-    if (exchangeError) {
-      console.error('OAuth callback error:', exchangeError)
-      return NextResponse.redirect(new URL('/auth?error=oauth_failed', origin))
+      if (verifyError) {
+        console.error('Email verification error:', verifyError)
+
+        // For recovery, redirect to reset password page with error
+        if (type === 'recovery') {
+          return NextResponse.redirect(
+            new URL('/auth/reset-password?error=invalid_token', origin)
+          )
+        }
+
+        return NextResponse.redirect(
+          new URL('/auth?error=verification_failed', origin)
+        )
+      }
+
+      // Get current user after verification
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        return NextResponse.redirect(new URL('/auth', origin))
+      }
+
+      // For password recovery, redirect to reset password page
+      if (type === 'recovery') {
+        const redirectResponse = NextResponse.redirect(
+          new URL('/auth/reset-password', origin)
+        )
+        response.cookies.getAll().forEach((cookie) => {
+          redirectResponse.cookies.set(cookie.name, cookie.value)
+        })
+        return redirectResponse
+      }
+
+      // For signup/invite, check profile and redirect accordingly
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('disclaimer_accepted_at')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      let redirectUrl: URL
+      if (!profile?.disclaimer_accepted_at) {
+        redirectUrl = new URL('/onboarding', origin)
+      } else {
+        redirectUrl = new URL('/', origin)
+      }
+
+      const redirectResponse = NextResponse.redirect(redirectUrl)
+      response.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value)
+      })
+
+      return redirectResponse
     }
 
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // Handle OAuth callback (Google)
+    if (code) {
+      const { error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code)
 
-    if (!user) {
-      return NextResponse.redirect(new URL('/auth', origin))
+      if (exchangeError) {
+        console.error('OAuth callback error:', exchangeError)
+        return NextResponse.redirect(
+          new URL('/auth?error=oauth_failed', origin)
+        )
+      }
+
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        return NextResponse.redirect(new URL('/auth', origin))
+      }
+
+      // Check if profile exists
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('disclaimer_accepted_at')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      // Build redirect response with cookies from the response object
+      let redirectUrl: URL
+      if (!profile?.disclaimer_accepted_at) {
+        // New user - redirect to onboarding
+        redirectUrl = new URL('/onboarding', origin)
+      } else {
+        // Existing user - redirect to requested page or home
+        // Validate redirect to prevent open redirect attacks
+        const targetPath = redirect.startsWith('/') ? redirect : '/'
+        redirectUrl = new URL(targetPath, origin)
+      }
+
+      // Create redirect response and copy all cookies from the response object
+      // Preserve original cookie options set by Supabase
+      const redirectResponse = NextResponse.redirect(redirectUrl)
+      response.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value)
+      })
+
+      return redirectResponse
     }
 
-    // Check if profile exists
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('disclaimer_accepted_at')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    // Build redirect response with cookies from the response object
-    let redirectUrl: URL
-    if (!profile?.disclaimer_accepted_at) {
-      // New user - redirect to onboarding
-      redirectUrl = new URL('/onboarding', origin)
-    } else {
-      // Existing user - redirect to requested page or home
-      // Validate redirect to prevent open redirect attacks
-      const targetPath = redirect.startsWith('/') ? redirect : '/'
-      redirectUrl = new URL(targetPath, origin)
-    }
-
-    // Create redirect response and copy all cookies from the response object
-    // Preserve original cookie options set by Supabase
-    const redirectResponse = NextResponse.redirect(redirectUrl)
-    response.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
-
-    return redirectResponse
+    // No valid parameters
+    return NextResponse.redirect(new URL('/auth', origin))
   } catch (error) {
     console.error('Unexpected error in OAuth callback:', error)
     return NextResponse.redirect(new URL('/auth?error=unexpected', origin))

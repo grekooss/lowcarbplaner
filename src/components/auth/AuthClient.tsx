@@ -71,7 +71,7 @@ export function AuthClient({
   }
 
   return (
-    <div className='relative w-full max-w-2xl space-y-6'>
+    <div className='relative w-full max-w-2xl space-y-3 sm:space-y-6'>
       {/* Close button */}
       {showCloseButton && (
         <button
@@ -84,11 +84,11 @@ export function AuthClient({
       )}
 
       {/* Header */}
-      <div className='space-y-2 text-center'>
-        <h1 className='text-3xl font-bold tracking-tight'>
+      <div className='space-y-1 text-center sm:space-y-2'>
+        <h1 className='text-xl font-bold tracking-tight sm:text-3xl'>
           Witaj w LowCarbPlaner
         </h1>
-        <p className='text-muted-foreground'>
+        <p className='text-muted-foreground text-xs sm:text-base'>
           Zaloguj się lub utwórz konto, aby rozpocząć
         </p>
       </div>
@@ -98,20 +98,20 @@ export function AuthClient({
         <TabsList className='grid w-full grid-cols-2 bg-transparent'>
           <TabsTrigger
             value='login'
-            className='hover:data-[state=inactive]:border-primary hover:data-[state=inactive]:text-primary data-[state=inactive]:border data-[state=inactive]:border-transparent data-[state=inactive]:bg-white hover:data-[state=inactive]:bg-white'
+            className='hover:data-[state=inactive]:border-primary hover:data-[state=inactive]:text-primary text-xs data-[state=inactive]:border data-[state=inactive]:border-transparent data-[state=inactive]:bg-white hover:data-[state=inactive]:bg-white sm:text-sm'
           >
             Logowanie
           </TabsTrigger>
           <TabsTrigger
             value='register'
-            className='hover:data-[state=inactive]:border-primary hover:data-[state=inactive]:text-primary data-[state=inactive]:border data-[state=inactive]:border-transparent data-[state=inactive]:bg-white hover:data-[state=inactive]:bg-white'
+            className='hover:data-[state=inactive]:border-primary hover:data-[state=inactive]:text-primary text-xs data-[state=inactive]:border data-[state=inactive]:border-transparent data-[state=inactive]:bg-white hover:data-[state=inactive]:bg-white sm:text-sm'
           >
             Rejestracja
           </TabsTrigger>
         </TabsList>
 
         {/* Login Tab */}
-        <TabsContent value='login' className='mt-6'>
+        <TabsContent value='login' className='mt-3 sm:mt-6'>
           <LoginForm
             onSubmit={login}
             isLoading={isLoading}
@@ -122,7 +122,7 @@ export function AuthClient({
         </TabsContent>
 
         {/* Register Tab */}
-        <TabsContent value='register' className='mt-6'>
+        <TabsContent value='register' className='mt-3 sm:mt-6'>
           <RegisterForm
             onSubmit={register}
             isLoading={isLoading}

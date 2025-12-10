@@ -74,13 +74,13 @@ export function ForgotPasswordForm({
   // Show success message after submission
   if (success) {
     return (
-      <div className='space-y-4 text-center'>
+      <div className='space-y-3 text-center sm:space-y-4'>
         <div className='flex justify-center'>
-          <CheckCircle2 className='h-12 w-12 text-red-600' />
+          <CheckCircle2 className='h-10 w-10 text-red-600 sm:h-12 sm:w-12' />
         </div>
-        <div className='space-y-2'>
-          <h3 className='text-lg font-semibold'>Email wysłany!</h3>
-          <p className='text-muted-foreground text-sm'>
+        <div className='space-y-1 sm:space-y-2'>
+          <h3 className='text-base font-semibold sm:text-lg'>Email wysłany!</h3>
+          <p className='text-muted-foreground text-xs sm:text-sm'>
             Sprawdź swoją skrzynkę pocztową i kliknij w link resetujący hasło.
           </p>
         </div>
@@ -89,11 +89,14 @@ export function ForgotPasswordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-4'>
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className='space-y-2 sm:space-y-4'
+    >
       {/* General error from auth */}
       {error && (
         <div
-          className='rounded-md bg-red-50 p-3 text-sm text-red-600'
+          className='rounded-md bg-red-50 p-2 text-xs text-red-600 sm:p-3 sm:text-sm'
           role='alert'
           aria-live='polite'
         >
@@ -102,8 +105,10 @@ export function ForgotPasswordForm({
       )}
 
       {/* Email field */}
-      <div className='space-y-2'>
-        <Label htmlFor='forgot-email'>Email</Label>
+      <div className='space-y-1 sm:space-y-2'>
+        <Label htmlFor='forgot-email' className='text-xs sm:text-sm'>
+          Email
+        </Label>
         <Input
           id='forgot-email'
           type='email'
@@ -112,13 +117,13 @@ export function ForgotPasswordForm({
           disabled={isLoading}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'forgot-email-error' : undefined}
-          className='bg-white'
+          className='h-9 bg-white text-sm sm:h-10 sm:text-base'
           {...register('email')}
         />
         {errors.email && (
           <p
             id='forgot-email-error'
-            className='text-sm text-red-600'
+            className='text-xs text-red-600 sm:text-sm'
             role='alert'
           >
             {errors.email.message}
@@ -129,7 +134,7 @@ export function ForgotPasswordForm({
       {/* Submit button */}
       <Button
         type='submit'
-        className='w-full'
+        className='h-9 w-full text-sm sm:h-10 sm:text-base'
         disabled={isLoading}
         aria-busy={isLoading}
       >

@@ -171,7 +171,7 @@ export const MealPlanClient = ({
     <>
       {/* Wskaźnik generowania planu */}
       {isGenerating && (
-        <div className='mb-6 rounded-2xl border bg-blue-50 p-4'>
+        <div className='mb-6 rounded-md border bg-blue-50 p-4 sm:rounded-2xl'>
           <div className='flex items-center gap-3'>
             <Loader2 className='h-5 w-5 animate-spin text-blue-600' />
             <div>
@@ -188,7 +188,7 @@ export const MealPlanClient = ({
 
       {/* Desktop: WeekTable (widoczny >= md) */}
       <div className='hidden md:block'>
-        <section className='rounded-3xl border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl'>
+        <section className='rounded-md border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
           <WeekTable
             weekPlan={weekPlan}
             monthHeader={monthHeader}
@@ -199,20 +199,8 @@ export const MealPlanClient = ({
       </div>
 
       {/* Mobile: DayList (widoczny < md) */}
-      {monthHeader && (
-        <div className='mb-2 rounded-md bg-[#F5EFE7] px-4 py-2 md:hidden'>
-          <span className='text-base font-bold text-gray-900'>
-            {monthHeader.primary}
-          </span>
-          {monthHeader.secondary && (
-            <span className='ml-2 text-sm text-gray-500'>
-              {monthHeader.secondary}
-            </span>
-          )}
-        </div>
-      )}
       <div className='block md:hidden'>
-        <section className='rounded-3xl border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-xl'>
+        <section className='rounded-md border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
           <DayList
             weekPlan={weekPlan}
             onMealClick={handleMealClick}
@@ -228,7 +216,7 @@ export const MealPlanClient = ({
         onOpenChange={(open) =>
           setRecipeModal((prev) => ({ ...prev, isOpen: open }))
         }
-        enableIngredientEditing={false}
+        enableIngredientEditing={true}
       />
 
       {/* Modal zamienników */}

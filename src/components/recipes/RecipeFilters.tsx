@@ -53,7 +53,7 @@ export function RecipeFilters({
     <>
       {/* Desktop: Button row (xl+ where sidebar is visible) */}
       <div
-        className='no-scrollbar hidden gap-3 overflow-x-auto xl:flex'
+        className='no-scrollbar hidden gap-1.5 overflow-x-auto xl:flex'
         role='group'
         aria-label='Filtruj przepisy według typu posiłku'
       >
@@ -62,7 +62,7 @@ export function RecipeFilters({
             key={type}
             type='button'
             onClick={() => handleSelect(type)}
-            className={`rounded-sm border-2 px-4 py-2 text-sm font-bold tracking-wider uppercase transition-all ${
+            className={`h-[34px] rounded-sm border px-3 text-xs font-bold tracking-wide uppercase transition-all ${
               isSelected(type)
                 ? 'border-red-600 bg-red-600 text-white shadow-sm shadow-red-500/20'
                 : 'border-transparent bg-white text-gray-800 hover:border-red-600 hover:bg-white hover:text-red-600'
@@ -78,13 +78,13 @@ export function RecipeFilters({
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
-          className='flex w-full items-center justify-between gap-2 rounded-sm border-2 border-white bg-white px-4 py-2.5 text-sm font-bold text-gray-800 shadow-sm transition-all hover:border-red-600'
+          className='flex h-[34px] w-full items-center justify-between gap-1.5 rounded-sm border border-white bg-white px-3 text-xs font-bold text-gray-800 shadow-sm transition-all hover:border-red-600'
           aria-expanded={isOpen}
           aria-haspopup='listbox'
         >
-          <span className='tracking-wider uppercase'>{getSelectedLabel()}</span>
+          <span className='tracking-wide uppercase'>{getSelectedLabel()}</span>
           <ChevronDown
-            className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`h-3.5 w-3.5 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
 
@@ -98,7 +98,7 @@ export function RecipeFilters({
 
             {/* Dropdown */}
             <div
-              className='absolute top-full left-0 z-20 mt-1 w-full min-w-[180px] overflow-hidden rounded-sm border-2 border-white bg-white shadow-lg'
+              className='absolute top-full left-0 z-20 mt-1 w-full min-w-[140px] overflow-hidden rounded-sm border border-white bg-white shadow-lg'
               role='listbox'
             >
               {MEAL_TYPES.map((type) => (
@@ -106,7 +106,7 @@ export function RecipeFilters({
                   key={type}
                   type='button'
                   onClick={() => handleSelect(type)}
-                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-bold tracking-wider uppercase transition-colors ${
+                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs font-bold tracking-wide uppercase transition-colors ${
                     isSelected(type)
                       ? 'bg-red-50 text-red-600'
                       : 'text-gray-800 hover:bg-gray-50'
@@ -118,7 +118,7 @@ export function RecipeFilters({
                     {type === 'all' ? 'Wszystkie' : MEAL_TYPE_LABELS[type]}
                   </span>
                   {isSelected(type) && (
-                    <Check className='h-4 w-4 text-red-600' />
+                    <Check className='h-3.5 w-3.5 text-red-600' />
                   )}
                 </button>
               ))}

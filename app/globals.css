@@ -369,6 +369,7 @@ html {
 .ad-layout-container {
   flex-direction: column !important;
   align-items: stretch !important;
+  padding-bottom: 3.5rem !important; /* pb-10 for portrait */
 }
 
 .ad-panel-landscape {
@@ -379,11 +380,12 @@ html {
   display: flex !important;
 }
 
-/* Landscape mode - row layout, show right side ad */
-@media screen and (orientation: landscape) {
+/* Landscape mode - row layout, show right side ad (mobile/tablet only, not desktop) */
+@media screen and (orientation: landscape) and (max-width: 1535px) {
   .ad-layout-container {
     flex-direction: row !important;
     align-items: stretch !important;
+    padding-bottom: 0 !important;
   }
 
   .ad-panel-landscape {

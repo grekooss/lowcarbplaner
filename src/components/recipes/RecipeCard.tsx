@@ -64,7 +64,7 @@ export function RecipeCard({
 
   return (
     <div
-      className='group flex h-full cursor-pointer flex-col rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01]'
+      className='group flex h-full cursor-pointer flex-col rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] sm:rounded-2xl'
       onClick={handleClick}
       role='button'
       tabIndex={0}

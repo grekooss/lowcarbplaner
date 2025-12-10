@@ -64,7 +64,7 @@ export function RecipeListItem({
 
   return (
     <div
-      className='group flex cursor-pointer flex-col gap-6 rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] md:flex-row'
+      className='group flex cursor-pointer flex-col gap-6 rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] sm:rounded-2xl md:flex-row'
       onClick={handleClick}
       role='button'
       tabIndex={0}

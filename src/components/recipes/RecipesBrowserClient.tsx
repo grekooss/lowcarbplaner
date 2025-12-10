@@ -2,15 +2,16 @@
  * Client wrapper dla przeglądarki przepisów
  *
  * Główny komponent orchestrujący cały widok /recipes.
- * Zarządza stanem filtrów, paginacją, auth check i modalem rejestracji.
+ * Zarządza stanem filtrów, paginacją, auth check i modalem przepisu.
  */
 
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { VisuallyHidden } from '@/components/ui/visually-hidden'
 import { FeaturedRecipeCard } from './FeaturedRecipeCard'
 import { RecipeFilters } from './RecipeFilters'
 import { RecipesGrid } from './RecipesGrid'
@@ -20,10 +21,12 @@ import { ViewToggle, type ViewMode } from './ViewToggle'
 import { SortSelect, type SortOption, type SortDirection } from './SortSelect'
 import { LoadMoreButton } from './LoadMoreButton'
 import { AuthPromptModal } from './AuthPromptModal'
+import { RecipeDetailWithViewer } from './RecipeDetailWithViewer'
 import { useRecipesFilter } from '@/lib/hooks/useRecipesFilter'
 import { useAuthPrompt } from '@/lib/hooks/useAuthPrompt'
 import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
 import { useRecipesQuery } from '@/lib/react-query/queries/useRecipesQuery'
+import { useRecipeQuery } from '@/lib/react-query/queries/useRecipeQuery'
 import type { RecipesResponse } from '@/types/recipes-view.types'
 
 interface RecipesBrowserClientProps {
@@ -51,12 +54,19 @@ export function RecipesBrowserClient({
   initialData,
   initialFilters,
 }: RecipesBrowserClientProps) {
-  const router = useRouter()
-
   // Stan lokalny dla widoku i sortowania
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [sortBy, setSortBy] = useState<SortOption>('calories')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+
+  // Stan modala przepisu
+  const [recipeModal, setRecipeModal] = useState<{
+    isOpen: boolean
+    recipeId: number | null
+  }>({
+    isOpen: false,
+    recipeId: null,
+  })
 
   // Hooks dla state management
   const { filters, updateMealTypes, resetFilters } = useRecipesFilter({
@@ -71,6 +81,12 @@ export function RecipesBrowserClient({
   } = useAuthPrompt()
 
   const { isAuthenticated, isLoading: authLoading } = useAuthCheck()
+
+  // Query dla szczegółów przepisu w modalu
+  const { data: selectedRecipe, isLoading: isRecipeLoading } = useRecipeQuery({
+    recipeId: recipeModal.recipeId ?? 0,
+    enabled: recipeModal.isOpen && !!recipeModal.recipeId,
+  })
 
   // Infinite query dla przepisów
   const {
@@ -139,21 +155,22 @@ export function RecipesBrowserClient({
     return sortedRecipes.filter((r) => r.id !== featuredRecipe.id)
   }, [sortedRecipes, featuredRecipe])
 
-  // Handle recipe click - TYMCZASOWO WYŁĄCZONE - zawsze nawiguj
+  // Handle recipe click - otwórz modal z przepisem
   const handleRecipeClick = (recipeId: number) => {
     if (authLoading) return // Nie pozwól na klik podczas ładowania
 
-    // TYMCZASOWO WYŁĄCZONE - autoryzacja
-    // if (!isAuthenticated) {
-    //   // Niezalogowany - otwórz modal
-    //   openPrompt(recipeId)
-    // } else {
-    //   // Zalogowany - nawiguj do szczegółów
-    //   router.push(`/recipes/${recipeId}`)
-    // }
+    // Otwórz modal z przepisem
+    setRecipeModal({
+      isOpen: true,
+      recipeId,
+    })
+  }
 
-    // Zawsze nawiguj do szczegółów (bez sprawdzania auth)
-    router.push(`/recipes/${recipeId}`)
+  // Zamknij modal przepisu
+  const handleRecipeModalClose = (open: boolean) => {
+    if (!open) {
+      setRecipeModal({ isOpen: false, recipeId: null })
+    }
   }
 
   // Handle Add to Meal Plan
@@ -173,10 +190,10 @@ export function RecipesBrowserClient({
 
   return (
     <>
-      <main className='w-full space-y-6'>
-        {/* Featured Recipe */}
+      <main className='w-full space-y-3'>
+        {/* Featured Recipe - hidden on mobile */}
         {featuredRecipe && (
-          <section className='w-full'>
+          <section className='hidden w-full md:block'>
             <FeaturedRecipeCard
               recipe={featuredRecipe}
               onClick={handleRecipeClick}
@@ -186,25 +203,27 @@ export function RecipesBrowserClient({
 
         {/* Filters, Sort i View Toggle */}
         <section className='w-full'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='flex items-center justify-between gap-2'>
             <RecipeFilters
               selectedMealTypes={filters.meal_types}
               onChange={updateMealTypes}
             />
-            <div className='flex flex-wrap items-center gap-3'>
+            <div className='flex shrink-0 items-center gap-2'>
               <SortSelect
                 value={sortBy}
                 direction={sortDirection}
                 onChange={setSortBy}
                 onDirectionChange={setSortDirection}
               />
-              <ViewToggle mode={viewMode} onChange={setViewMode} />
+              <div className='hidden md:block'>
+                <ViewToggle mode={viewMode} onChange={setViewMode} />
+              </div>
             </div>
           </div>
         </section>
 
         {/* Recipes Grid/List */}
-        <section className='w-full space-y-6'>
+        <section className='w-full space-y-3'>
           {isFetching && !isFetchingNextPage ? (
             // Filtering/refetching (not load more)
             <div className='flex justify-center pt-16'>
@@ -241,32 +260,37 @@ export function RecipesBrowserClient({
             </div>
           ) : (
             <>
-              {/* Grid lub List view */}
+              {/* Grid view - always on mobile, conditional on desktop */}
               {/* Ukryj badge meal type gdy filtr jest aktywny */}
-              {viewMode === 'grid' ? (
+              <div className={viewMode === 'list' ? 'block md:hidden' : ''}>
                 <RecipesGrid
                   recipes={recipesForGrid}
                   onRecipeClick={handleRecipeClick}
                   hideMealTypeBadge={filters.meal_types.length > 0}
                 />
-              ) : (
-                <div className='grid w-full grid-cols-1 gap-6'>
-                  {recipesForGrid.map((recipe, index) => (
-                    <div key={recipe.id}>
-                      <RecipeListItem
-                        recipe={recipe}
-                        onClick={handleRecipeClick}
-                        onAddToMealPlan={handleAddToMealPlan}
-                        isAuthenticated={isAuthenticated ?? undefined}
-                        hideMealTypeBadge={filters.meal_types.length > 0}
-                      />
-                      {(index + 1) % 4 === 0 && (
-                        <div className='mt-6'>
-                          <RecipeAdPlaceholder variant='list' />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+              </div>
+
+              {/* List view - only on desktop when selected */}
+              {viewMode === 'list' && (
+                <div className='hidden md:block'>
+                  <div className='grid w-full grid-cols-1 gap-3'>
+                    {recipesForGrid.map((recipe, index) => (
+                      <div key={recipe.id}>
+                        <RecipeListItem
+                          recipe={recipe}
+                          onClick={handleRecipeClick}
+                          onAddToMealPlan={handleAddToMealPlan}
+                          isAuthenticated={isAuthenticated ?? undefined}
+                          hideMealTypeBadge={filters.meal_types.length > 0}
+                        />
+                        {(index + 1) % 4 === 0 && (
+                          <div className='mt-3'>
+                            <RecipeAdPlaceholder variant='list' />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -287,6 +311,26 @@ export function RecipesBrowserClient({
         onOpenChange={(open) => !open && closePrompt()}
         redirectRecipeId={redirectRecipeId}
       />
+
+      {/* Recipe Detail Modal */}
+      <Dialog open={recipeModal.isOpen} onOpenChange={handleRecipeModalClose}>
+        <DialogContent
+          coverMainPanel
+          className='overflow-y-auto rounded-md border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md sm:rounded-2xl md:rounded-3xl'
+        >
+          <VisuallyHidden>
+            <DialogTitle>{selectedRecipe?.name ?? 'Przepis'}</DialogTitle>
+          </VisuallyHidden>
+
+          {isRecipeLoading ? (
+            <div className='flex min-h-[400px] items-center justify-center'>
+              <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+            </div>
+          ) : selectedRecipe ? (
+            <RecipeDetailWithViewer recipe={selectedRecipe} />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

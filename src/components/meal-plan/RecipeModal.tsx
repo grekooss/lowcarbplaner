@@ -85,7 +85,7 @@ export const RecipeModal = ({
       <DialogContent
         data-testid='recipe-modal'
         coverMainPanel
-        className='overflow-y-auto rounded-2xl border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md md:rounded-3xl'
+        className='overflow-y-auto rounded-md border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md sm:rounded-2xl md:rounded-3xl'
       >
         <VisuallyHidden>
           <DialogTitle>{meal.recipe.name}</DialogTitle>

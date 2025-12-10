@@ -28,19 +28,19 @@ export function ResetPasswordModal() {
   return (
     <Dialog open={true} onOpenChange={handleClose}>
       <DialogContent
-        constrainToMainPanel
-        className='max-h-[90vh] max-w-md overflow-y-auto rounded-[20px] border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px]'
+        coverMainPanelOnMobile
+        className='max-h-[90vh] overflow-y-auto rounded-lg border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] sm:max-w-sm sm:rounded-2xl lg:rounded-3xl'
       >
         <VisuallyHidden>
           <DialogTitle>Ustaw nowe hasło</DialogTitle>
         </VisuallyHidden>
-        <div className='space-y-6 p-6'>
+        <div className='space-y-3 p-4 sm:space-y-6 sm:p-6'>
           {/* Header */}
-          <div className='space-y-2'>
-            <h1 className='text-3xl font-bold tracking-tight'>
+          <div className='space-y-1 sm:space-y-2'>
+            <h1 className='text-xl font-bold tracking-tight sm:text-3xl'>
               Ustaw nowe hasło
             </h1>
-            <p className='text-muted-foreground'>
+            <p className='text-muted-foreground text-xs sm:text-base'>
               Wprowadź nowe hasło dla swojego konta.
             </p>
           </div>

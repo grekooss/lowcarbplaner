@@ -56,7 +56,7 @@ export function FeaturedRecipeCard({
     : null
 
   return (
-    <div className='flex gap-4 rounded-2xl border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl lg:gap-6'>
+    <div className='flex gap-4 rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl lg:gap-6'>
       {/* Image Section - 1/3 width on tablet landscape, fixed width on desktop */}
       <div className='w-1/3 flex-shrink-0 lg:w-64'>
         <div className='relative h-full min-h-[200px] w-full overflow-hidden rounded-md bg-white/60 lg:min-h-[280px]'>

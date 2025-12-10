@@ -103,13 +103,13 @@ export function SwapRecipeDialog({
           )}
 
           {error && (
-            <div className='rounded-2xl border border-red-200/50 bg-red-50/50 p-4 text-sm text-red-600 backdrop-blur-sm'>
+            <div className='rounded-md border border-red-200/50 bg-red-50/50 p-4 text-sm text-red-600 backdrop-blur-sm sm:rounded-2xl'>
               Błąd podczas wczytywania zamienników: {(error as Error).message}
             </div>
           )}
 
           {!isLoading && !error && replacements.length === 0 && (
-            <div className='rounded-2xl border border-[var(--glass-border)] bg-white/30 px-6 py-12 text-center backdrop-blur-sm'>
+            <div className='rounded-md border border-[var(--glass-border)] bg-white/30 px-6 py-12 text-center backdrop-blur-sm sm:rounded-2xl'>
               <UtensilsCrossed className='text-muted-foreground/60 mx-auto mb-2 h-12 w-12' />
               <p className='text-muted-foreground'>
                 Brak dostępnych zamienników dla tego przepisu.
@@ -120,7 +120,7 @@ export function SwapRecipeDialog({
           {!isLoading && !error && replacements.length > 0 && (
             <div className='space-y-3 px-2 pb-2'>
               {/* Aktualny przepis */}
-              <div className='relative flex gap-4 rounded-2xl border-2 border-white bg-white/40 p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl'>
+              <div className='relative flex gap-4 rounded-md border-2 border-white bg-white/40 p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl'>
                 {/* Aktualny Badge - prawy górny róg */}
                 <div className='absolute top-2 right-4 flex items-center gap-1 rounded-sm border border-white bg-white px-2 py-0.5 text-xs font-bold tracking-wider text-gray-800 uppercase'>
                   Aktualny
@@ -196,7 +196,7 @@ export function SwapRecipeDialog({
                     key={replacement.id}
                     onClick={() => setSelectedRecipeId(replacement.id)}
                     className={cn(
-                      'relative flex w-full gap-4 rounded-2xl border-2 bg-white/40 p-3 text-left shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all hover:scale-[1.01]',
+                      'relative flex w-full gap-4 rounded-md border-2 bg-white/40 p-3 text-left shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all hover:scale-[1.01] sm:rounded-2xl',
                       isSelected ? 'border-red-600' : 'border-white'
                     )}
                   >

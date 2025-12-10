@@ -350,7 +350,7 @@ export function RecipeDetailClient({
                 {saveError}
               </p>
             )}
-            {enableIngredientEditing && (
+            {enableIngredientEditing && onSave && (
               <p className='text-muted-foreground mb-3 text-xs'>
                 Dostosuj gramatury składników (ostrzeżenie przy &gt;15%)
               </p>

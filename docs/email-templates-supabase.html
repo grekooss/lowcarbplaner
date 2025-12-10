@@ -1,0 +1,480 @@
+<!--
+================================================================================
+  LOWCARBPLANER - SZABLONY EMAIL DLA SUPABASE
+  Styl: Glassmorphism
+
+  JAK UŻYĆ:
+  1. Przejdź do Supabase Dashboard → Authentication → Email Templates
+  2. Skopiuj odpowiedni szablon (HTML między komentarzami)
+  3. Wklej do pola "Body" w Supabase
+  4. Ustaw odpowiedni "Subject" (podany przy każdym szablonie)
+  5. Zapisz zmiany
+================================================================================
+-->
+
+
+<!-- ============================================================================
+     1. CONFIRM SIGNUP (Potwierdzenie rejestracji)
+     Subject: Potwierdź swój email - LowCarbPlaner 🥗
+============================================================================= -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potwierdź swój email - LowCarbPlaner</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Montserrat', 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <!-- Main Container -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: rgba(255, 255, 255, 0.85); border-radius: 24px; border: 2px solid rgba(255, 255, 255, 1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header with gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 22px 22px 0 0; padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
+                🥗 LowCarbPlaner
+              </h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;">
+                Twój asystent diety niskowęglowodanowej
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 22px; font-weight: 600; text-align: center;">
+                Witaj w społeczności! 👋
+              </h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 15px; line-height: 1.6; text-align: center;">
+                Dziękujemy za rejestrację w LowCarbPlaner. Jesteś o krok od planowania zdrowych, niskowęglowodanowych posiłków!
+              </p>
+
+              <!-- Glass card -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(243, 244, 246, 0.6); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px;">
+                      Kliknij poniższy przycisk, aby potwierdzić swój adres email:
+                    </p>
+
+                    <!-- CTA Button -->
+                    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4); transition: all 0.2s;">
+                      ✓ Potwierdź email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; color: #9ca3af; font-size: 13px; text-align: center;">
+                Link wygasa po 24 godzinach.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(243, 244, 246, 0.5); border-radius: 0 0 22px 22px; padding: 24px 40px; text-align: center; border-top: 1px solid rgba(229, 231, 235, 0.8);">
+              <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">
+                Jeśli nie zakładałeś konta, zignoruj tę wiadomość.
+              </p>
+              <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                © 2024 LowCarbPlaner. Wszystkie prawa zastrzeżone.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+
+<!-- ============================================================================
+     2. RESET PASSWORD (Reset hasła)
+     Subject: Resetuj swoje hasło - LowCarbPlaner 🔐
+============================================================================= -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resetuj hasło - LowCarbPlaner</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Montserrat', 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: rgba(255, 255, 255, 0.85); border-radius: 24px; border: 2px solid rgba(255, 255, 255, 1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 22px 22px 0 0; padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                🥗 LowCarbPlaner
+              </h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;">
+                Twój asystent diety niskowęglowodanowej
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="display: inline-block; background: rgba(220, 38, 38, 0.1); border-radius: 50%; padding: 16px;">
+                  <span style="font-size: 32px;">🔐</span>
+                </span>
+              </div>
+
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 22px; font-weight: 600; text-align: center;">
+                Resetowanie hasła
+              </h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 15px; line-height: 1.6; text-align: center;">
+                Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta. Kliknij przycisk poniżej, aby ustawić nowe hasło.
+              </p>
+
+              <!-- Glass card -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(243, 244, 246, 0.6); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
+                      🔑 Ustaw nowe hasło
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Warning box -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(249, 115, 22, 0.1); border-radius: 12px; border-left: 4px solid #f97316;">
+                <tr>
+                  <td style="padding: 16px;">
+                    <p style="margin: 0; color: #ea580c; font-size: 13px; line-height: 1.5;">
+                      ⚠️ Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość. Twoje hasło pozostanie bez zmian.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 13px; text-align: center;">
+                Link wygasa po 1 godzinie.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(243, 244, 246, 0.5); border-radius: 0 0 22px 22px; padding: 24px 40px; text-align: center; border-top: 1px solid rgba(229, 231, 235, 0.8);">
+              <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                © 2024 LowCarbPlaner. Wszystkie prawa zastrzeżone.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+
+<!-- ============================================================================
+     3. MAGIC LINK (Logowanie przez link)
+     Subject: Twój link do logowania - LowCarbPlaner ✨
+============================================================================= -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zaloguj się - LowCarbPlaner</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Montserrat', 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: rgba(255, 255, 255, 0.85); border-radius: 24px; border: 2px solid rgba(255, 255, 255, 1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 22px 22px 0 0; padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                🥗 LowCarbPlaner
+              </h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;">
+                Twój asystent diety niskowęglowodanowej
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="display: inline-block; background: rgba(34, 197, 94, 0.1); border-radius: 50%; padding: 16px;">
+                  <span style="font-size: 32px;">✨</span>
+                </span>
+              </div>
+
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 22px; font-weight: 600; text-align: center;">
+                Twój magiczny link
+              </h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 15px; line-height: 1.6; text-align: center;">
+                Kliknij poniższy przycisk, aby zalogować się do swojego konta bez hasła.
+              </p>
+
+              <!-- Glass card -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(243, 244, 246, 0.6); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
+                      ✨ Zaloguj się teraz
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; color: #9ca3af; font-size: 13px; text-align: center;">
+                Link jest jednorazowy i wygasa po 1 godzinie.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(243, 244, 246, 0.5); border-radius: 0 0 22px 22px; padding: 24px 40px; text-align: center; border-top: 1px solid rgba(229, 231, 235, 0.8);">
+              <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">
+                Jeśli nie prosiłeś o ten link, zignoruj tę wiadomość.
+              </p>
+              <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                © 2024 LowCarbPlaner. Wszystkie prawa zastrzeżone.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+
+<!-- ============================================================================
+     4. CHANGE EMAIL (Zmiana adresu email)
+     Subject: Potwierdź zmianę adresu email - LowCarbPlaner 📧
+============================================================================= -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potwierdź zmianę email - LowCarbPlaner</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Montserrat', 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: rgba(255, 255, 255, 0.85); border-radius: 24px; border: 2px solid rgba(255, 255, 255, 1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 22px 22px 0 0; padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                🥗 LowCarbPlaner
+              </h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;">
+                Twój asystent diety niskowęglowodanowej
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="display: inline-block; background: rgba(59, 130, 246, 0.1); border-radius: 50%; padding: 16px;">
+                  <span style="font-size: 32px;">📧</span>
+                </span>
+              </div>
+
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 22px; font-weight: 600; text-align: center;">
+                Potwierdź nowy adres email
+              </h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 15px; line-height: 1.6; text-align: center;">
+                Otrzymaliśmy prośbę o zmianę adresu email powiązanego z Twoim kontem. Kliknij przycisk poniżej, aby potwierdzić zmianę.
+              </p>
+
+              <!-- Glass card -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(243, 244, 246, 0.6); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email_change" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
+                      ✓ Potwierdź zmianę
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Warning box -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(249, 115, 22, 0.1); border-radius: 12px; border-left: 4px solid #f97316;">
+                <tr>
+                  <td style="padding: 16px;">
+                    <p style="margin: 0; color: #ea580c; font-size: 13px; line-height: 1.5;">
+                      ⚠️ Jeśli nie prosiłeś o tę zmianę, natychmiast zabezpiecz swoje konto zmieniając hasło.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 13px; text-align: center;">
+                Link wygasa po 24 godzinach.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(243, 244, 246, 0.5); border-radius: 0 0 22px 22px; padding: 24px 40px; text-align: center; border-top: 1px solid rgba(229, 231, 235, 0.8);">
+              <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                © 2024 LowCarbPlaner. Wszystkie prawa zastrzeżone.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+
+<!-- ============================================================================
+     5. INVITE USER (Zaproszenie użytkownika)
+     Subject: Zaproszenie do LowCarbPlaner 🎉
+============================================================================= -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zaproszenie - LowCarbPlaner</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Montserrat', 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: rgba(255, 255, 255, 0.85); border-radius: 24px; border: 2px solid rgba(255, 255, 255, 1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 22px 22px 0 0; padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                🥗 LowCarbPlaner
+              </h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;">
+                Twój asystent diety niskowęglowodanowej
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="display: inline-block; background: rgba(34, 197, 94, 0.1); border-radius: 50%; padding: 16px;">
+                  <span style="font-size: 32px;">🎉</span>
+                </span>
+              </div>
+
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 22px; font-weight: 600; text-align: center;">
+                Zostałeś zaproszony!
+              </h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 15px; line-height: 1.6; text-align: center;">
+                Ktoś zaprosił Cię do dołączenia do LowCarbPlaner - aplikacji do planowania zdrowych, niskowęglowodanowych posiłków.
+              </p>
+
+              <!-- Features list -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(243, 244, 246, 0.6); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="margin: 0 0 12px 0; color: #4b5563; font-size: 14px;">
+                      ✓ Planuj posiłki na cały tydzień
+                    </p>
+                    <p style="margin: 0 0 12px 0; color: #4b5563; font-size: 14px;">
+                      ✓ Śledź makroskładniki i kalorie
+                    </p>
+                    <p style="margin: 0; color: #4b5563; font-size: 14px;">
+                      ✓ Generuj listy zakupów automatycznie
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Glass card with CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
+                      🚀 Dołącz teraz
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; color: #9ca3af; font-size: 13px; text-align: center;">
+                Link wygasa po 7 dniach.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(243, 244, 246, 0.5); border-radius: 0 0 22px 22px; padding: 24px 40px; text-align: center; border-top: 1px solid rgba(229, 231, 235, 0.8);">
+              <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                © 2024 LowCarbPlaner. Wszystkie prawa zastrzeżone.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+
+<!--
+================================================================================
+  KONFIGURACJA SMTP (opcjonalnie)
+
+  Aby emaile wychodziły z Twojej domeny:
+  1. Przejdź do: Project Settings → Authentication → SMTP Settings
+  2. Włącz "Enable Custom SMTP"
+  3. Skonfiguruj:
+     - Sender email: noreply@lowcarbplaner.pl
+     - Sender name: LowCarbPlaner
+     - Host: (twój serwer SMTP)
+     - Port: 587
+     - Username/Password: (dane logowania)
+================================================================================
+-->
