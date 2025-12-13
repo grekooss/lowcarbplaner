@@ -22,19 +22,21 @@ interface SummaryStepProps {
 
 export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>Podsumowanie</h2>
-        <p className='text-muted-foreground text-sm'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
+          Podsumowanie
+        </h2>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Sprawdź swoje dane i cele żywieniowe przed kontynuowaniem.
         </p>
       </div>
 
-      <div className='space-y-4'>
+      <div className='space-y-3'>
         {/* Personal Data */}
-        <div className='rounded-3xl bg-white p-6 shadow-sm'>
-          <h3 className='mb-4 text-lg font-bold'>Twoje dane</h3>
-          <div className='space-y-3'>
+        <div className='rounded-md bg-white p-4 shadow-sm'>
+          <h3 className='mb-2 text-base font-bold'>Twoje dane</h3>
+          <div className='space-y-2'>
             <div className='flex justify-between'>
               <span className='text-muted-foreground'>Płeć:</span>
               <span className='font-medium'>
@@ -93,9 +95,9 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
 
         {/* Nutrition Targets */}
         {calculatedTargets && (
-          <div className='rounded-3xl bg-white p-6 shadow-sm'>
-            <h3 className='mb-4 text-lg font-bold'>Twoje cele żywieniowe</h3>
-            <div className='space-y-3'>
+          <div className='rounded-md bg-white p-4 shadow-sm'>
+            <h3 className='mb-2 text-base font-bold'>Twoje cele żywieniowe</h3>
+            <div className='space-y-2'>
               <div className='flex items-center justify-between'>
                 <span className='text-muted-foreground'>Kalorie dziennie:</span>
                 <span className='text-primary text-2xl font-bold'>
@@ -103,9 +105,9 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                 </span>
               </div>
               <Separator />
-              <div className='space-y-2'>
+              <div className='space-y-1'>
                 <div className='text-sm font-medium'>Makroskładniki:</div>
-                <div className='space-y-1 text-sm'>
+                <div className='space-y-0.5 text-sm'>
                   <div className='flex justify-between'>
                     <span className='text-muted-foreground'>
                       Węglowodany (15%):

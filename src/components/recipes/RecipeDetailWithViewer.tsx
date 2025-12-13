@@ -12,6 +12,13 @@ import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipeDetailWithViewerProps {
   recipe: RecipeDTO
+  // Step mode props (controlled from parent modal)
+  isStepMode?: boolean
+  currentStep?: number
+  onOpenStepMode?: () => void
+  totalSteps?: number
+  // Hide steps button (when parent handles it in fixed footer)
+  hideStepsButton?: boolean
 }
 
 /**
@@ -19,6 +26,11 @@ interface RecipeDetailWithViewerProps {
  */
 export function RecipeDetailWithViewer({
   recipe,
+  isStepMode = false,
+  currentStep = 1,
+  onOpenStepMode,
+  totalSteps,
+  hideStepsButton = false,
 }: RecipeDetailWithViewerProps) {
   const {
     adjustedNutrition,
@@ -28,6 +40,11 @@ export function RecipeDetailWithViewer({
     incrementAmount,
     decrementAmount,
   } = useIngredientViewer({ recipe })
+
+  // Oblicz total steps jeśli nie podano
+  const calculatedTotalSteps =
+    totalSteps ??
+    (Array.isArray(recipe.instructions) ? recipe.instructions.length : 0)
 
   return (
     <RecipeDetailClient
@@ -42,6 +59,11 @@ export function RecipeDetailWithViewer({
       adjustedNutrition={adjustedNutrition}
       hasChanges={false}
       isSaving={false}
+      isStepMode={isStepMode}
+      currentStep={currentStep}
+      onOpenStepMode={onOpenStepMode}
+      totalSteps={calculatedTotalSteps}
+      hideStepsButton={hideStepsButton}
     />
   )
 }

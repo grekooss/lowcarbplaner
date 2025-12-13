@@ -8,10 +8,15 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { VisuallyHidden } from '@/components/ui/visually-hidden'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+} from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 import { FeaturedRecipeCard } from './FeaturedRecipeCard'
 import { RecipeFilters } from './RecipeFilters'
 import { RecipesGrid } from './RecipesGrid'
@@ -67,6 +72,10 @@ export function RecipesBrowserClient({
     isOpen: false,
     recipeId: null,
   })
+
+  // Mobile step-by-step mode state
+  const [isStepMode, setIsStepMode] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
 
   // Hooks dla state management
   const { filters, updateMealTypes, resetFilters } = useRecipesFilter({
@@ -170,7 +179,52 @@ export function RecipesBrowserClient({
   const handleRecipeModalClose = (open: boolean) => {
     if (!open) {
       setRecipeModal({ isOpen: false, recipeId: null })
+      // Reset step mode when modal closes
+      setIsStepMode(false)
+      setCurrentStep(1)
     }
+  }
+
+  // Step mode navigation
+  const totalSteps = selectedRecipe?.instructions
+    ? Array.isArray(selectedRecipe.instructions)
+      ? selectedRecipe.instructions.length
+      : 0
+    : 0
+
+  const sortedInstructions = selectedRecipe?.instructions
+    ? Array.isArray(selectedRecipe.instructions)
+      ? [...selectedRecipe.instructions].sort((a, b) => a.step - b.step)
+      : []
+    : []
+
+  const goToNextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const goToPrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const openStepMode = () => {
+    console.log('openStepMode called! totalSteps:', totalSteps)
+    setCurrentStep(1)
+    setIsStepMode(true)
+  }
+
+  // DEBUG
+  console.log('RecipesBrowserClient DEBUG:', {
+    isStepMode,
+    totalSteps,
+    currentStep,
+  })
+
+  const closeStepMode = () => {
+    setIsStepMode(false)
   }
 
   // Handle Add to Meal Plan
@@ -316,19 +370,119 @@ export function RecipesBrowserClient({
       <Dialog open={recipeModal.isOpen} onOpenChange={handleRecipeModalClose}>
         <DialogContent
           coverMainPanel
-          className='overflow-y-auto rounded-md border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md sm:rounded-2xl md:rounded-3xl'
+          hideCloseButton
+          className='flex flex-col overflow-hidden rounded-md border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md sm:rounded-2xl md:rounded-3xl'
         >
-          <VisuallyHidden>
-            <DialogTitle>{selectedRecipe?.name ?? 'Przepis'}</DialogTitle>
-          </VisuallyHidden>
+          {/* Fixed Header */}
+          <div className='relative flex-shrink-0 border-b-2 border-white bg-[var(--bg-card)] p-4 pb-3'>
+            <DialogTitle className='pr-8 text-base font-bold text-gray-800 sm:text-lg lg:pr-0 lg:text-center lg:text-2xl'>
+              {selectedRecipe?.name ?? ''}
+            </DialogTitle>
+            <DialogClose className='absolute top-1/2 right-3 -translate-y-1/2 opacity-70 transition-opacity hover:opacity-100'>
+              <X className='h-5 w-5' />
+              <span className='sr-only'>Zamknij</span>
+            </DialogClose>
+          </div>
 
-          {isRecipeLoading ? (
-            <div className='flex min-h-[400px] items-center justify-center'>
-              <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+          {/* Scrollable Content */}
+          <div className='custom-scrollbar flex-1 overflow-y-auto'>
+            {isRecipeLoading ? (
+              <div className='flex min-h-[400px] items-center justify-center'>
+                <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+              </div>
+            ) : selectedRecipe ? (
+              <RecipeDetailWithViewer
+                recipe={selectedRecipe}
+                isStepMode={isStepMode}
+                currentStep={currentStep}
+                onOpenStepMode={openStepMode}
+                totalSteps={totalSteps}
+                hideStepsButton={true}
+              />
+            ) : null}
+          </div>
+
+          {/* Fixed Footer - przycisk KROKI lub panel kroków (tylko mobile) */}
+          {totalSteps > 0 && (
+            <div className='flex-shrink-0 lg:hidden'>
+              {!isStepMode ? (
+                /* Przycisk KROKI */
+                <div className='flex justify-center border-t-2 border-white bg-[var(--bg-card)] p-3'>
+                  <Button
+                    onClick={openStepMode}
+                    className='h-7 rounded-sm bg-red-600 px-6 text-sm font-bold tracking-wide text-white shadow-lg shadow-red-500/30 transition-transform hover:bg-red-700 active:scale-95'
+                  >
+                    KROKI
+                  </Button>
+                </div>
+              ) : (
+                /* Panel kroków */
+                <div className='border-t-2 border-white bg-[var(--bg-card)] p-4 pb-6 shadow-[0_-4px_20px_rgba(0,0,0,0.15)]'>
+                  {/* Header: numer kroku + przycisk zamknięcia */}
+                  <div className='mb-3 flex items-center justify-between'>
+                    <h3 className='text-base font-bold text-gray-800'>
+                      Krok {currentStep} z {totalSteps}
+                    </h3>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={closeStepMode}
+                      className='h-8 w-8 rounded-full p-0'
+                    >
+                      <X className='h-4 w-4' />
+                    </Button>
+                  </div>
+
+                  {/* Opis kroku */}
+                  <div className='mb-4 flex items-start gap-3'>
+                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-red-600 text-sm font-bold text-white'>
+                      {currentStep}
+                    </div>
+                    <p className='flex-1 text-sm leading-relaxed font-medium text-gray-800'>
+                      {sortedInstructions[currentStep - 1]?.description}
+                    </p>
+                  </div>
+
+                  {/* Nawigacja: strzałka lewa + kropki + strzałka prawa */}
+                  <div className='flex items-center justify-between'>
+                    <Button
+                      variant='outline'
+                      onClick={goToPrevStep}
+                      disabled={currentStep === 1}
+                      className='flex h-10 w-10 items-center justify-center rounded-full p-0 disabled:opacity-30'
+                    >
+                      <ChevronLeft className='h-5 w-5' />
+                    </Button>
+
+                    <div className='flex items-center gap-1.5'>
+                      {sortedInstructions.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentStep(index + 1)}
+                          className={cn(
+                            'h-2 rounded-full transition-all',
+                            index + 1 === currentStep
+                              ? 'w-5 bg-red-600'
+                              : 'w-2 bg-gray-300 hover:bg-gray-400'
+                          )}
+                          aria-label={`Krok ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+
+                    <Button
+                      variant='outline'
+                      onClick={goToNextStep}
+                      disabled={currentStep === totalSteps}
+                      className='flex h-10 w-10 items-center justify-center rounded-full p-0 disabled:opacity-30'
+                    >
+                      <ChevronRight className='h-5 w-5' />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : selectedRecipe ? (
-            <RecipeDetailWithViewer recipe={selectedRecipe} />
-          ) : null}
+          )}
         </DialogContent>
       </Dialog>
     </>

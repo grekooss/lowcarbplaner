@@ -47,19 +47,19 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
           Ile masz lat?
         </h2>
-        <p className='text-muted-foreground text-sm'>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Wiek wpływa na Twoje dzienne zapotrzebowanie kaloryczne.
         </p>
       </div>
 
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <span className='text-muted-foreground text-sm'>Wiek</span>
+          <span className='text-foreground text-sm font-bold'>Wiek</span>
           <div className='flex items-center gap-2'>
             <div className='flex flex-col'>
               <button

@@ -74,10 +74,10 @@ export const ShoppingListAccordion = ({
         value={categoryData.category}
         className='rounded-md border-2 border-white bg-white/40 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl'
       >
-        <AccordionTrigger className='px-6 py-4 hover:no-underline'>
+        <AccordionTrigger className='px-4 py-3 hover:no-underline sm:px-6 sm:py-4'>
           <div className='flex w-full items-center justify-between pr-4'>
             <span
-              className={`text-lg font-bold ${allPurchased ? 'text-gray-400' : 'text-gray-800'}`}
+              className={`text-base font-bold sm:text-lg ${allPurchased ? 'text-gray-400' : 'text-gray-800'}`}
             >
               {categoryLabel}
             </span>
@@ -92,7 +92,7 @@ export const ShoppingListAccordion = ({
             </span>
           </div>
         </AccordionTrigger>
-        <AccordionContent className='px-6 pb-4'>
+        <AccordionContent className='px-4 pb-3 sm:px-6 sm:pb-4'>
           <CategorySection
             category={categoryData.category}
             items={categoryData.items}
@@ -144,12 +144,12 @@ export const ShoppingListAccordion = ({
   })()
 
   return (
-    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+    <div className='grid grid-cols-1 gap-3 sm:gap-6 lg:grid-cols-2'>
       <Accordion
         type='multiple'
         value={openCategories}
         onValueChange={setOpenCategories}
-        className='flex w-full flex-col gap-6'
+        className='flex w-full flex-col gap-3 sm:gap-6'
       >
         {leftColumn.map(renderCategoryCard)}
       </Accordion>
@@ -158,7 +158,7 @@ export const ShoppingListAccordion = ({
         type='multiple'
         value={openCategories}
         onValueChange={setOpenCategories}
-        className='flex w-full flex-col gap-6'
+        className='flex w-full flex-col gap-3 sm:gap-6'
       >
         {rightColumn.map(renderCategoryCard)}
       </Accordion>

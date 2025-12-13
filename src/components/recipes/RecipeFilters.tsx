@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, Check } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { Enums } from '@/types/database.types'
 
@@ -98,7 +98,7 @@ export function RecipeFilters({
 
             {/* Dropdown */}
             <div
-              className='absolute top-full left-0 z-20 mt-1 w-full min-w-[140px] overflow-hidden rounded-sm border border-white bg-white shadow-lg'
+              className='absolute top-full left-0 z-20 mt-1 w-full min-w-[140px] rounded-sm border border-white bg-white p-1 shadow-[0_4px_20px_rgb(0,0,0,0.08)]'
               role='listbox'
             >
               {MEAL_TYPES.map((type) => (
@@ -106,10 +106,10 @@ export function RecipeFilters({
                   key={type}
                   type='button'
                   onClick={() => handleSelect(type)}
-                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs font-bold tracking-wide uppercase transition-colors ${
+                  className={`flex w-full items-center justify-between rounded-sm px-3 py-1.5 text-left text-xs font-bold tracking-wide uppercase transition-colors ${
                     isSelected(type)
-                      ? 'bg-red-50 text-red-600'
-                      : 'text-gray-800 hover:bg-gray-50'
+                      ? 'bg-red-600 text-white'
+                      : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
                   }`}
                   role='option'
                   aria-selected={isSelected(type)}
@@ -117,9 +117,6 @@ export function RecipeFilters({
                   <span>
                     {type === 'all' ? 'Wszystkie' : MEAL_TYPE_LABELS[type]}
                   </span>
-                  {isSelected(type) && (
-                    <Check className='h-3.5 w-3.5 text-red-600' />
-                  )}
                 </button>
               ))}
             </div>

@@ -13,7 +13,6 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 interface NavigationButtonsProps {
   currentStep: number
   totalSteps: number
-  canGoBack: boolean
   canGoNext: boolean
   isLastStep: boolean
   isLoading?: boolean
@@ -25,7 +24,7 @@ interface NavigationButtonsProps {
 }
 
 export function NavigationButtons({
-  canGoBack,
+  currentStep,
   canGoNext,
   isLastStep,
   isLoading = false,
@@ -35,25 +34,42 @@ export function NavigationButtons({
   nextButtonText = 'Dalej',
   submitButtonText = 'Wygeneruj plan',
 }: NavigationButtonsProps) {
-  return (
-    <div className='flex flex-col items-stretch justify-between gap-2 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-3 py-2 shadow-[var(--shadow-card)] backdrop-blur-[16px] sm:flex-row sm:items-center sm:gap-0 sm:px-4 sm:py-3'>
-      {/* Back Button - hidden on first step */}
-      {canGoBack ? (
+  const isFirstStep = currentStep === 1
+
+  // First step: single button full width
+  if (isFirstStep) {
+    return (
+      <div className='flex justify-center'>
         <Button
           type='button'
-          variant='outline'
-          onClick={onBack}
-          disabled={isLoading}
-          className='gap-2'
+          onClick={onNext}
+          disabled={!canGoNext || isLoading}
+          className='w-full gap-2'
           size='lg'
         >
-          <ChevronLeft className='h-4 w-4' />
-          <span className='hidden sm:inline'>Wstecz</span>
-          <span className='sm:hidden'>Cofnij</span>
+          <span>{nextButtonText}</span>
+          <ChevronRight className='h-4 w-4' />
         </Button>
-      ) : (
-        <div />
-      )}
+      </div>
+    )
+  }
+
+  // Other steps: back and next buttons in a row
+  return (
+    <div className='flex items-center justify-between gap-3'>
+      {/* Back Button */}
+      <Button
+        type='button'
+        variant='outline'
+        onClick={onBack}
+        disabled={isLoading}
+        className='gap-2'
+        size='lg'
+      >
+        <ChevronLeft className='h-4 w-4' />
+        <span className='hidden sm:inline'>Wstecz</span>
+        <span className='sm:hidden'>Cofnij</span>
+      </Button>
 
       {/* Next/Submit Button */}
       {isLastStep ? (

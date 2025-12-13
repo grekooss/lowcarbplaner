@@ -19,10 +19,12 @@ interface DisclaimerStepProps {
 
 export function DisclaimerStep({ value, onChange }: DisclaimerStepProps) {
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>Oświadczenie</h2>
-        <p className='text-muted-foreground text-sm'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
+          Oświadczenie
+        </h2>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Przed kontynuowaniem przeczytaj i zaakceptuj poniższe oświadczenie.
         </p>
       </div>
@@ -53,7 +55,7 @@ export function DisclaimerStep({ value, onChange }: DisclaimerStepProps) {
         </AlertDescription>
       </Alert>
 
-      <div className='flex items-start space-x-3 rounded-3xl bg-white p-4 shadow-sm'>
+      <div className='flex items-start space-x-3 rounded-md bg-white p-4 shadow-sm'>
         <Checkbox
           id='disclaimer'
           checked={value}

@@ -37,7 +37,7 @@ const variantStyles = {
   protein: {
     bg: 'bg-white',
     border: 'border-white',
-    iconBg: 'bg-blue-500',
+    iconBg: 'bg-blue-400',
     icon: 'text-white',
     textColor: 'text-slate-900',
     labelColor: 'text-slate-600',
@@ -46,7 +46,7 @@ const variantStyles = {
   fat: {
     bg: 'bg-white',
     border: 'border-white',
-    iconBg: 'bg-green-500',
+    iconBg: 'bg-green-400',
     icon: 'text-white',
     textColor: 'text-slate-900',
     labelColor: 'text-slate-600',
@@ -62,49 +62,45 @@ export const MacroCard = ({ label, value, unit, variant }: MacroCardProps) => {
 
   return (
     <Card
-      className={`${styles.bg} ${styles.border} flex flex-1 ${noIconBg ? 'items-center gap-2.5 p-2.5 pl-6' : 'items-center justify-center gap-2.5 p-2.5'} border-2 shadow-none`}
+      className={`${styles.bg} ${styles.border} flex flex-1 items-center justify-center gap-2.5 border-2 p-4 shadow-none`}
     >
       {noIconBg ? (
-        <>
+        <div className='flex flex-col items-center text-center'>
           <div className={`flex items-center justify-center ${styles.icon}`}>
             <Icon className='h-8 w-8' />
           </div>
-          <div className='flex flex-col'>
-            <p className={`text-xs font-bold uppercase ${styles.labelColor}`}>
-              {label}
-            </p>
-            <p className='flex items-baseline gap-1'>
-              <span className={`text-xl font-bold ${styles.textColor}`}>
-                {Math.round(value)}
-              </span>
-              <span className={`text-xs font-bold ${styles.labelColor}`}>
-                {unit}
-              </span>
-            </p>
-          </div>
-        </>
-      ) : (
-        <div className='flex flex-col items-start'>
           <p
-            className={`text-xs font-bold uppercase ${styles.labelColor} mb-1`}
+            className={`text-xs font-bold uppercase ${styles.labelColor} mt-1`}
           >
             {label}
           </p>
-          <div className='flex items-center gap-2'>
-            <div
-              className={`rounded ${iconBg} p-1.5 shadow-none ${styles.icon}`}
-            >
-              <Icon className='h-4 w-4' />
-            </div>
-            <p className='flex items-baseline gap-1'>
-              <span className={`text-xl font-bold ${styles.textColor}`}>
-                {Math.round(value)}
-              </span>
-              <span className={`text-xs font-bold ${styles.labelColor}`}>
-                {unit}
-              </span>
-            </p>
+          <p className='flex items-baseline gap-1'>
+            <span className={`text-xl font-bold ${styles.textColor}`}>
+              {Math.round(value)}
+            </span>
+            <span className={`text-xs font-bold ${styles.labelColor}`}>
+              {unit}
+            </span>
+          </p>
+        </div>
+      ) : (
+        <div className='flex flex-col items-center text-center'>
+          <div className={`rounded ${iconBg} p-1.5 shadow-none ${styles.icon}`}>
+            <Icon className='h-4 w-4' />
           </div>
+          <p
+            className={`text-xs font-bold uppercase ${styles.labelColor} mt-1`}
+          >
+            {label}
+          </p>
+          <p className='flex items-baseline gap-1'>
+            <span className={`text-xl font-bold ${styles.textColor}`}>
+              {Math.round(value)}
+            </span>
+            <span className={`text-xs font-bold ${styles.labelColor}`}>
+              {unit}
+            </span>
+          </p>
         </div>
       )}
     </Card>

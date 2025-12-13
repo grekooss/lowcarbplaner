@@ -36,12 +36,12 @@ export function GoalStep({
   const hasDisabledOptions = weightLossOptions.some((opt) => opt.isDisabled)
 
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
           Jaki jest Twój cel?
         </h2>
-        <p className='text-muted-foreground text-sm'>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Wybierz cel, który chcesz osiągnąć.
         </p>
       </div>
@@ -54,9 +54,9 @@ export function GoalStep({
         {GOALS.map((goal) => (
           <div
             key={goal}
-            className='hover:border-primary flex items-start space-x-3 rounded-3xl border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
+            className='hover:border-primary flex items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
           >
-            <RadioGroupItem value={goal} id={goal} className='mt-1' />
+            <RadioGroupItem value={goal} id={goal} />
             <Label htmlFor={goal} className='flex-1 cursor-pointer font-normal'>
               <div className='font-medium'>{GOAL_LABELS[goal]}</div>
               <div className='text-muted-foreground mt-1 text-sm'>
@@ -99,7 +99,7 @@ export function GoalStep({
             {weightLossOptions.map((option) => (
               <div
                 key={option.value}
-                className={`flex items-start space-x-3 rounded-3xl border border-transparent bg-white p-4 shadow-sm transition-colors ${
+                className={`flex items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors ${
                   option.isDisabled
                     ? 'cursor-not-allowed opacity-50'
                     : 'hover:border-primary hover:bg-white'
@@ -109,7 +109,6 @@ export function GoalStep({
                   value={option.value.toString()}
                   id={`rate-${option.value}`}
                   disabled={option.isDisabled}
-                  className='mt-1'
                 />
                 <Label
                   htmlFor={`rate-${option.value}`}

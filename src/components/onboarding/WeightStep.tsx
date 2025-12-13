@@ -49,17 +49,19 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>Ile ważysz?</h2>
-        <p className='text-muted-foreground text-sm'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
+          Ile ważysz?
+        </h2>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Twoja aktualna waga jest podstawą do obliczenia celów żywieniowych.
         </p>
       </div>
 
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <span className='text-muted-foreground text-sm'>Waga</span>
+          <span className='text-foreground text-sm font-bold'>Waga</span>
           <div className='flex items-center gap-2'>
             <div className='flex flex-col'>
               <button

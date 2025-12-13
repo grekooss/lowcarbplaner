@@ -20,14 +20,25 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
   const month = fullDate.toLocaleDateString('pl-PL', { month: 'long' })
   const year = fullDate.getFullYear()
 
+  // Pokaż przycisk zmiany tylko dla dziś i przyszłych dni
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const dayDate = new Date(day.date)
+  dayDate.setHours(0, 0, 0, 0)
+  const isTodayOrFuture = dayDate >= today
+
   return (
     <div className='space-y-3'>
-      {/* Czerwony button z dniem */}
-      <div className='flex items-center justify-center gap-1.5 rounded-md bg-red-600 py-2.5 text-white shadow-sm'>
-        <span className='font-semibold capitalize'>{day.dayName}</span>
-        <span className='font-bold'>{day.dayNumber}</span>
-        <span>{month}</span>
-        <span className='text-sm opacity-80'>{year}</span>
+      {/* Nagłówek dnia */}
+      <div className='flex items-baseline gap-2 pl-2'>
+        <span className='font-semibold text-gray-900 capitalize'>
+          {day.dayName}
+        </span>
+        <span className='flex h-9 w-9 items-center justify-center rounded-sm bg-red-600 text-xl font-bold text-white'>
+          {day.dayNumber}
+        </span>
+        <span className='text-gray-900'>{month}</span>
+        <span className='text-xs text-gray-500'>{year}</span>
       </div>
 
       {/* Posiłki */}
@@ -38,6 +49,7 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
             meal={day.breakfast}
             mealType='breakfast'
             onMealClick={onMealClick}
+            showSwapButton={isTodayOrFuture}
           />
         )}
 
@@ -47,6 +59,7 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
             meal={day.lunch}
             mealType='lunch'
             onMealClick={onMealClick}
+            showSwapButton={isTodayOrFuture}
           />
         )}
 
@@ -56,6 +69,7 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
             meal={day.dinner}
             mealType='dinner'
             onMealClick={onMealClick}
+            showSwapButton={isTodayOrFuture}
           />
         )}
       </div>

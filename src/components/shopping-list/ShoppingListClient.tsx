@@ -112,7 +112,7 @@ export const ShoppingListClient = ({
               <p className='text-xs font-bold tracking-wide text-gray-400 uppercase'>
                 Kupione
               </p>
-              <p className='text-lg font-bold text-red-600'>
+              <p className='text-lg font-bold text-gray-800'>
                 {stats.purchasedCount}
               </p>
             </div>

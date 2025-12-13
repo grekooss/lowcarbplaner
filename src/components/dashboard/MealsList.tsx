@@ -23,8 +23,8 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   today.setHours(0, 0, 0, 0)
   const selectedDate = new Date(date)
   selectedDate.setHours(0, 0, 0, 0)
-  const isFutureDate = selectedDate > today
   const isCurrentDate = selectedDate.getTime() === today.getTime()
+  const isTodayOrFuture = selectedDate >= today
 
   const breakfast = mealsForDate.find((meal) => meal.meal_type === 'breakfast')
   const lunch = mealsForDate.find((meal) => meal.meal_type === 'lunch')
@@ -50,7 +50,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
           <MealCard
             key={meal.id}
             meal={meal}
-            showSwapButton={isFutureDate}
+            showSwapButton={isTodayOrFuture}
             enableEatenCheckbox={isCurrentDate}
             onRecipePreview={onRecipePreview}
           />

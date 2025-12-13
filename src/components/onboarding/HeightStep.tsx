@@ -47,19 +47,19 @@ export function HeightStep({ value, onChange, error }: HeightStepProps) {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
           Jaki masz wzrost?
         </h2>
-        <p className='text-muted-foreground text-sm'>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Wzrost jest używany do obliczenia Twojego podstawowego metabolizmu.
         </p>
       </div>
 
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <span className='text-muted-foreground text-sm'>Wzrost</span>
+          <span className='text-foreground text-sm font-bold'>Wzrost</span>
           <div className='flex items-center gap-2'>
             <div className='flex flex-col'>
               <button

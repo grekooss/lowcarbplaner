@@ -66,6 +66,10 @@ interface DialogContentProps
    * When true, covers main panel on mobile (<640px), centered modal on larger screens
    */
   coverMainPanelOnMobile?: boolean
+  /**
+   * When true, hides the default close button (useful when providing custom close button)
+   */
+  hideCloseButton?: boolean
 }
 
 const DialogContent = React.forwardRef<
@@ -79,6 +83,7 @@ const DialogContent = React.forwardRef<
       constrainToMainPanel = false,
       coverMainPanel = false,
       coverMainPanelOnMobile = false,
+      hideCloseButton = false,
       ...props
     },
     ref
@@ -107,6 +112,7 @@ const DialogContent = React.forwardRef<
         if (contentArea) {
           setContentAreaRect(contentArea.getBoundingClientRect())
         }
+        // Mobile breakpoint - use 640 to match sm: breakpoint in Tailwind
         setIsMobile(window.innerWidth < 640)
       }
 
@@ -165,7 +171,9 @@ const DialogContent = React.forwardRef<
           ref={ref}
           style={panelStyle}
           className={cn(
-            'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 grid gap-4 border p-6 shadow-lg duration-200 sm:rounded-lg',
+            'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 border shadow-lg duration-200 sm:rounded-lg',
+            // Default padding only when not covering main panel (full-screen modals handle their own padding)
+            !effectiveCoverMainPanel && 'p-6',
             // Default viewport centering when not using panel-based positioning
             // or as fallback before panelRect is loaded
             (!needsPanelRect || !panelRect) &&
@@ -180,13 +188,15 @@ const DialogContent = React.forwardRef<
           {...props}
         >
           {children}
-          <DialogPrimitive.Close
-            className='data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3 right-3 opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none'
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            <Cross2Icon className='h-5 w-5' />
-            <span className='sr-only'>Close</span>
-          </DialogPrimitive.Close>
+          {!hideCloseButton && (
+            <DialogPrimitive.Close
+              className='data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3 right-3 z-30 opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none'
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <Cross2Icon className='h-5 w-5' />
+              <span className='sr-only'>Close</span>
+            </DialogPrimitive.Close>
+          )}
         </DialogPrimitive.Content>
       </DialogPortal>
     )

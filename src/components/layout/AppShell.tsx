@@ -221,7 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Main Glass Panel */}
           <div
             data-main-panel
-            className='flex h-full w-full flex-1 overflow-hidden rounded-lg border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md sm:rounded-2xl lg:rounded-3xl'
+            className='relative flex h-full w-full flex-1 overflow-hidden rounded-lg border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md sm:rounded-2xl lg:rounded-3xl'
           >
             {/* Sidebar - Desktop only (xl+) */}
             <aside className='hidden h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white xl:flex'>
@@ -324,7 +324,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Main Content Area */}
             <main
               data-content-area
-              className='custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-4 pt-1 sm:pt-2 lg:p-8 lg:pt-4'
+              className='custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto bg-transparent px-2 py-3 pt-1 sm:pt-2 lg:p-8 lg:pt-4'
             >
               {/* Header */}
               <header className='mb-2 flex items-center justify-between sm:mb-4 lg:mb-6'>

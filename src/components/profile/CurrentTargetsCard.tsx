@@ -27,7 +27,7 @@ export const CurrentTargetsCard = ({ targets }: CurrentTargetsCardProps) => {
           Wartości obliczone na podstawie Twoich parametrów
         </p>
       </div>
-      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-4'>
         <MacroCard
           label='Kalorie'
           value={targets.target_calories}

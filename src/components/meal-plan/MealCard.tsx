@@ -74,7 +74,7 @@ export const MealCard = ({
               <UtensilsCrossed className='h-6 w-6' />
             </div>
           )}
-          {/* Swap button on image */}
+          {/* Swap button on image - center on mobile, hover-reveal on desktop */}
           {showSwapButton && (
             <Button
               variant='ghost'
@@ -84,9 +84,9 @@ export const MealCard = ({
                 setSwapDialogOpen(true)
               }}
               aria-label='Zmień przepis'
-              className='absolute top-1/2 left-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1 text-gray-500 opacity-0 shadow-sm transition-all group-hover:opacity-100 hover:bg-white hover:text-red-600'
+              className='absolute top-1/2 left-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60 p-1 text-gray-600 shadow-md transition-all hover:bg-white hover:text-red-600 xl:bg-white/90 xl:opacity-0 xl:group-hover:opacity-100 [&_svg]:size-3.5 xl:[&_svg]:size-4'
             >
-              <RefreshCw className='h-3.5 w-3.5' />
+              <RefreshCw />
             </Button>
           )}
         </div>

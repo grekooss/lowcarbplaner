@@ -384,17 +384,19 @@ export function OnboardingClient() {
 
   return (
     <div className='min-h-screen'>
-      <div className='container mx-auto max-w-3xl px-4 pb-4 sm:px-6 sm:pb-6 md:pb-8'>
-        {/* Header - glassmorphism card */}
-        <div className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-4 py-3 text-center shadow-[var(--shadow-glass)] backdrop-blur-[20px] sm:mb-5 sm:px-6 sm:py-4'>
-          <h1 className='text-foreground mb-1 text-xl font-bold sm:text-2xl md:text-3xl'>
-            Rozpocznijmy Twoją podróż
-          </h1>
-          <p className='text-muted-foreground text-xs sm:text-sm'>
-            Odpowiedz na kilka pytań, a my stworzymy dla Ciebie spersonalizowany
-            plan żywieniowy
-          </p>
-        </div>
+      <div className='container mx-auto max-w-3xl px-2 pb-4 sm:px-6 sm:pb-6 md:pb-8'>
+        {/* Header - glassmorphism card - only visible on first step */}
+        {currentStep === 1 && (
+          <div className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-4 py-3 text-center shadow-[var(--shadow-glass)] backdrop-blur-[20px] sm:mb-5 sm:px-6 sm:py-4'>
+            <h1 className='text-foreground mb-1 text-lg font-bold sm:text-2xl md:text-3xl'>
+              Rozpocznijmy Twoją podróż
+            </h1>
+            <p className='text-muted-foreground text-xs sm:text-sm'>
+              Odpowiedz na kilka pytań, a my stworzymy dla Ciebie
+              spersonalizowany plan żywieniowy
+            </p>
+          </div>
+        )}
 
         {/* Stepper */}
         {currentStep <= TOTAL_STEPS && (
@@ -404,7 +406,7 @@ export function OnboardingClient() {
         {/* Step Content - glassmorphism card */}
         <div
           ref={stepContentRef}
-          className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 p-4 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] outline-none sm:p-6 md:p-8'
+          className='mb-4 rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 px-4 py-3 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] outline-none sm:p-4 md:p-6 md:py-3'
           role='region'
           aria-label={`Krok ${currentStep} z ${TOTAL_STEPS}`}
           aria-live='polite'
@@ -418,7 +420,6 @@ export function OnboardingClient() {
           <NavigationButtons
             currentStep={currentStep}
             totalSteps={TOTAL_STEPS}
-            canGoBack={currentStep > 1}
             canGoNext={isCurrentStepValid()}
             isLastStep={currentStep === TOTAL_STEPS}
             isLoading={isSubmitting}

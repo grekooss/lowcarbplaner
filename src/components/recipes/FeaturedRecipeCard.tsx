@@ -96,21 +96,30 @@ export function FeaturedRecipeCard({
             {calories ?? '—'} kcal
           </span>
           <div className='flex items-center gap-2' title='Węglowodany'>
-            <Wheat className='h-4 w-4 text-gray-900' />
-            <span className='text-sm font-bold text-gray-700'>
-              {carbs ?? '—'}g
+            <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-orange-400'>
+              <Wheat className='h-4 w-4 text-white' />
+            </div>
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='text-sm font-bold'>{carbs ?? '—'}</span>
+              <span className='text-xs'>g</span>
             </span>
           </div>
           <div className='flex items-center gap-2' title='Białko'>
-            <Beef className='h-4 w-4 text-gray-900' />
-            <span className='text-sm font-bold text-gray-700'>
-              {protein ?? '—'}g
+            <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-blue-400'>
+              <Beef className='h-4 w-4 text-white' />
+            </div>
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='text-sm font-bold'>{protein ?? '—'}</span>
+              <span className='text-xs'>g</span>
             </span>
           </div>
           <div className='flex items-center gap-2' title='Tłuszcze'>
-            <Droplet className='h-4 w-4 text-gray-900' />
-            <span className='text-sm font-bold text-gray-700'>
-              {fats ?? '—'}g
+            <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-green-400'>
+              <Droplet className='h-4 w-4 text-white' />
+            </div>
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='text-sm font-bold'>{fats ?? '—'}</span>
+              <span className='text-xs'>g</span>
             </span>
           </div>
         </div>
@@ -187,10 +196,14 @@ export function FeaturedRecipeCard({
           <p className='mb-1 text-center text-xs font-bold text-white uppercase'>
             Kalorie
           </p>
-          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-white'>
-            <Flame className='h-4 w-4' />
-            {calories ?? '—'}{' '}
-            <span className='text-xs font-medium text-white'>kcal</span>
+          <p className='flex items-center justify-center gap-1.5'>
+            <Flame className='h-5 w-5 text-white' />
+            <span className='flex items-baseline gap-0.5'>
+              <span className='text-xl font-bold text-white'>
+                {calories ?? '—'}
+              </span>
+              <span className='text-xs font-medium text-white'>kcal</span>
+            </span>
           </p>
         </div>
 
@@ -198,12 +211,16 @@ export function FeaturedRecipeCard({
           <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
             Węglowodany
           </p>
-          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-gray-800'>
-            <span className='flex h-5 w-5 items-center justify-center rounded-sm bg-orange-500'>
-              <Wheat className='h-3 w-3 text-white' />
+          <p className='flex items-center justify-center gap-1.5'>
+            <span className='flex h-6 w-6 items-center justify-center rounded-sm bg-orange-400'>
+              <Wheat className='h-4 w-4 text-white' />
             </span>
-            {carbs ?? '—'}{' '}
-            <span className='text-xs font-medium text-gray-500'>g</span>
+            <span className='flex items-baseline gap-0.5'>
+              <span className='text-xl font-bold text-gray-800'>
+                {carbs ?? '—'}
+              </span>
+              <span className='text-xs font-medium text-gray-500'>g</span>
+            </span>
           </p>
         </div>
 
@@ -211,12 +228,16 @@ export function FeaturedRecipeCard({
           <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
             Białko
           </p>
-          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-gray-800'>
-            <span className='flex h-5 w-5 items-center justify-center rounded-sm bg-blue-500'>
-              <Beef className='h-3 w-3 text-white' />
+          <p className='flex items-center justify-center gap-1.5'>
+            <span className='flex h-6 w-6 items-center justify-center rounded-sm bg-blue-400'>
+              <Beef className='h-4 w-4 text-white' />
             </span>
-            {protein ?? '—'}{' '}
-            <span className='text-xs font-medium text-gray-500'>g</span>
+            <span className='flex items-baseline gap-0.5'>
+              <span className='text-xl font-bold text-gray-800'>
+                {protein ?? '—'}
+              </span>
+              <span className='text-xs font-medium text-gray-500'>g</span>
+            </span>
           </p>
         </div>
 
@@ -224,12 +245,16 @@ export function FeaturedRecipeCard({
           <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
             Tłuszcze
           </p>
-          <p className='flex items-center justify-center gap-1.5 text-xl font-bold text-gray-800'>
-            <span className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-500'>
-              <Droplet className='h-3 w-3 text-white' />
+          <p className='flex items-center justify-center gap-1.5'>
+            <span className='flex h-6 w-6 items-center justify-center rounded-sm bg-green-400'>
+              <Droplet className='h-4 w-4 text-white' />
             </span>
-            {fats ?? '—'}{' '}
-            <span className='text-xs font-medium text-gray-500'>g</span>
+            <span className='flex items-baseline gap-0.5'>
+              <span className='text-xl font-bold text-gray-800'>
+                {fats ?? '—'}
+              </span>
+              <span className='text-xs font-medium text-gray-500'>g</span>
+            </span>
           </p>
         </div>
       </div>

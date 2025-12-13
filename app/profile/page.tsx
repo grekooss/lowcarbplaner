@@ -41,8 +41,8 @@ export default async function ProfilePage() {
   }
 
   return (
-    <main className='container mx-auto max-w-4xl px-4 pt-0 pb-8'>
+    <div className='pb-6'>
       <ProfileClient initialProfile={profileResult.data} />
-    </main>
+    </div>
   )
 }

@@ -31,12 +31,12 @@ interface DayRowProps {
 }
 
 const DayRow = ({ day, date, dateStr, meals, onMealClick }: DayRowProps) => {
-  // Hide the swap button for past days
+  // Hide the swap button for past days (allow today and future)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const dayDate = new Date(dateStr)
   dayDate.setHours(0, 0, 0, 0)
-  const isFutureDate = dayDate > today
+  const isTodayOrFuture = dayDate >= today
 
   // Formatuj pełną datę
   const month = dayDate.toLocaleDateString('pl-PL', { month: 'long' })
@@ -65,7 +65,7 @@ const DayRow = ({ day, date, dateStr, meals, onMealClick }: DayRowProps) => {
           meal={item.meal}
           mealType={item.mealType}
           onMealClick={onMealClick}
-          showSwapButton={isFutureDate}
+          showSwapButton={isTodayOrFuture}
         />
       ))}
     </div>

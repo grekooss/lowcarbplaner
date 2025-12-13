@@ -52,20 +52,19 @@ const getDifficultyColor = (difficulty: string | undefined) => {
   }
 }
 
-const formatValue = (
+const formatNumber = (
   value: number | null | undefined,
   unit: 'kcal' | 'g'
 ): string => {
   if (value === null || value === undefined) {
-    return '--'
+    return '—'
   }
 
   if (unit === 'kcal') {
-    return `${Math.round(value)} kcal`
+    return String(Math.round(value))
   }
 
-  const rounded = Number(value.toFixed(1))
-  return `${rounded}g`
+  return String(Number(value.toFixed(1)))
 }
 
 export function MealCard({
@@ -178,7 +177,7 @@ export function MealCard({
                     <UtensilsCrossed className='h-10 w-10' />
                   </div>
                 )}
-                {/* Swap button on image */}
+                {/* Swap button on image - top-right on mobile, center on desktop */}
                 {showSwapButton && (
                   <Button
                     variant='ghost'
@@ -188,7 +187,7 @@ export function MealCard({
                       setSwapDialogOpen(true)
                     }}
                     aria-label='Zmień przepis'
-                    className='absolute top-1/2 left-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-gray-500 opacity-0 shadow-sm transition-all group-hover:opacity-100 hover:bg-white hover:text-red-600'
+                    className='absolute top-1 right-1 h-8 w-8 rounded-full bg-white/90 p-1.5 text-gray-600 shadow-md transition-all hover:bg-white hover:text-red-600 md:top-1/2 md:right-auto md:left-1/2 md:h-10 md:w-10 md:-translate-x-1/2 md:-translate-y-1/2 md:p-2 md:opacity-0 md:group-hover:opacity-100'
                   >
                     <RefreshCw className='h-5 w-5' />
                   </Button>
@@ -198,13 +197,16 @@ export function MealCard({
               <div className='flex flex-1 flex-col justify-center'>
                 <div className='mb-3 flex flex-wrap items-center gap-2'>
                   {/* Calories Badge */}
-                  <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-500/20'>
+                  <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs text-white shadow-sm shadow-red-500/20'>
                     <Flame className='h-3.5 w-3.5' />{' '}
-                    {formatValue(calories, 'kcal')}
+                    <span className='font-bold'>
+                      {formatNumber(calories, 'kcal')}
+                    </span>{' '}
+                    kcal
                   </div>
 
                   {/* Difficulty Badge */}
-                  <div className='hidden items-center gap-1.5 rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase sm:flex'>
+                  <div className='flex items-center gap-1.5 rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase'>
                     <span
                       className={`h-3 w-1 rounded-full ${getDifficultyColor(meal.recipe.difficulty_level)}`}
                     />
@@ -214,33 +216,45 @@ export function MealCard({
 
                 <h3
                   data-testid='recipe-name'
-                  className='mb-4 text-lg leading-tight font-bold text-gray-800'
+                  className='mb-4 text-base leading-tight font-bold text-gray-800 sm:text-lg'
                 >
                   {meal.recipe.name}
                 </h3>
 
-                <div className='flex flex-wrap items-center gap-6 text-sm font-medium text-black'>
+                <div className='flex flex-wrap items-center justify-center gap-4 text-sm text-black md:justify-start'>
                   {/* Carbs */}
-                  <div className='flex items-center gap-2' title='Węglowodany'>
-                    <Wheat className='h-5 w-5 text-gray-900' />
-                    <span className='font-bold text-gray-700'>
-                      {formatValue(carbs, 'g')}
+                  <div
+                    className='flex items-center gap-1.5'
+                    title='Węglowodany'
+                  >
+                    <Wheat className='h-5 w-5 text-orange-500' />
+                    <span className='flex items-baseline gap-0.5 text-gray-700'>
+                      <span className='font-bold'>
+                        {formatNumber(carbs, 'g')}
+                      </span>
+                      <span>g</span>
                     </span>
                   </div>
 
                   {/* Protein */}
-                  <div className='flex items-center gap-2' title='Białko'>
-                    <Beef className='h-5 w-5 text-gray-900' />
-                    <span className='font-bold text-gray-700'>
-                      {formatValue(protein, 'g')}
+                  <div className='flex items-center gap-1.5' title='Białko'>
+                    <Beef className='h-5 w-5 text-blue-500' />
+                    <span className='flex items-baseline gap-0.5 text-gray-700'>
+                      <span className='font-bold'>
+                        {formatNumber(protein, 'g')}
+                      </span>
+                      <span>g</span>
                     </span>
                   </div>
 
                   {/* Fat */}
-                  <div className='flex items-center gap-2' title='Tłuszcze'>
-                    <Droplet className='h-5 w-5 text-gray-900' />
-                    <span className='font-bold text-gray-700'>
-                      {formatValue(fats, 'g')}
+                  <div className='flex items-center gap-1.5' title='Tłuszcze'>
+                    <Droplet className='h-5 w-5 text-green-500' />
+                    <span className='flex items-baseline gap-0.5 text-gray-700'>
+                      <span className='font-bold'>
+                        {formatNumber(fats, 'g')}
+                      </span>
+                      <span>g</span>
                     </span>
                   </div>
                 </div>

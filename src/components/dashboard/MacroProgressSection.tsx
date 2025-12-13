@@ -156,7 +156,7 @@ export function MacroProgressSection({
       consumed: macros.consumed.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
-      bgColor: 'bg-orange-500',
+      bgColor: 'bg-orange-400',
       icon: Wheat,
       iconColor: 'text-white',
     },
@@ -166,7 +166,7 @@ export function MacroProgressSection({
       consumed: macros.consumed.protein_g,
       target: macros.target.protein_g,
       unit: 'g',
-      bgColor: 'bg-blue-500',
+      bgColor: 'bg-blue-400',
       icon: Beef,
       iconColor: 'text-white',
     },
@@ -176,7 +176,7 @@ export function MacroProgressSection({
       consumed: macros.consumed.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
-      bgColor: 'bg-green-500',
+      bgColor: 'bg-green-400',
       icon: Droplet,
       iconColor: 'text-white',
     },
@@ -190,7 +190,7 @@ export function MacroProgressSection({
       value: plannedTotals.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
-      bgColor: 'bg-orange-500',
+      bgColor: 'bg-orange-400',
       icon: Wheat,
       iconColor: 'text-white',
     },
@@ -200,7 +200,7 @@ export function MacroProgressSection({
       value: plannedTotals.protein_g,
       target: macros.target.protein_g,
       unit: 'g',
-      bgColor: 'bg-blue-500',
+      bgColor: 'bg-blue-400',
       icon: Beef,
       iconColor: 'text-white',
     },
@@ -210,7 +210,7 @@ export function MacroProgressSection({
       value: plannedTotals.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
-      bgColor: 'bg-green-500',
+      bgColor: 'bg-green-400',
       icon: Droplet,
       iconColor: 'text-white',
     },
@@ -284,7 +284,7 @@ export function MacroProgressSection({
                   </div>
                   <div className='flex-shrink-0 text-right whitespace-nowrap'>
                     <span className='text-xs font-bold text-gray-800 sm:text-sm'>
-                      {Math.round(displayValue)}g
+                      {Math.round(displayValue)}
                     </span>
                     <span className='ml-1 text-[10px] text-gray-600 sm:text-xs'>
                       / {Math.round(targetValue)}g
@@ -379,7 +379,7 @@ export function MacroProgressSection({
                   </div>
                   <div className='flex-shrink-0 text-right whitespace-nowrap'>
                     <span className='text-sm font-bold text-gray-800'>
-                      {Math.round(row.consumed)}g
+                      {Math.round(row.consumed)}
                     </span>
                     <span className='ml-1 text-xs text-gray-600'>
                       / {Math.round(targetValue)}g

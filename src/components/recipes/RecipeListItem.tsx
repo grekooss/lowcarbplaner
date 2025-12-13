@@ -105,8 +105,9 @@ export function RecipeListItem({
             )}
 
           {/* Calories Badge */}
-          <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-500/20'>
-            <Flame className='h-3.5 w-3.5' /> {calories ?? '—'} kcal
+          <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs text-white shadow-sm shadow-red-500/20'>
+            <Flame className='h-3.5 w-3.5' />{' '}
+            <span className='font-bold'>{calories ?? '—'}</span> kcal
           </div>
 
           {/* Difficulty Badge */}
@@ -119,28 +120,37 @@ export function RecipeListItem({
         </div>
 
         {/* Title */}
-        <h4 className='mb-4 text-lg leading-tight font-bold text-gray-800'>
+        <h4 className='mb-4 text-base leading-tight font-bold text-gray-800 sm:text-lg'>
           {recipe.name}
         </h4>
 
         {/* Macros Row */}
-        <div className='flex flex-wrap items-center gap-6 text-sm font-medium text-black'>
+        <div className='flex flex-wrap items-center justify-center gap-4 text-sm text-black md:justify-start'>
           {/* Carbs */}
-          <div className='flex items-center gap-2' title='Węglowodany'>
-            <Wheat className='h-5 w-5 text-gray-900' />
-            <span className='font-bold text-gray-700'>{carbs ?? '—'}g</span>
+          <div className='flex items-center gap-1.5' title='Węglowodany'>
+            <Wheat className='h-5 w-5 text-orange-500' />
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='font-bold'>{carbs ?? '—'}</span>
+              <span>g</span>
+            </span>
           </div>
 
           {/* Protein */}
-          <div className='flex items-center gap-2' title='Białko'>
-            <Beef className='h-5 w-5 text-gray-900' />
-            <span className='font-bold text-gray-700'>{protein ?? '—'}g</span>
+          <div className='flex items-center gap-1.5' title='Białko'>
+            <Beef className='h-5 w-5 text-blue-500' />
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='font-bold'>{protein ?? '—'}</span>
+              <span>g</span>
+            </span>
           </div>
 
           {/* Fat */}
-          <div className='flex items-center gap-2' title='Tłuszcze'>
-            <Droplet className='h-5 w-5 text-gray-900' />
-            <span className='font-bold text-gray-700'>{fats ?? '—'}g</span>
+          <div className='flex items-center gap-1.5' title='Tłuszcze'>
+            <Droplet className='h-5 w-5 text-green-500' />
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='font-bold'>{fats ?? '—'}</span>
+              <span>g</span>
+            </span>
           </div>
         </div>
       </div>

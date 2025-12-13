@@ -30,12 +30,12 @@ const ACTIVITY_LEVELS: Enums<'activity_level_enum'>[] = [
 
 export function ActivityLevelStep({ value, onChange }: ActivityLevelStepProps) {
   return (
-    <div className='space-y-6'>
-      <div className='space-y-2'>
-        <h2 className='text-foreground text-2xl font-semibold'>
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
           Jaki jest Twój poziom aktywności fizycznej?
         </h2>
-        <p className='text-muted-foreground text-sm'>
+        <p className='text-muted-foreground text-xs sm:text-sm'>
           Wybierz opcję, która najlepiej opisuje Twoją codzienną aktywność.
         </p>
       </div>
@@ -45,20 +45,20 @@ export function ActivityLevelStep({ value, onChange }: ActivityLevelStepProps) {
         onValueChange={(val: string) =>
           onChange(val as Enums<'activity_level_enum'>)
         }
-        className='space-y-3'
+        className='space-y-2 sm:space-y-3'
       >
         {ACTIVITY_LEVELS.map((level) => (
           <div
             key={level}
-            className='hover:border-primary flex items-start space-x-3 rounded-3xl border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
+            className='hover:border-primary flex items-center space-x-3 rounded-md border border-transparent bg-white p-3 shadow-sm transition-colors hover:bg-white sm:p-4'
           >
-            <RadioGroupItem value={level} id={level} className='mt-1' />
+            <RadioGroupItem value={level} id={level} />
             <Label
               htmlFor={level}
               className='flex-1 cursor-pointer font-normal'
             >
               <div className='font-medium'>{ACTIVITY_LEVEL_LABELS[level]}</div>
-              <div className='text-muted-foreground mt-1 text-sm'>
+              <div className='text-muted-foreground mt-1 text-xs sm:text-sm'>
                 {ACTIVITY_LEVEL_DESCRIPTIONS[level]}
               </div>
             </Label>

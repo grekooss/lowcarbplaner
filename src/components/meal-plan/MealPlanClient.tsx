@@ -200,13 +200,11 @@ export const MealPlanClient = ({
 
       {/* Mobile: DayList (widoczny < md) */}
       <div className='block md:hidden'>
-        <section className='rounded-md border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
-          <DayList
-            weekPlan={weekPlan}
-            onMealClick={handleMealClick}
-            onSwapClick={handleSwapClick}
-          />
-        </section>
+        <DayList
+          weekPlan={weekPlan}
+          onMealClick={handleMealClick}
+          onSwapClick={handleSwapClick}
+        />
       </div>
 
       {/* Modal podglądu przepisu */}

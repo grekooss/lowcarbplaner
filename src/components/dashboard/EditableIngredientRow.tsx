@@ -33,6 +33,8 @@ interface EditableIngredientRowProps {
   }
   isChecked?: boolean
   onToggleChecked?: (ingredientId: number) => void
+  /** Compact mode for mobile view */
+  compact?: boolean
 }
 
 export function EditableIngredientRow({
@@ -44,10 +46,10 @@ export function EditableIngredientRow({
   onDecrement,
   isChecked = false,
   onToggleChecked,
+  compact = false,
 }: EditableIngredientRowProps) {
   const [localValue, setLocalValue] = useState(currentAmount.toString())
   const [error, setError] = useState<string | null>(null)
-  const [warning, setWarning] = useState<string | null>(null)
 
   // Sync local value when currentAmount changes externally
   useEffect(() => {
@@ -58,7 +60,6 @@ export function EditableIngredientRow({
     const value = e.target.value
     setLocalValue(value)
     setError(null)
-    setWarning(null)
 
     // Parse and validate
     const numValue = parseFloat(value)
@@ -69,30 +70,22 @@ export function EditableIngredientRow({
     const result = onAmountChange(ingredient.id, numValue)
     if (!result.success && result.error) {
       setError(result.error)
-    } else if (result.warning) {
-      setWarning(result.warning)
     }
   }
 
   const handleIncrement = () => {
     const result = onIncrement(ingredient.id)
     setError(null)
-    setWarning(null)
     if (!result.success && result.error) {
       setError(result.error)
-    } else if (result.warning) {
-      setWarning(result.warning)
     }
   }
 
   const handleDecrement = () => {
     const result = onDecrement(ingredient.id)
     setError(null)
-    setWarning(null)
     if (!result.success && result.error) {
       setError(result.error)
-    } else if (result.warning) {
-      setWarning(result.warning)
     }
   }
 
@@ -115,15 +108,17 @@ export function EditableIngredientRow({
     <div
       data-testid='ingredient-row'
       className={cn(
-        'space-y-1 rounded-lg px-3 py-3',
+        'space-y-1 rounded-lg',
+        compact ? 'px-1 py-2' : 'px-3 py-3',
         isChecked && 'bg-red-50/50'
       )}
     >
-      <div className='flex items-center gap-3'>
+      <div className={cn('flex items-center', compact ? 'gap-2' : 'gap-3')}>
         {/* Checkbox */}
         <div
           className={cn(
-            'flex h-6 w-6 flex-shrink-0 cursor-pointer items-center justify-center rounded-md border-2 transition-all duration-200',
+            'flex flex-shrink-0 cursor-pointer items-center justify-center rounded-md border-2 transition-all duration-200',
+            compact ? 'h-4 w-4 rounded' : 'h-6 w-6',
             isChecked
               ? 'border-red-500 bg-red-500'
               : 'border-gray-300 bg-white hover:border-red-600'
@@ -135,20 +130,24 @@ export function EditableIngredientRow({
           tabIndex={0}
         >
           {isChecked && (
-            <Check className='h-4 w-4 text-white' strokeWidth={3} />
+            <Check
+              className={cn(compact ? 'h-2.5 w-2.5' : 'h-4 w-4', 'text-white')}
+              strokeWidth={3}
+            />
           )}
         </div>
 
         {/* Ingredient name */}
-        <div className='flex-1'>
+        <div className='min-w-0 flex-1'>
           <p
             className={cn(
-              'text-sm font-medium transition-all duration-200',
+              'font-medium break-words transition-all duration-200',
+              compact ? 'text-[13px] leading-tight' : 'text-sm',
               isChecked ? 'text-gray-400 line-through' : 'text-gray-800'
             )}
           >
             {ingredient.name}
-            {isChanged && !isAutoAdjusted && (
+            {isChanged && !isAutoAdjusted && !compact && (
               <span className='ml-2 text-xs text-red-500'>(zmieniono)</span>
             )}
           </p>
@@ -167,9 +166,17 @@ export function EditableIngredientRow({
               type='button'
               onClick={handleDecrement}
               disabled={currentAmount <= 0 || isChecked}
-              className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50'
+              className={cn(
+                'flex items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50',
+                compact ? 'h-5 w-5' : 'h-6 w-6'
+              )}
             >
-              <Minus className='h-3.5 w-3.5 text-gray-600' />
+              <Minus
+                className={cn(
+                  compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                  'text-gray-600'
+                )}
+              />
             </button>
 
             {/* Amount display */}
@@ -180,13 +187,19 @@ export function EditableIngredientRow({
                 onChange={handleInputChange}
                 disabled={isChecked}
                 className={cn(
-                  'h-auto w-14 [appearance:textfield] border-0 bg-transparent p-0 text-center text-lg font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                  'h-auto [appearance:textfield] border-0 bg-transparent p-0 text-center font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                  compact ? 'w-10 text-sm' : 'w-14 text-lg',
                   error && 'text-red-500'
                 )}
                 step='1'
                 min='0'
               />
-              <span className='-ml-1 text-sm text-gray-500'>
+              <span
+                className={cn(
+                  '-ml-1 text-gray-500',
+                  compact ? 'text-[10px]' : 'text-sm'
+                )}
+              >
                 {ingredient.unit}
               </span>
             </div>
@@ -196,9 +209,17 @@ export function EditableIngredientRow({
               type='button'
               onClick={handleIncrement}
               disabled={isChecked}
-              className='flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50'
+              className={cn(
+                'flex items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50',
+                compact ? 'h-5 w-5' : 'h-6 w-6'
+              )}
             >
-              <Plus className='h-3.5 w-3.5 text-gray-600' />
+              <Plus
+                className={cn(
+                  compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                  'text-gray-600'
+                )}
+              />
             </button>
           </div>
         ) : (
@@ -209,19 +230,32 @@ export function EditableIngredientRow({
               isChecked ? 'opacity-50' : ''
             )}
           >
-            <span className='text-lg font-bold text-gray-800'>
+            <span
+              className={cn(
+                'font-bold text-gray-800',
+                compact ? 'text-sm' : 'text-lg'
+              )}
+            >
               {currentAmount}
             </span>
-            <span className='text-sm text-gray-500'>{ingredient.unit}</span>
+            <span
+              className={cn(
+                'text-gray-500',
+                compact ? 'text-[10px]' : 'text-sm'
+              )}
+            >
+              {ingredient.unit}
+            </span>
           </div>
         )}
       </div>
 
       {/* Error message */}
-      {error && <p className='pl-10 text-xs text-red-500'>{error}</p>}
-
-      {/* Warning message */}
-      {warning && <p className='pl-10 text-xs text-red-500'>{warning}</p>}
+      {error && (
+        <p className={cn('text-xs text-red-500', compact ? 'pl-6' : 'pl-10')}>
+          {error}
+        </p>
+      )}
     </div>
   )
 }

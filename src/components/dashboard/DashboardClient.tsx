@@ -252,12 +252,22 @@ export function DashboardClient({
 
         {/* Column 2 - calories / macros (spans 1 col, 2 rows on xl) */}
         <div className='w-full xl:col-span-1 xl:row-span-2'>
-          <MacroProgressSection
-            meals={displayMeals}
-            targetMacros={targetMacros}
-            isToday={isToday}
-            isMobile={isMobile}
-          />
+          {isFetching && isDateChanging ? (
+            <div className='flex h-full min-h-[200px] items-center justify-center rounded-md border-2 border-white bg-white/40 shadow-sm backdrop-blur-xl sm:min-h-[300px] sm:rounded-3xl'>
+              <Loader2
+                className='h-10 w-10 animate-spin text-red-600'
+                strokeWidth={3}
+              />
+            </div>
+          ) : (
+            <MacroProgressSection
+              key={selectedDateStr}
+              meals={displayMeals}
+              targetMacros={targetMacros}
+              isToday={isToday}
+              isMobile={isMobile}
+            />
+          )}
         </div>
 
         {/* Column 1 continued - meals list */}
