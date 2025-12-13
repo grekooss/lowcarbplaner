@@ -96,12 +96,16 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       setError(null)
 
       try {
+        // Use NEXT_PUBLIC_SITE_URL if set, otherwise use current origin
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
         // Rejestracja przez Supabase Auth
         const { data, error: authError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${siteUrl}/auth/callback`,
           },
         })
 
@@ -142,10 +146,17 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
     setError(null)
 
     try {
+      // Use NEXT_PUBLIC_SITE_URL if set, otherwise use current origin
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      // redirectTo must EXACTLY match a Redirect URL in Supabase Dashboard (no query params)
+      const callbackUrl = `${siteUrl}/auth/callback`
+
+      console.log('[AUTH] Google OAuth redirectTo:', callbackUrl)
+
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectTo || '/'}`,
+          redirectTo: callbackUrl,
         },
       })
 

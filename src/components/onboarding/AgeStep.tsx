@@ -7,7 +7,7 @@
  * Collects user's age (18-100 years)
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 
@@ -22,6 +22,9 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
   const MAX = 100
   const DEFAULT = 30
 
+  // Local state for input to allow free typing
+  const [inputValue, setInputValue] = useState<string>(String(value ?? DEFAULT))
+
   // Initialize with default value if null
   useEffect(() => {
     if (value === null) {
@@ -29,20 +32,41 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
     }
   }, [value, onChange])
 
+  // Sync input value when external value changes (e.g., from slider)
+  useEffect(() => {
+    setInputValue(String(value ?? DEFAULT))
+  }, [value])
+
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value
+    // Allow free typing - don't clamp immediately
+    setInputValue(e.target.value)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur()
+    }
+  }
+
+  const handleInputBlur = () => {
+    // Clamp value on blur
     if (inputValue === '') {
-      onChange(null)
+      onChange(DEFAULT)
+      setInputValue(String(DEFAULT))
       return
     }
     const numValue = parseInt(inputValue, 10)
     if (!isNaN(numValue)) {
       const clampedValue = Math.min(MAX, Math.max(MIN, numValue))
       onChange(clampedValue)
+      setInputValue(String(clampedValue))
+    } else {
+      // Reset to current value if invalid
+      setInputValue(String(value ?? DEFAULT))
     }
   }
 
@@ -65,7 +89,7 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
               <button
                 type='button'
                 onClick={() => onChange(Math.min(MAX, (value ?? DEFAULT) + 1))}
-                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                className='text-foreground hover:text-foreground/70 h-5 px-3 text-base transition-colors'
                 aria-label='Zwiększ wiek'
               >
                 ▲
@@ -73,7 +97,7 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
               <button
                 type='button'
                 onClick={() => onChange(Math.max(MIN, (value ?? DEFAULT) - 1))}
-                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                className='text-foreground hover:text-foreground/70 h-5 px-3 text-base transition-colors'
                 aria-label='Zmniejsz wiek'
               >
                 ▼
@@ -81,8 +105,10 @@ export function AgeStep({ value, onChange, error }: AgeStepProps) {
             </div>
             <Input
               type='number'
-              value={value ?? DEFAULT}
+              value={inputValue}
               onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              onKeyDown={handleKeyDown}
               min={MIN}
               max={MAX}
               className='h-10 w-20 [appearance:textfield] text-center text-xl font-bold [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'

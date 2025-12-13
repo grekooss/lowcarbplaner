@@ -52,18 +52,19 @@ export function GoalStep({
         className='space-y-3'
       >
         {GOALS.map((goal) => (
-          <div
+          <Label
             key={goal}
-            className='hover:border-primary flex items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
+            htmlFor={goal}
+            className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
           >
             <RadioGroupItem value={goal} id={goal} />
-            <Label htmlFor={goal} className='flex-1 cursor-pointer font-normal'>
+            <div className='flex-1 font-normal'>
               <div className='font-medium'>{GOAL_LABELS[goal]}</div>
               <div className='text-muted-foreground mt-1 text-sm'>
                 {GOAL_DESCRIPTIONS[goal]}
               </div>
-            </Label>
-          </div>
+            </div>
+          </Label>
         ))}
       </RadioGroup>
 
@@ -97,12 +98,13 @@ export function GoalStep({
             className='space-y-3'
           >
             {weightLossOptions.map((option) => (
-              <div
+              <Label
                 key={option.value}
+                htmlFor={`rate-${option.value}`}
                 className={`flex items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors ${
                   option.isDisabled
                     ? 'cursor-not-allowed opacity-50'
-                    : 'hover:border-primary hover:bg-white'
+                    : 'hover:border-primary cursor-pointer hover:bg-white'
                 }`}
               >
                 <RadioGroupItem
@@ -110,12 +112,7 @@ export function GoalStep({
                   id={`rate-${option.value}`}
                   disabled={option.isDisabled}
                 />
-                <Label
-                  htmlFor={`rate-${option.value}`}
-                  className={`flex-1 font-normal ${
-                    option.isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
-                  }`}
-                >
+                <div className='flex-1 font-normal'>
                   <div className='font-medium'>{option.label}</div>
                   <div className='text-muted-foreground mt-1 text-sm'>
                     {option.description}
@@ -130,8 +127,8 @@ export function GoalStep({
                       {option.reasonDisabled}
                     </div>
                   )}
-                </Label>
-              </div>
+                </div>
+              </Label>
             ))}
           </RadioGroup>
         </div>

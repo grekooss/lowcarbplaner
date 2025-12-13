@@ -10,7 +10,6 @@ import React, { useEffect, useRef } from 'react'
 import { CalendarStrip } from './CalendarStrip'
 import { MacroProgressSection } from './MacroProgressSection'
 import { MealsList } from './MealsList'
-import { DashboardSkeleton } from './DashboardSkeleton'
 import { useDashboardStore } from '@/lib/zustand/stores/useDashboardStore'
 import { usePlannedMealsQuery } from '@/hooks/usePlannedMealsQuery'
 import { useAutoGenerateMealPlan } from '@/hooks/useAutoGenerateMealPlan'
@@ -155,7 +154,17 @@ export function DashboardClient({
   // Używamy ref aby śledzić czy już próbowaliśmy wygenerować plan
   const hasAttemptedGeneration = React.useRef(false)
 
+  // Jeśli mamy dane z serwera, nie próbuj generować
+  // (initialMeals jest przekazywane z server-side, więc jeśli ma dane, plan istnieje)
+  const hasInitialData = initialMeals.length > 0
+
   useEffect(() => {
+    // Nie generuj jeśli już mamy dane z serwera
+    if (hasInitialData) {
+      hasAttemptedGeneration.current = true
+      return
+    }
+
     // Sprawdź czy mamy kompletny plan na cały tydzień (21 posiłków = 7 dni × 3 posiłki)
     const hasIncompletePlan = weekCheck?.hasIncompletePlan ?? false
     const shouldGenerate =
@@ -169,6 +178,7 @@ export function DashboardClient({
       mealsCount: weekCheck?.mealsCount,
       expectedCount: weekCheck?.expectedMealsCount,
       hasIncompletePlan,
+      hasInitialData,
       isLoading,
       isCheckingWeek,
       isGenerating,
@@ -184,6 +194,7 @@ export function DashboardClient({
       generatePlan()
     }
   }, [
+    hasInitialData,
     isLoading,
     isCheckingWeek,
     isGenerating,
@@ -193,9 +204,24 @@ export function DashboardClient({
     generatePlan,
   ])
 
-  // Pokaż skeleton podczas generowania lub ładowania (gdy brak danych)
-  if ((isLoading || isGenerating) && displayMeals.length === 0) {
-    return <DashboardSkeleton />
+  // Pokaż pełnoekranowy spinner TYLKO podczas aktywnego generowania planu
+  if (isGenerating) {
+    return (
+      <div className='flex min-h-[60vh] flex-col items-center justify-center space-y-6'>
+        <Loader2
+          className='h-16 w-16 animate-spin text-red-600'
+          strokeWidth={2}
+        />
+        <div className='space-y-2 text-center'>
+          <h2 className='text-xl font-bold text-gray-800'>
+            Generujemy Twój plan
+          </h2>
+          <p className='text-sm text-gray-600'>
+            Przygotowujemy spersonalizowany plan posiłków na cały tydzień...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   // Sprawdź czy błąd generowania to "plan już istnieje" - to nie jest prawdziwy błąd

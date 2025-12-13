@@ -32,7 +32,7 @@ export function NavigationButtons({
   onNext,
   onSubmit,
   nextButtonText = 'Dalej',
-  submitButtonText = 'Wygeneruj plan',
+  submitButtonText = 'Rozpocznij',
 }: NavigationButtonsProps) {
   const isFirstStep = currentStep === 1
 
@@ -83,14 +83,10 @@ export function NavigationButtons({
           {isLoading ? (
             <>
               <Loader2 className='h-4 w-4 animate-spin' />
-              <span className='hidden sm:inline'>Generowanie...</span>
-              <span className='sm:hidden'>Tworzenie...</span>
+              <span>Zapisywanie...</span>
             </>
           ) : (
-            <>
-              <span className='hidden sm:inline'>{submitButtonText}</span>
-              <span className='sm:hidden'>Wygeneruj</span>
-            </>
+            <span>{submitButtonText}</span>
           )}
         </Button>
       ) : (

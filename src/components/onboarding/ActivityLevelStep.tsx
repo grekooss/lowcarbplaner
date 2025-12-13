@@ -48,21 +48,19 @@ export function ActivityLevelStep({ value, onChange }: ActivityLevelStepProps) {
         className='space-y-2 sm:space-y-3'
       >
         {ACTIVITY_LEVELS.map((level) => (
-          <div
+          <Label
             key={level}
-            className='hover:border-primary flex items-center space-x-3 rounded-md border border-transparent bg-white p-3 shadow-sm transition-colors hover:bg-white sm:p-4'
+            htmlFor={level}
+            className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-md border border-transparent bg-white p-3 shadow-sm transition-colors hover:bg-white sm:p-4'
           >
             <RadioGroupItem value={level} id={level} />
-            <Label
-              htmlFor={level}
-              className='flex-1 cursor-pointer font-normal'
-            >
+            <div className='flex-1 font-normal'>
               <div className='font-medium'>{ACTIVITY_LEVEL_LABELS[level]}</div>
               <div className='text-muted-foreground mt-1 text-xs sm:text-sm'>
                 {ACTIVITY_LEVEL_DESCRIPTIONS[level]}
               </div>
-            </Label>
-          </div>
+            </div>
+          </Label>
         ))}
       </RadioGroup>
     </div>

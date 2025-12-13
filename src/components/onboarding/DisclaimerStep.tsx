@@ -55,24 +55,26 @@ export function DisclaimerStep({ value, onChange }: DisclaimerStepProps) {
         </AlertDescription>
       </Alert>
 
-      <div className='flex items-start space-x-3 rounded-md bg-white p-4 shadow-sm'>
+      <Label
+        htmlFor='disclaimer'
+        className='flex cursor-pointer items-start space-x-3 rounded-md bg-white p-4 shadow-sm transition-colors hover:bg-gray-50'
+      >
         <Checkbox
           id='disclaimer'
           checked={value}
           onCheckedChange={onChange}
           aria-describedby='disclaimer-label'
         />
-        <Label
+        <span
           id='disclaimer-label'
-          htmlFor='disclaimer'
-          className='cursor-pointer text-sm leading-relaxed font-normal'
+          className='text-sm leading-relaxed font-normal'
         >
           Potwierdzam, że przeczytałem(-am) i rozumiem powyższe oświadczenie.
           Akceptuję, że aplikacja nie zastępuje profesjonalnej porady medycznej
           i biorę pełną odpowiedzialność za decyzje dotyczące mojego zdrowia i
           odżywiania.
-        </Label>
-      </div>
+        </span>
+      </Label>
     </div>
   )
 }

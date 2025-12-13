@@ -327,7 +327,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className='custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto bg-transparent px-2 py-3 pt-1 sm:pt-2 lg:p-8 lg:pt-4'
             >
               {/* Header */}
-              <header className='mb-2 flex items-center justify-between sm:mb-4 lg:mb-6'>
+              <header className='mb-2 flex items-center justify-between sm:mb-4 lg:mt-2 lg:mb-6'>
                 <div className='flex items-center gap-4'>
                   <button
                     className='rounded-sm bg-white p-1.5 transition-colors hover:bg-white/70 sm:p-2 xl:hidden'
@@ -342,7 +342,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       <div className='flex items-center gap-3'>
                         <div className='h-8 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:h-10' />
                         <div className='flex flex-col justify-center'>
-                          <h1 className='text-lg leading-none font-bold tracking-tight text-gray-800 sm:mb-1 sm:text-2xl lg:text-3xl'>
+                          <h1 className='text-lg leading-none font-bold tracking-tight text-gray-800 sm:mb-1 sm:text-2xl lg:mb-1.5 lg:text-3xl'>
                             {getViewInfo(pathname).title}
                           </h1>
                           <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>

@@ -7,7 +7,7 @@
  * Collects user's current weight (40-150 kg)
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 
@@ -23,6 +23,11 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
   const DEFAULT = 70
   const STEP = 0.1
 
+  // Local state for input to allow free typing
+  const [inputValue, setInputValue] = useState<string>(
+    (value ?? DEFAULT).toFixed(1)
+  )
+
   // Initialize with default value if null
   useEffect(() => {
     if (value === null) {
@@ -30,14 +35,31 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
     }
   }, [value, onChange])
 
+  // Sync input value when external value changes (e.g., from slider)
+  useEffect(() => {
+    setInputValue((value ?? DEFAULT).toFixed(1))
+  }, [value])
+
   const handleSliderChange = (values: number[]) => {
     onChange(values[0] ?? null)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value
+    // Allow free typing - don't clamp immediately
+    setInputValue(e.target.value)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur()
+    }
+  }
+
+  const handleInputBlur = () => {
+    // Clamp value on blur
     if (inputValue === '') {
-      onChange(null)
+      onChange(DEFAULT)
+      setInputValue(DEFAULT.toFixed(1))
       return
     }
     const numValue = parseFloat(inputValue)
@@ -45,6 +67,10 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
       const clampedValue = Math.min(MAX, Math.max(MIN, numValue))
       const roundedValue = Math.round(clampedValue * 10) / 10
       onChange(roundedValue)
+      setInputValue(roundedValue.toFixed(1))
+    } else {
+      // Reset to current value if invalid
+      setInputValue((value ?? DEFAULT).toFixed(1))
     }
   }
 
@@ -69,7 +95,7 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
                 onClick={() =>
                   onChange(Math.min(MAX, (value ?? DEFAULT) + STEP))
                 }
-                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                className='text-foreground hover:text-foreground/70 h-5 px-3 text-base transition-colors'
                 aria-label='Zwiększ wagę'
               >
                 ▲
@@ -79,7 +105,7 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
                 onClick={() =>
                   onChange(Math.max(MIN, (value ?? DEFAULT) - STEP))
                 }
-                className='text-muted-foreground/50 hover:text-muted-foreground h-3 px-1 text-[10px] transition-colors'
+                className='text-foreground hover:text-foreground/70 h-5 px-3 text-base transition-colors'
                 aria-label='Zmniejsz wagę'
               >
                 ▼
@@ -87,8 +113,10 @@ export function WeightStep({ value, onChange, error }: WeightStepProps) {
             </div>
             <Input
               type='number'
-              value={(value ?? DEFAULT).toFixed(1)}
+              value={inputValue}
               onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              onKeyDown={handleKeyDown}
               min={MIN}
               max={MAX}
               step={STEP}
