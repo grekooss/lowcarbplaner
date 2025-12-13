@@ -237,6 +237,10 @@ export async function getRecipes(
     const { limit, offset, tags, meal_types } = validated.data
 
     // 2. Utworzenie Supabase Admin client (content schema to publiczne dane)
+    console.log(
+      '[RECIPES] Creating admin client, SERVICE_ROLE_KEY length:',
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0
+    )
     const supabase = createAdminClient()
 
     // 3. Budowanie zapytania z paginacją
