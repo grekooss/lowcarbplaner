@@ -1,5 +1,5 @@
 /**
- * Next.js Proxy
+ * Next.js Proxy (Next.js 16+)
  *
  * Handles authentication and route protection:
  * - Updates Supabase auth session from cookies
@@ -47,6 +47,13 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // DEBUG: Log auth state (remove after debugging)
+  console.log('[PROXY]', {
+    pathname,
+    hasUser: !!user,
+    userId: user?.id?.slice(0, 8),
+  })
 
   // Public auth routes that don't require authentication
   const isAuthRoute = pathname.startsWith('/auth')
