@@ -8,10 +8,30 @@
  * for the session to persist after redirect.
  */
 
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { Database } from '@/types/database.types'
+
+/**
+ * Helper to copy cookies from one response to another with all options preserved
+ */
+function copyCookies(
+  from: NextResponse,
+  to: NextResponse,
+  cookieOptions: Map<string, CookieOptions>
+) {
+  from.cookies.getAll().forEach((cookie) => {
+    const options = cookieOptions.get(cookie.name) || {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    }
+    to.cookies.set(cookie.name, cookie.value, options)
+  })
+}
 
 /**
  * GET handler dla OAuth callback i Email verification
@@ -60,6 +80,9 @@ export async function GET(request: NextRequest) {
     request,
   })
 
+  // Store cookie options as they're set by Supabase
+  const cookieOptions = new Map<string, CookieOptions>()
+
   // Create Supabase client that can set cookies on the response
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -71,6 +94,8 @@ export async function GET(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
+            // Store the options for later use
+            cookieOptions.set(name, options)
             response.cookies.set(name, value, options)
           })
         },
@@ -115,9 +140,7 @@ export async function GET(request: NextRequest) {
         const redirectResponse = NextResponse.redirect(
           new URL('/auth/reset-password', origin)
         )
-        response.cookies.getAll().forEach((cookie) => {
-          redirectResponse.cookies.set(cookie.name, cookie.value)
-        })
+        copyCookies(response, redirectResponse, cookieOptions)
         return redirectResponse
       }
 
@@ -136,9 +159,7 @@ export async function GET(request: NextRequest) {
       }
 
       const redirectResponse = NextResponse.redirect(redirectUrl)
-      response.cookies.getAll().forEach((cookie) => {
-        redirectResponse.cookies.set(cookie.name, cookie.value)
-      })
+      copyCookies(response, redirectResponse, cookieOptions)
 
       return redirectResponse
     }
@@ -161,8 +182,17 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (!user) {
+        console.error('OAuth callback: No user after exchangeCodeForSession')
         return NextResponse.redirect(new URL('/auth', origin))
       }
+
+      // DEBUG: Log successful auth (can be removed after debugging)
+      console.log('[AUTH CALLBACK] User authenticated:', {
+        userId: user.id.slice(0, 8),
+        email: user.email,
+        provider: user.app_metadata?.provider,
+        cookieCount: response.cookies.getAll().length,
+      })
 
       // Check if profile exists
       const { data: profile } = await supabase
@@ -176,19 +206,24 @@ export async function GET(request: NextRequest) {
       if (!profile?.disclaimer_accepted_at) {
         // New user - redirect to onboarding
         redirectUrl = new URL('/onboarding', origin)
+        console.log('[AUTH CALLBACK] Redirecting to onboarding (new user)')
       } else {
         // Existing user - redirect to requested page or home
         // Validate redirect to prevent open redirect attacks
         const targetPath = redirect.startsWith('/') ? redirect : '/'
         redirectUrl = new URL(targetPath, origin)
+        console.log('[AUTH CALLBACK] Redirecting to:', targetPath)
       }
 
-      // Create redirect response and copy all cookies from the response object
-      // Preserve original cookie options set by Supabase
+      // Create redirect response and copy all cookies with preserved options
       const redirectResponse = NextResponse.redirect(redirectUrl)
-      response.cookies.getAll().forEach((cookie) => {
-        redirectResponse.cookies.set(cookie.name, cookie.value)
-      })
+      copyCookies(response, redirectResponse, cookieOptions)
+
+      // DEBUG: Verify cookies are being set
+      console.log(
+        '[AUTH CALLBACK] Cookies set on redirect:',
+        redirectResponse.cookies.getAll().map((c) => c.name)
+      )
 
       return redirectResponse
     }
