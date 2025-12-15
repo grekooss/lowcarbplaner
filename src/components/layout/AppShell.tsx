@@ -321,41 +321,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             )}
 
-            {/* Main Content Area */}
-            <main
-              data-content-area
-              className='custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto bg-transparent px-2 py-3 pt-1 sm:pt-2 lg:p-8 lg:pt-4'
-            >
-              {/* Header */}
-              <header className='mb-2 flex items-center justify-between sm:mb-4 lg:mt-2 lg:mb-6'>
-                <div className='flex items-center gap-4'>
-                  <button
-                    className='rounded-sm bg-white p-1.5 transition-colors hover:bg-white/70 sm:p-2 xl:hidden'
-                    onClick={() => setMobileNavOpen(true)}
-                  >
-                    <Menu className='h-5 w-5 text-gray-600 sm:h-6 sm:w-6' />
-                  </button>
+            {/* Main Content Wrapper - flex column for mobile header + scrollable content */}
+            <div className='flex h-full flex-1 flex-col'>
+              {/* Mobile Header (< sm) - fixed at top, full width */}
+              <div className='relative flex flex-shrink-0 items-center justify-center border-b-2 border-white bg-[var(--bg-card)] p-3 sm:hidden'>
+                {/* Hamburger - left */}
+                <button
+                  className='absolute left-3 rounded-sm bg-white p-1.5 transition-colors hover:bg-white/70'
+                  onClick={() => setMobileNavOpen(true)}
+                >
+                  <Menu className='h-5 w-5 text-gray-600' />
+                </button>
 
-                  {/* View Title with Red Bar - hide when auth modal is open or on root path */}
-                  {!pathname.includes('/auth') &&
-                    getViewInfo(pathname).title && (
-                      <div className='flex items-center gap-3'>
-                        <div className='h-8 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50 sm:h-10' />
-                        <div className='flex flex-col justify-center'>
-                          <h1 className='text-lg leading-none font-bold tracking-tight text-gray-800 sm:mb-1 sm:text-2xl lg:mb-1.5 lg:text-3xl'>
-                            {getViewInfo(pathname).title}
-                          </h1>
-                          <p className='hidden text-sm leading-none font-medium text-gray-600 sm:block lg:text-base'>
-                            {getViewInfo(pathname).subtitle}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                </div>
+                {/* Centered Title */}
+                {!pathname.includes('/auth') && getViewInfo(pathname).title && (
+                  <h1 className='text-base font-bold text-gray-800'>
+                    {getViewInfo(pathname).title}
+                  </h1>
+                )}
 
-                {/* User Menu - hide login button when auth modal is open */}
+                {/* User Icon - right */}
                 {(user || !pathname.includes('/auth')) && (
-                  <div className='relative' ref={headerMenuRef}>
+                  <div className='absolute right-3' ref={headerMenuRef}>
                     <button
                       onClick={() => {
                         if (user) {
@@ -364,31 +351,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           router.push('/auth?tab=login')
                         }
                       }}
-                      className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-1.5 pl-1.5 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90 sm:pr-4 sm:pl-1'
+                      className='rounded-sm p-1 transition-opacity hover:opacity-70'
                     >
                       {user ? (
-                        <>
-                          <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-600'>
-                            <UserCircle className='h-5 w-5 text-white' />
-                          </div>
-                          <span className='hidden text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900 sm:inline'>
-                            Witaj {displayName}
-                          </span>
-                          <ChevronDown className='hidden h-4 w-4 text-gray-500 sm:block' />
-                        </>
+                        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-red-600'>
+                          <UserCircle className='h-4 w-4 text-white' />
+                        </div>
                       ) : (
-                        <>
-                          <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
-                            <User className='h-4 w-4 text-gray-500' />
-                          </div>
-                          <span className='hidden text-sm font-bold text-gray-700 sm:block'>
-                            Zaloguj się
-                          </span>
-                        </>
+                        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-gray-200'>
+                          <User className='h-4 w-4 text-gray-500' />
+                        </div>
                       )}
                     </button>
 
-                    {/* Dropdown Menu */}
+                    {/* Dropdown Menu - Mobile */}
                     {user && headerMenuOpen && (
                       <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
                         <Link
@@ -410,11 +386,106 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     )}
                   </div>
                 )}
-              </header>
+              </div>
 
-              {/* Page Content */}
-              <div className='animate-in fade-in pb-8'>{children}</div>
-            </main>
+              {/* Main Content Area */}
+              <main
+                data-content-area
+                className='custom-scrollbar relative h-full flex-1 overflow-x-hidden overflow-y-auto bg-transparent px-2 py-3 sm:pt-2 lg:p-8 lg:pt-4'
+              >
+                {/* Header - Tablet/Desktop only */}
+                <header className='mb-2 sm:mb-4 lg:mt-2 lg:mb-6'>
+                  {/* Tablet/Desktop Header (>= sm) - original layout */}
+                  <div className='hidden items-center justify-between sm:flex'>
+                    <div className='flex items-center gap-4'>
+                      <button
+                        className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 xl:hidden'
+                        onClick={() => setMobileNavOpen(true)}
+                      >
+                        <Menu className='h-6 w-6 text-gray-600' />
+                      </button>
+
+                      {/* View Title with Red Bar - hide when auth modal is open or on root path */}
+                      {!pathname.includes('/auth') &&
+                        getViewInfo(pathname).title && (
+                          <div className='flex items-center gap-3'>
+                            <div className='h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50' />
+                            <div className='flex flex-col justify-center'>
+                              <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:mb-1.5 lg:text-3xl'>
+                                {getViewInfo(pathname).title}
+                              </h1>
+                              <p className='text-sm leading-none font-medium text-gray-600 lg:text-base'>
+                                {getViewInfo(pathname).subtitle}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                    </div>
+
+                    {/* User Menu - hide login button when auth modal is open */}
+                    {(user || !pathname.includes('/auth')) && (
+                      <div className='relative' ref={headerMenuRef}>
+                        <button
+                          onClick={() => {
+                            if (user) {
+                              setHeaderMenuOpen(!headerMenuOpen)
+                            } else {
+                              router.push('/auth?tab=login')
+                            }
+                          }}
+                          className='group flex cursor-pointer items-center gap-2 rounded-full border-2 border-white bg-white/70 py-1.5 pr-4 pl-1 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/90'
+                        >
+                          {user ? (
+                            <>
+                              <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-600'>
+                                <UserCircle className='h-5 w-5 text-white' />
+                              </div>
+                              <span className='text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900'>
+                                Witaj {displayName}
+                              </span>
+                              <ChevronDown className='h-4 w-4 text-gray-500' />
+                            </>
+                          ) : (
+                            <>
+                              <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
+                                <User className='h-4 w-4 text-gray-500' />
+                              </div>
+                              <span className='text-sm font-bold text-gray-700'>
+                                Zaloguj się
+                              </span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* Dropdown Menu - Tablet/Desktop */}
+                        {user && headerMenuOpen && (
+                          <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
+                            <Link
+                              href='/profile'
+                              className='flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                              onClick={() => setHeaderMenuOpen(false)}
+                            >
+                              <Settings className='h-4 w-4 text-gray-500' />
+                              <span>Ustawienia profilu</span>
+                            </Link>
+                            <button
+                              onClick={handleLogout}
+                              className='flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
+                            >
+                              <LogOut className='h-4 w-4' />
+                              <span>Wyloguj się</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </header>
+
+                {/* Page Content */}
+                <div className='animate-in fade-in pb-8'>{children}</div>
+              </main>
+            </div>
           </div>
 
           {/* Global Right Side Ad Panel (Visible on Large Screens - Desktop) */}

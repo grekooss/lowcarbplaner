@@ -46,6 +46,10 @@ export function AuthModal({
       <DialogContent
         coverMainPanelOnMobile
         className='max-h-[90vh] overflow-y-auto rounded-lg border-2 border-[var(--glass-border)] bg-white/40 p-0 shadow-[var(--shadow-elevated)] backdrop-blur-[20px] sm:max-w-sm sm:rounded-2xl lg:rounded-3xl'
+        // Zamykanie tylko przez X, nie przez kliknięcie poza modalem
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <VisuallyHidden>
           <DialogTitle>

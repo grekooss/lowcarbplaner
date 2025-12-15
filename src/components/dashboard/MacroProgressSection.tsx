@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   PieChart,
   Pie,
@@ -47,7 +47,12 @@ function AnimatedProgressBar({
   color,
   height = 12,
 }: AnimatedProgressBarProps) {
+  const [isMounted, setIsMounted] = useState(false)
   const percent = max > 0 ? Math.min((value / max) * 100, 100) : 0
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const data = [
     {
@@ -62,33 +67,35 @@ function AnimatedProgressBar({
       className='w-full overflow-hidden rounded-full border border-gray-100 bg-gray-100'
       style={{ height }}
     >
-      <ResponsiveContainer width='100%' height='100%'>
-        <BarChart
-          data={data}
-          layout='vertical'
-          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-          barCategoryGap={0}
-        >
-          <XAxis type='number' domain={[0, 100]} hide />
-          <YAxis type='category' dataKey='name' hide />
-          <Bar
-            dataKey='value'
-            stackId='progress'
-            fill={color}
-            radius={[6, 6, 6, 6]}
-            isAnimationActive={true}
-            animationBegin={0}
-            animationDuration={800}
-            animationEasing='ease-out'
-          />
-          <Bar
-            dataKey='remaining'
-            stackId='progress'
-            fill='transparent'
-            isAnimationActive={false}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      {isMounted && (
+        <ResponsiveContainer width='100%' height='100%'>
+          <BarChart
+            data={data}
+            layout='vertical'
+            margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+            barCategoryGap={0}
+          >
+            <XAxis type='number' domain={[0, 100]} hide />
+            <YAxis type='category' dataKey='name' hide />
+            <Bar
+              dataKey='value'
+              stackId='progress'
+              fill={color}
+              radius={[6, 6, 6, 6]}
+              isAnimationActive={true}
+              animationBegin={0}
+              animationDuration={800}
+              animationEasing='ease-out'
+            />
+            <Bar
+              dataKey='remaining'
+              stackId='progress'
+              fill='transparent'
+              isAnimationActive={false}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
     </div>
   )
 }
@@ -111,6 +118,12 @@ export function MacroProgressSection({
   isToday = true,
   isMobile = false,
 }: MacroProgressSectionProps) {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const macros = useDailyMacros({
     meals,
     targetCalories: targetMacros.target_calories,
@@ -316,28 +329,30 @@ export function MacroProgressSection({
         </p>
 
         <div className='relative flex h-56 items-center justify-center'>
-          <ResponsiveContainer width='100%' height='100%'>
-            <PieChart>
-              <Pie
-                data={chartData}
-                innerRadius={80}
-                outerRadius={100}
-                startAngle={90}
-                endAngle={-270}
-                dataKey='value'
-                stroke='none'
-                cornerRadius={10}
-                isAnimationActive={true}
-              >
-                {chartData.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          {isMounted && (
+            <ResponsiveContainer width='100%' height='100%'>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  innerRadius={80}
+                  outerRadius={100}
+                  startAngle={90}
+                  endAngle={-270}
+                  dataKey='value'
+                  stroke='none'
+                  cornerRadius={10}
+                  isAnimationActive={true}
+                >
+                  {chartData.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
           <div className='absolute inset-0 flex flex-col items-center justify-center pb-4'>
             <Flame className='h-6 w-6 text-red-600' />
             <span className='mb-1 text-sm font-bold text-red-600'>kcal</span>
