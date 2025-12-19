@@ -12,9 +12,7 @@ import { transformToWeekPlan } from '@/lib/utils/meal-plan'
 import { WeekTable } from './WeekTable'
 import { DayList } from './DayList'
 import { RecipeModal } from './RecipeModal'
-import { ReplacementsModal } from './ReplacementsModal'
 import type { PlannedMealDTO } from '@/types/dto.types'
-import type { ReplacementsModalState } from '@/types/meal-plan-view.types'
 import { Loader2 } from 'lucide-react'
 
 interface MealPlanClientProps {
@@ -38,13 +36,6 @@ export const MealPlanClient = ({
     isOpen: false,
     meal: null,
   })
-
-  const [replacementsModal, setReplacementsModal] =
-    useState<ReplacementsModalState>({
-      isOpen: false,
-      mealId: null,
-      mealType: null,
-    })
 
   // Oblicz endDate (startDate + 6 dni)
   const endDate = useMemo(() => {
@@ -76,21 +67,8 @@ export const MealPlanClient = ({
       hasIncompletePlan &&
       !hasAttemptedGeneration.current
 
-    console.log('MealPlanClient auto-generation check:', {
-      mealsLength: meals.length,
-      expectedMealsCount,
-      hasIncompletePlan,
-      isLoading,
-      isGenerating,
-      hasAttemptedGeneration: hasAttemptedGeneration.current,
-      shouldGenerate,
-    })
-
     if (shouldGenerate) {
       hasAttemptedGeneration.current = true
-      console.log(
-        `Auto-generating meal plan for week ${startDate} (ma ${meals.length}/${expectedMealsCount} posiłków)`
-      )
       generatePlan()
     }
   }, [isLoading, isGenerating, meals.length, startDate, generatePlan])
@@ -149,15 +127,6 @@ export const MealPlanClient = ({
     })
   }
 
-  // Handler kliknięcia "Zmień posiłek"
-  const handleSwapClick = (mealId: number, mealType: string) => {
-    setReplacementsModal({
-      isOpen: true,
-      mealId,
-      mealType: mealType as 'breakfast' | 'lunch' | 'dinner',
-    })
-  }
-
   // Initial loading - show spinner
   if (isLoading) {
     return (
@@ -193,18 +162,13 @@ export const MealPlanClient = ({
             weekPlan={weekPlan}
             monthHeader={monthHeader}
             onMealClick={handleMealClick}
-            onSwapClick={handleSwapClick}
           />
         </section>
       </div>
 
       {/* Mobile: DayList (widoczny < md) */}
       <div className='block md:hidden'>
-        <DayList
-          weekPlan={weekPlan}
-          onMealClick={handleMealClick}
-          onSwapClick={handleSwapClick}
-        />
+        <DayList weekPlan={weekPlan} onMealClick={handleMealClick} />
       </div>
 
       {/* Modal podglądu przepisu */}
@@ -215,16 +179,6 @@ export const MealPlanClient = ({
           setRecipeModal((prev) => ({ ...prev, isOpen: open }))
         }
         enableIngredientEditing={true}
-      />
-
-      {/* Modal zamienników */}
-      <ReplacementsModal
-        isOpen={replacementsModal.isOpen}
-        mealId={replacementsModal.mealId}
-        mealType={replacementsModal.mealType}
-        onOpenChange={(open) =>
-          setReplacementsModal((prev) => ({ ...prev, isOpen: open }))
-        }
       />
     </>
   )

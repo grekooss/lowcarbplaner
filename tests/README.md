@@ -80,13 +80,13 @@ npm run test:integration
 
 ## 📊 Coverage Targets
 
-| Obszar | Target Coverage | Aktualny Status |
-|--------|----------------|-----------------|
-| **Server Actions** | ≥90% | 🟢 |
-| **Services** | ≥95% | 🟢 |
-| **Hooks** | ≥85% | 🟡 |
-| **Components** | ≥80% | 🟡 |
-| **Validators** | 100% | 🟢 |
+| Obszar             | Target Coverage | Aktualny Status |
+| ------------------ | --------------- | --------------- |
+| **Server Actions** | ≥90%            | 🟢              |
+| **Services**       | ≥95%            | 🟢              |
+| **Hooks**          | ≥85%            | 🟡              |
+| **Components**     | ≥80%            | 🟡              |
+| **Validators**     | 100%            | 🟢              |
 
 ---
 
@@ -97,6 +97,7 @@ npm run test:integration
 **Plik**: `tests/integration/services/meal-plan-generator.test.ts`
 
 Testuje logikę generowania planu 7-dniowego:
+
 - ✅ Generowanie 21 posiłków (7 dni × 3 posiłki)
 - ✅ Dobór przepisów według kalorii (±15%)
 - ✅ Różnorodność przepisów (brak powtórzeń w tym samym dniu)
@@ -110,7 +111,7 @@ test('generates 7-day plan with 21 meals', async () => {
   const plan = await generateWeeklyPlan(profile, new Date('2025-01-15'))
 
   expect(plan).toHaveLength(21)
-  expect(plan.filter(m => m.meal_type === 'breakfast')).toHaveLength(7)
+  expect(plan.filter((m) => m.meal_type === 'breakfast')).toHaveLength(7)
 })
 ```
 
@@ -119,6 +120,7 @@ test('generates 7-day plan with 21 meals', async () => {
 **Plik**: `tests/integration/services/nutrition-calculator.test.ts`
 
 Testuje kalkulator kaloryczny:
+
 - ✅ Obliczanie BMR (Harris-Benedict)
 - ✅ Obliczanie TDEE (z mnożnikiem aktywności)
 - ✅ Deficyt kaloryczny dla utraty wagi
@@ -127,9 +129,13 @@ Testuje kalkulator kaloryczny:
 ```typescript
 test('calculates TDEE with moderate multiplier', () => {
   const goals = calculateNutritionGoals({
-    age: 30, gender: 'male', weight_kg: 85,
-    height_cm: 180, activity_level: 'moderate',
-    goal: 'weight_loss', weight_loss_rate: 'moderate'
+    age: 30,
+    gender: 'male',
+    weight_kg: 85,
+    height_cm: 180,
+    activity_level: 'moderate',
+    goal: 'weight_loss',
+    weight_loss_rate: 'moderate',
   })
 
   expect(goals.tdee).toBeGreaterThan(2850)
@@ -142,6 +148,7 @@ test('calculates TDEE with moderate multiplier', () => {
 **Plik**: `tests/integration/meal-plan/swap-recipe.test.ts`
 
 Testuje wymianę przepisu:
+
 - ✅ Wymiana z tym samym meal_type
 - ✅ Walidacja różnicy kalorycznej ±15%
 - ✅ Reset ingredient_overrides
@@ -152,7 +159,7 @@ Testuje wymianę przepisu:
 test('swaps recipe successfully', async () => {
   const result = await updatePlannedMeal(123, {
     action: 'swap_recipe',
-    recipe_id: 103
+    recipe_id: 103,
   })
 
   expect(result.error).toBeUndefined()
@@ -165,6 +172,7 @@ test('swaps recipe successfully', async () => {
 **Plik**: `tests/integration/meal-plan/ingredient-scaling.test.ts`
 
 Testuje skalowanie składników:
+
 - ✅ Modyfikacja skalowanych składników
 - ✅ Walidacja is_scalable flag
 - ✅ Walidacja ilości >0
@@ -175,9 +183,7 @@ Testuje skalowanie składników:
 test('modifies scalable ingredient', async () => {
   const result = await updatePlannedMeal(123, {
     action: 'modify_ingredients',
-    ingredient_overrides: [
-      { ingredient_id: 1, new_amount: 180 }
-    ]
+    ingredient_overrides: [{ ingredient_id: 1, new_amount: 180 }],
   })
 
   expect(result.error).toBeUndefined()
@@ -191,18 +197,21 @@ test('modifies scalable ingredient', async () => {
 Testuje kompletny flow autentykacji:
 
 **Registration** (~20 testów):
+
 - ✅ Email/password validation (Zod)
 - ✅ Password strength indicator
 - ✅ Duplicate email handling
 - ✅ Profile creation after signup
 
 **Login** (~25 testów):
+
 - ✅ Email/password authentication
 - ✅ Google OAuth flow
 - ✅ Session management
 - ✅ Redirect after login
 
 **Password Reset** (~15 testów):
+
 - ✅ Forgot password flow
 - ✅ Reset token validation
 - ✅ Security (rate limiting)
@@ -225,6 +234,7 @@ test('OAuth creates profile for new users', async () => {
 **Plik**: `tests/integration/dashboard/daily-view.test.ts`
 
 Testuje widok dziennego planu (~40 testów):
+
 - ✅ Wyświetlanie posiłków z bieżącego dnia
 - ✅ Nawigacja kalendarzowa (7 dni)
 - ✅ Progress bars dla makroskładników
@@ -259,6 +269,7 @@ test('navigates to next day', async () => {
 **Plik**: `tests/integration/profile/update-goals.test.ts`
 
 Testuje zarządzanie profilem (~35 testów):
+
 - ✅ Aktualizacja wagi (30-300kg validation)
 - ✅ Zmiana poziomu aktywności
 - ✅ Automatyczne przeliczanie makroskładników
@@ -293,6 +304,7 @@ test('recalculates goals after weight update', async () => {
 **Plik**: `tests/integration/shopping-list/aggregation.test.ts`
 
 Testuje listę zakupów (~30 testów):
+
 - ✅ Agregacja składników z 6-dniowego zakresu (jutro + 5 dni)
 - ✅ Uwzględnienie ingredient_overrides
 - ✅ Grupowanie po kategoriach
@@ -366,7 +378,7 @@ Mockowanie HTTP requestów:
 export const handlers = [
   http.post('*/auth/v1/signup', () => {
     return HttpResponse.json({ user: { id: 'test-id' } })
-  })
+  }),
 ]
 ```
 
@@ -396,17 +408,14 @@ const profile = createTestProfile({ target_calories: 2000 })
 import {
   testRecipeBreakfast,
   testRecipeLunch,
-  testRecipeDinner
+  testRecipeDinner,
 } from '../fixtures/recipes'
 ```
 
 ### Planned Meals
 
 ```typescript
-import {
-  testPlannedMeals,
-  generateWeekPlan
-} from '../fixtures/planned-meals'
+import { testPlannedMeals, generateWeekPlan } from '../fixtures/planned-meals'
 
 const weekPlan = generateWeekPlan('2025-01-15') // 21 posiłków
 ```
@@ -429,16 +438,17 @@ export default defineConfig({
         lines: 80,
         functions: 80,
         branches: 75,
-        statements: 80
-      }
-    }
-  }
+        statements: 80,
+      },
+    },
+  },
 })
 ```
 
 ### Global Setup
 
 Plik `tests/setup/setup-tests.ts` konfiguruje:
+
 - @testing-library/jest-dom matchers
 - MSW server (Mock Service Worker)
 - Cleanup po każdym teście

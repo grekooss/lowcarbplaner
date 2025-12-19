@@ -3,11 +3,12 @@
  *
  * Weekly calendar selector styled to match the dashboard hero mock.
  * Displays current week (Mon-Sun) with day buttons and navigation arrows.
+ * Memoized to prevent re-renders when parent state changes.
  */
 
 'use client'
 
-import type { KeyboardEvent } from 'react'
+import { memo, type KeyboardEvent } from 'react'
 
 import { useCalendarDays } from '@/hooks/useCalendarDays'
 import { cn } from '@/lib/utils'
@@ -17,7 +18,7 @@ interface CalendarStripProps {
   onDateChange: (date: Date) => void
 }
 
-export function CalendarStrip({
+export const CalendarStrip = memo(function CalendarStrip({
   selectedDate,
   onDateChange,
 }: CalendarStripProps) {
@@ -122,4 +123,6 @@ export function CalendarStrip({
       </div>
     </section>
   )
-}
+})
+
+CalendarStrip.displayName = 'CalendarStrip'

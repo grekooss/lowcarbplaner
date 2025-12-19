@@ -15,7 +15,6 @@ type MonthHeader = { primary: string; secondary?: string } | null
 interface WeekTableProps {
   weekPlan: WeekPlanViewModel
   onMealClick: (meal: PlannedMealDTO) => void
-  onSwapClick: (mealId: number, mealType: string) => void
   monthHeader?: MonthHeader
 }
 

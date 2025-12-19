@@ -182,17 +182,8 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        console.error('OAuth callback: No user after exchangeCodeForSession')
         return NextResponse.redirect(new URL('/auth', origin))
       }
-
-      // DEBUG: Log successful auth (can be removed after debugging)
-      console.log('[AUTH CALLBACK] User authenticated:', {
-        userId: user.id.slice(0, 8),
-        email: user.email,
-        provider: user.app_metadata?.provider,
-        cookieCount: response.cookies.getAll().length,
-      })
 
       // Check if profile exists
       const { data: profile } = await supabase
@@ -206,24 +197,16 @@ export async function GET(request: NextRequest) {
       if (!profile?.disclaimer_accepted_at) {
         // New user - redirect to onboarding
         redirectUrl = new URL('/onboarding', origin)
-        console.log('[AUTH CALLBACK] Redirecting to onboarding (new user)')
       } else {
         // Existing user - redirect to requested page or home
         // Validate redirect to prevent open redirect attacks
         const targetPath = redirect.startsWith('/') ? redirect : '/'
         redirectUrl = new URL(targetPath, origin)
-        console.log('[AUTH CALLBACK] Redirecting to:', targetPath)
       }
 
       // Create redirect response and copy all cookies with preserved options
       const redirectResponse = NextResponse.redirect(redirectUrl)
       copyCookies(response, redirectResponse, cookieOptions)
-
-      // DEBUG: Verify cookies are being set
-      console.log(
-        '[AUTH CALLBACK] Cookies set on redirect:',
-        redirectResponse.cookies.getAll().map((c) => c.name)
-      )
 
       return redirectResponse
     }

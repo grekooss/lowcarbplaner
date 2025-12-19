@@ -48,6 +48,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMyProfile, updateMyProfile } from '@/lib/actions/profile'
 import type { UpdateProfileInput } from '@/lib/validation/profile'
+import { userDataCacheHeaders } from '@/lib/utils/cache-headers'
+import {
+  rateLimit,
+  strictRateLimit,
+  getClientIp,
+  rateLimitHeaders,
+} from '@/lib/utils/rate-limit'
 
 /**
  * GET /api/profile/me
@@ -56,9 +63,31 @@ import type { UpdateProfileInput } from '@/lib/validation/profile'
  * GET /api/profile/me
  * Authorization: Bearer {token}
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Wywołanie Server Action
+    // 0. Rate limiting check
+    const clientIp = getClientIp(request)
+    const rateLimitResult = rateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
+    // 1. Wywołanie Server Action
     const result = await getMyProfile()
 
     // Obsługa błędów z Server Action
@@ -101,8 +130,11 @@ export async function GET() {
       }
     }
 
-    // Zwrócenie sukcesu (200 OK)
-    return NextResponse.json(result.data, { status: 200 })
+    // Zwrócenie sukcesu (200 OK) z cache headers dla user data
+    return NextResponse.json(result.data, {
+      status: 200,
+      headers: userDataCacheHeaders,
+    })
   } catch (err) {
     console.error('Nieoczekiwany błąd w GET /api/profile/me:', err)
     return NextResponse.json(
@@ -132,6 +164,28 @@ export async function GET() {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    // 0. Rate limiting check (strict for profile updates)
+    const clientIp = getClientIp(request)
+    const rateLimitResult = strictRateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
     // 1. Parsowanie body z request
     let body: UpdateProfileInput
     try {

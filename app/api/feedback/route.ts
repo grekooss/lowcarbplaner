@@ -26,11 +26,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createFeedback } from '@/lib/actions/feedback'
 import type { CreateFeedbackInput } from '@/lib/validation/feedback'
+import {
+  strictRateLimit,
+  getClientIp,
+  rateLimitHeaders,
+} from '@/lib/utils/rate-limit'
 
 /**
  * POST /api/feedback
  *
  * Tworzy nowy feedback użytkownika.
+ * Rate limited: 10 requests per minute per IP.
  *
  * @example
  * POST /api/feedback
@@ -38,6 +44,28 @@ import type { CreateFeedbackInput } from '@/lib/validation/feedback'
  */
 export async function POST(request: NextRequest) {
   try {
+    // 0. Rate limiting check
+    const clientIp = getClientIp(request)
+    const rateLimitResult = strictRateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
     // 1. Parsowanie JSON body
     const body: CreateFeedbackInput = await request.json()
 

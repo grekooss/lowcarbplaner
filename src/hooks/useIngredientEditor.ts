@@ -32,12 +32,8 @@ export function useIngredientEditor({
 
   // Sync overrides when initialOverrides changes (e.g., after save or navigation)
   useEffect(() => {
-    console.log('🔄 initialOverrides changed, syncing local state:', {
-      recipeName: recipe.name,
-      newInitialOverrides: initialOverrides,
-    })
     setOverrides(initialOverrides || [])
-  }, [initialOverrides, recipe.name])
+  }, [initialOverrides])
 
   // Check if there are any changes from initial state
   const hasChanges = useMemo(() => {
@@ -58,17 +54,8 @@ export function useIngredientEditor({
     const currentStr = JSON.stringify(normalize(current))
     const result = initialStr !== currentStr
 
-    console.log('🔍 hasChanges calculation:', {
-      recipeName: recipe.name,
-      initialOverrides,
-      overrides,
-      initialStr,
-      currentStr,
-      hasChanges: result,
-    })
-
     return result
-  }, [overrides, initialOverrides, recipe.name])
+  }, [overrides, initialOverrides])
 
   // Calculate adjusted nutrition based on current overrides
   const adjustedNutrition = useMemo(() => {

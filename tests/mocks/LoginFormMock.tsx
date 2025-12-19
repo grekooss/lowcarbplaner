@@ -42,8 +42,10 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
-    const emailVal = (form.elements.namedItem('email') as HTMLInputElement).value
-    const passVal = (form.elements.namedItem('password') as HTMLInputElement).value
+    const emailVal = (form.elements.namedItem('email') as HTMLInputElement)
+      .value
+    const passVal = (form.elements.namedItem('password') as HTMLInputElement)
+      .value
 
     const emailValid = validateEmail(emailVal)
     const passValid = validatePassword(passVal)
@@ -54,27 +56,31 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} data-testid="login-form">
+    <form onSubmit={handleSubmit} data-testid='login-form'>
       <div>
-        <label htmlFor="email">Email</label>
+        <label htmlFor='email'>Email</label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id='email'
+          name='email'
+          type='email'
           disabled={isLoading}
           aria-invalid={emailError ? 'true' : 'false'}
           aria-describedby={emailError ? 'email-error' : undefined}
           onBlur={(e) => validateEmail(e.target.value)}
         />
-        {emailError && <p id="email-error" role="alert">{emailError}</p>}
+        {emailError && (
+          <p id='email-error' role='alert'>
+            {emailError}
+          </p>
+        )}
       </div>
 
       <div>
-        <label htmlFor="password">Hasło</label>
+        <label htmlFor='password'>Hasło</label>
         <input
-          id="password"
-          name="password"
-          aria-label="Hasło"
+          id='password'
+          name='password'
+          aria-label='Hasło'
           type={showPassword ? 'text' : 'password'}
           disabled={isLoading}
           aria-invalid={passwordError ? 'true' : 'false'}
@@ -82,24 +88,28 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
           onBlur={(e) => validatePassword(e.target.value)}
         />
         <button
-          type="button"
+          type='button'
           aria-label={showPassword ? 'Ukryj' : 'Pokaż'}
           onClick={() => setShowPassword(!showPassword)}
           disabled={isLoading}
-          data-testid="toggle-password"
+          data-testid='toggle-password'
         >
           {showPassword ? 'Hide' : 'Show'}
         </button>
-        {passwordError && <p id="password-error" role="alert">{passwordError}</p>}
+        {passwordError && (
+          <p id='password-error' role='alert'>
+            {passwordError}
+          </p>
+        )}
       </div>
 
-      {error && <div role="alert">{error}</div>}
+      {error && <div role='alert'>{error}</div>}
 
-      <button type="submit" disabled={isLoading}>
+      <button type='submit' disabled={isLoading}>
         {isLoading ? 'Logowanie...' : 'Zaloguj się'}
       </button>
 
-      <a href="/auth/forgot-password">Zapomniałem hasła</a>
+      <a href='/auth/forgot-password'>Zapomniałem hasła</a>
     </form>
   )
 }

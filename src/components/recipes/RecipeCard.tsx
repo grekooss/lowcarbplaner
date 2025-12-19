@@ -2,10 +2,12 @@
  * Komponent karty przepisu w widoku siatki
  *
  * Styl zgodny z RecipeListItem – glassmorphism z białym tłem.
+ * Memoized to prevent unnecessary re-renders in recipe lists.
  */
 
 'use client'
 
+import { memo } from 'react'
 import Image from 'next/image'
 import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
@@ -38,7 +40,7 @@ const getDifficultyColor = (difficulty: RecipeDTO['difficulty_level']) => {
   }
 }
 
-export function RecipeCard({
+export const RecipeCard = memo(function RecipeCard({
   recipe,
   onClick,
   hideMealTypeBadge = false,
@@ -156,4 +158,6 @@ export function RecipeCard({
       </div>
     </div>
   )
-}
+})
+
+RecipeCard.displayName = 'RecipeCard'

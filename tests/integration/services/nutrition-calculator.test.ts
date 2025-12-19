@@ -141,7 +141,7 @@ describe('Nutrition Calculator Service', () => {
 
       expect(ratio1.c).toBeCloseTo(0.15, 2)
       expect(ratio1.p).toBeCloseTo(0.35, 2)
-      expect(ratio1.f).toBeCloseTo(0.50, 2)
+      expect(ratio1.f).toBeCloseTo(0.5, 2)
       expect(ratio2.c).toBeCloseTo(ratio1.c, 2)
       expect(ratio2.p).toBeCloseTo(ratio1.p, 2)
       expect(ratio2.f).toBeCloseTo(ratio1.f, 2)

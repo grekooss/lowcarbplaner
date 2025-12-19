@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Image from 'next/image'
 import { UtensilsCrossed, RefreshCw } from 'lucide-react'
 
@@ -22,12 +22,12 @@ const mealTypeLabels: Record<string, string> = {
   dinner: 'Kolacja',
 }
 
-export const MealCard = ({
+export const MealCard = memo(function MealCard({
   meal,
   mealType,
   onMealClick,
   showSwapButton = false,
-}: MealCardProps) => {
+}: MealCardProps) {
   const [swapDialogOpen, setSwapDialogOpen] = useState(false)
 
   // Empty state - show placeholder
@@ -110,4 +110,4 @@ export const MealCard = ({
       />
     </>
   )
-}
+})

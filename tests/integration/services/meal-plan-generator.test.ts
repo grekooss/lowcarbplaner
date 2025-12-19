@@ -25,11 +25,7 @@ import {
 } from '../../fixtures/recipes'
 
 // Helper function to get mock recipes
-const getMockRecipes = (
-  mealType: string,
-  minCal?: number,
-  maxCal?: number
-) => {
+const getMockRecipes = (mealType: string, minCal?: number, maxCal?: number) => {
   let recipes
   // Return appropriate recipes based on meal type
   if (mealType === 'breakfast') {
@@ -75,58 +71,58 @@ vi.mock('@/lib/supabase/server', () => {
   // Create query builder factory function
   const createQueryBuilder = () => {
     const builder = {
-        _mealType: 'breakfast' as string,
-        _minCal: undefined as number | undefined,
-        _maxCal: undefined as number | undefined,
+      _mealType: 'breakfast' as string,
+      _minCal: undefined as number | undefined,
+      _maxCal: undefined as number | undefined,
 
-        select(this: any) {
-          return this
-        },
-        insert(this: any) {
-          return this
-        },
-        eq(this: any) {
-          return this
-        },
-        gte(this: any, field: string, value: number) {
-          if (field === 'total_calories') {
-            this._minCal = value
-          }
-          return this
-        },
-        lte(this: any, field: string, value: number) {
-          if (field === 'total_calories') {
-            this._maxCal = value
-          }
-          return this
-        },
-        contains(this: any, field: string, value: any) {
-          // Extract meal type from contains filter
-          const mealType = Array.isArray(value) ? value[0] : value
-          this._mealType = mealType
-          return this
-        },
-        not(this: any) {
-          return Promise.resolve({
-            data: getMockRecipes(this._mealType, this._minCal, this._maxCal),
-            error: null,
-          })
-        },
-        order(this: any) {
-          return this
-        },
-        limit(this: any) {
-          return Promise.resolve({
-            data: getMockRecipes(this._mealType, this._minCal, this._maxCal),
-            error: null,
-          })
-        },
-        in(this: any) {
-          return Promise.resolve({
-            data: [],
-            error: null,
-          })
-        },
+      select(this: any) {
+        return this
+      },
+      insert(this: any) {
+        return this
+      },
+      eq(this: any) {
+        return this
+      },
+      gte(this: any, field: string, value: number) {
+        if (field === 'total_calories') {
+          this._minCal = value
+        }
+        return this
+      },
+      lte(this: any, field: string, value: number) {
+        if (field === 'total_calories') {
+          this._maxCal = value
+        }
+        return this
+      },
+      contains(this: any, field: string, value: any) {
+        // Extract meal type from contains filter
+        const mealType = Array.isArray(value) ? value[0] : value
+        this._mealType = mealType
+        return this
+      },
+      not(this: any) {
+        return Promise.resolve({
+          data: getMockRecipes(this._mealType, this._minCal, this._maxCal),
+          error: null,
+        })
+      },
+      order(this: any) {
+        return this
+      },
+      limit(this: any) {
+        return Promise.resolve({
+          data: getMockRecipes(this._mealType, this._minCal, this._maxCal),
+          error: null,
+        })
+      },
+      in(this: any) {
+        return Promise.resolve({
+          data: [],
+          error: null,
+        })
+      },
     }
     return builder
   }
@@ -238,7 +234,9 @@ describe('Meal Plan Generator Service', () => {
       })
 
       // Sprawdź czy jest ingredient_overrides (oznaka optymalizacji)
-      const hasOptimization = dayPlan.some((m) => m.ingredient_overrides !== null)
+      const hasOptimization = dayPlan.some(
+        (m) => m.ingredient_overrides !== null
+      )
       expect(hasOptimization).toBe(true)
     })
   })

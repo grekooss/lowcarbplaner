@@ -22,6 +22,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getReplacementRecipes } from '@/lib/actions/planned-meals'
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitHeaders,
+} from '@/lib/utils/rate-limit'
 
 /**
  * GET /api/planned-meals/{id}/replacements
@@ -30,10 +35,32 @@ import { getReplacementRecipes } from '@/lib/actions/planned-meals'
  * GET /api/planned-meals/123/replacements
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 0. Rate limiting check
+    const clientIp = getClientIp(request)
+    const rateLimitResult = rateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
     // 1. Await params (Next.js 15 requirement)
     const { id } = await params
 

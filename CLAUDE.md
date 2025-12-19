@@ -24,7 +24,9 @@ npm run test:e2e:ui      # Playwright with interactive UI
 npm run build            # Production build
 
 # Database (Supabase Cloud only - never use local Docker)
-npm run db:clone:win     # Clone schema + test data (Windows)
+npm run db:clone:win         # Clone schema + test data (Windows)
+npm run db:clone:full:win    # Full clone with all data (Windows)
+npm run db:generate-seeds:win # Generate seed data (Windows)
 npx supabase gen types typescript --project-id "<project-ref>" --schema public --schema content > src/types/database.types.ts
 ```
 
@@ -38,7 +40,10 @@ Server Component → Server Action → Supabase
 Client Component → API Route → Server Action → Supabase
 ```
 
-- **Server Actions** (`src/lib/actions/*.ts`): Business logic, validation, database operations. Return `ActionResult<T>` discriminated union.
+- **Server Actions** (`src/lib/actions/*.ts`): Business logic, validation, database operations. Return discriminated union:
+  ```typescript
+  type ActionResult<T> = { data: T } | { error: string }
+  ```
 - **API Route Handlers** (`app/api/**/route.ts`): Thin HTTP layer calling Server Actions.
 
 Prefer Server Actions directly in Server Components for better performance.
@@ -70,29 +75,44 @@ Key ENUM types: `gender_enum`, `activity_level_enum`, `goal_enum`, `meal_type_en
 
 - 7-day rolling plan generation
 - Recipe matching: target ± 15% calories
-- Ingredient scaling: ± 20% max change
+- Ingredient scaling: ± 10% max change
 
 ## Project Structure
 
 ```
 app/                      # Next.js App Router pages
-├── (public)/             # Auth routes (login, register, onboarding)
+├── (public)/             # Public routes (no auth required)
+│   ├── auth/             # Login, forgot-password, reset-password
+│   └── onboarding/       # User onboarding wizard
 ├── api/                  # API Route Handlers
 ├── dashboard/            # Main daily view
 ├── meal-plan/            # Weekly plan view
-├── recipes/              # Recipe browser
+├── profile/              # User profile settings
+├── recipes/              # Recipe browser + [id] detail
 └── shopping-list/        # Shopping list
 
 src/
 ├── components/
-│   ├── ui/               # shadcn/ui components (22 files)
+│   ├── ui/               # shadcn/ui components (23 files incl. charts)
+│   ├── auth/             # Auth forms and modals
 │   ├── dashboard/        # Dashboard-specific components
 │   ├── meal-plan/        # Meal planning components
+│   ├── onboarding/       # Onboarding wizard steps
+│   ├── profile/          # Profile management
+│   ├── recipes/          # Recipe browser and detail
+│   ├── shared/           # Shared components (ErrorBoundary, modals)
+│   └── shopping-list/    # Shopping list components
+├── hooks/                # Custom React hooks (14 files)
+│   ├── useAuth.ts        # Authentication state
+│   ├── usePlannedMealsQuery.ts
+│   ├── useSwapRecipe.ts
 │   └── ...
 ├── lib/
 │   ├── actions/          # Server Actions (main business logic)
+│   ├── hooks/            # Lib-specific hooks (3 files)
 │   ├── supabase/         # Supabase client/server setup
-│   ├── validation/       # Zod schemas
+│   ├── utils/            # Utility functions
+│   ├── validation/       # Zod schemas (auth, profile, recipes, etc.)
 │   ├── react-query/      # TanStack Query hooks
 │   └── zustand/          # Zustand stores
 ├── services/             # Core business logic (calculators, generators)
@@ -101,11 +121,11 @@ src/
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router, React 19)
+- **Framework**: Next.js 16.x (App Router, React 19.1)
 - **Database**: Supabase (PostgreSQL + Auth + Storage)
-- **UI**: Tailwind CSS 4 + shadcn/ui + Radix UI
-- **State**: TanStack Query + Zustand
-- **Forms**: React Hook Form + Zod
+- **UI**: Tailwind CSS 4 + shadcn/ui + Radix UI + Recharts
+- **State**: TanStack Query v5 + Zustand v5
+- **Forms**: React Hook Form v7 + Zod v4
 - **Testing**: Vitest + React Testing Library + Playwright
 
 ## Design System
@@ -117,6 +137,7 @@ src/
 - Font: Montserrat (Google Fonts)
 - Glass effect: `bg-white/[20-60]` + `backdrop-blur-[md-xl]` + `border-2 border-white`
 - Border radius: 6px (badge) → 8px (input/button) → 12px (card)
+- Charts: Recharts (wrapped in `src/components/ui/charts/`)
 
 Use `cn()` utility from `src/lib/utils.ts` for conditional class merging.
 
@@ -128,12 +149,30 @@ Use `cn()` utility from `src/lib/utils.ts` for conditional class merging.
 - **Server Actions**: Return `{ data: T } | { error: string }` pattern
 - **Validation**: All user input validated with Zod schemas in `src/lib/validation/`
 
+## Environment Variables
+
+Required in `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # Server-side only!
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+**Security rules:**
+
+- `NEXT_PUBLIC_*` - accessible in browser
+- Without prefix - server-side only
+- Never commit `.env.local`
+
 ## Important Notes
 
 - **Supabase**: Cloud only. Never suggest `supabase start` or local Docker.
 - **TypeScript**: Strict mode enabled. All business logic must be strictly typed.
 - **Commits**: Follow Conventional Commits (feat, fix, docs, refactor, test, chore)
 - **RLS**: Row Level Security enabled on all user tables. Users can only access their own data.
+- **Intercepting Routes**: Auth modals use `(..)auth` pattern in dashboard, meal-plan, shopping-list.
 
 ## Detailed Documentation
 

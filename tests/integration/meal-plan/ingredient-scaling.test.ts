@@ -53,7 +53,7 @@ const createMockSupabaseClient = () => {
                 created_at: '2025-01-14T00:00:00Z',
                 recipe: {
                   ...testRecipeLunch,
-                  recipe_ingredients: testIngredients.map(ing => ({
+                  recipe_ingredients: testIngredients.map((ing) => ({
                     base_amount: ing.amount,
                     unit: ing.unit,
                     is_scalable: ing.is_scalable,
@@ -65,8 +65,8 @@ const createMockSupabaseClient = () => {
                       id: ing.id,
                       name: ing.name,
                       category: ing.category,
-                    }
-                  }))
+                    },
+                  })),
                 },
               },
               error: null,
@@ -78,12 +78,12 @@ const createMockSupabaseClient = () => {
               user_id: 'test-user-id',
               recipe: {
                 id: testRecipeLunch.id,
-                recipe_ingredients: testIngredients.map(ing => ({
+                recipe_ingredients: testIngredients.map((ing) => ({
                   ingredient_id: ing.id,
                   base_amount: ing.amount,
                   is_scalable: ing.is_scalable,
-                }))
-              }
+                })),
+              },
             },
             error: null,
           })
@@ -115,7 +115,9 @@ describe('Ingredient Scaling', () => {
     vi.clearAllMocks()
     // Restore original mock after each test
     const { createServerClient } = await import('@/lib/supabase/server')
-    vi.mocked(createServerClient).mockImplementation(() => createMockSupabaseClient())
+    vi.mocked(createServerClient).mockImplementation(() =>
+      createMockSupabaseClient()
+    )
   })
 
   describe('updatePlannedMeal - modify_ingredients action', () => {
@@ -140,7 +142,7 @@ describe('Ingredient Scaling', () => {
       const overrides = [
         { ingredient_id: 1, new_amount: 180 }, // Kurczak: 200g → 180g
         { ingredient_id: 2, new_amount: 120 }, // Brokuły: 150g → 120g
-        { ingredient_id: 3, new_amount: 20 },  // Oliwa: 15ml → 20ml
+        { ingredient_id: 3, new_amount: 20 }, // Oliwa: 15ml → 20ml
       ]
 
       const result = await updatePlannedMeal(mealId, {

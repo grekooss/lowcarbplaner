@@ -6,7 +6,7 @@
 
 ### 1. **Server Actions** (Warstwa biznesowa)
 
-- **Lokalizacja:** `lib/actions/*.ts`
+- **Lokalizacja:** `src/lib/actions/*.ts`
 - **Odpowiedzialność:** Cała logika biznesowa, walidacja, interakcja z bazą danych
 - **Użycie:** Bezpośrednio z Server Components lub przez API Route Handlers
 - **Zwraca:** `ActionResult<T>` (discriminated union: `{ data: T } | { error: string }`)
@@ -15,7 +15,7 @@
 
 - **Lokalizacja:** `app/api/**/route.ts`
 - **Odpowiedzialność:** Cienka warstwa HTTP - wywołuje Server Actions
-- **Użycie:** REST API dla zewnętrznych klientów
+- **Użycie:** REST API dla Client Components
 - **Zwraca:** JSON response z odpowiednimi kodami statusu
 
 ### Przepływ danych
@@ -36,119 +36,186 @@ Client Component → API Route → Server Action → Supabase
 
 ```
 lowcarbplaner/
-├── app/                      # Next.js App Router
-│   ├── (auth)/              # Grupa routingu dla autentykacji
-│   │   ├── login/
-│   │   ├── register/
-│   │   └── forgot-password/
-│   ├── (main)/              # Grupa routingu dla głównej aplikacji
-│   │   ├── dashboard/       # Widok Dnia (główny ekran)
-│   │   ├── onboarding/      # Proces onboardingu
-│   │   ├── meals/           # Przeglądanie i szczegóły posiłków
-│   │   ├── shopping-list/   # Lista zakupów
-│   │   ├── profile/         # Profil użytkownika
-│   │   └── settings/        # Ustawienia
-│   ├── api/                 # API Route Handlers (REST API)
-│   │   ├── recipes/         # GET /api/recipes, GET /api/recipes/{id}
-│   │   ├── planned-meals/   # GET /api/planned-meals, PATCH /api/planned-meals/{id}
-│   │   └── ...              # Inne endpointy
-│   ├── layout.tsx           # Root layout z Geist fonts
-│   ├── globals.css          # Global styles, Tailwind, tokens
-│   ├── page.tsx             # Landing page
-│   └── error.tsx            # Global error boundary
+├── app/                          # Next.js App Router
+│   ├── (public)/                 # Publiczne routes (bez auth)
+│   │   ├── auth/                 # Login page
+│   │   │   ├── forgot-password/  # Reset hasła - request
+│   │   │   ├── reset-password/   # Reset hasła - nowe hasło
+│   │   │   └── callback/         # OAuth callback (route.ts)
+│   │   └── onboarding/           # Wizard onboardingu
+│   ├── api/                      # API Route Handlers
+│   │   ├── feedback/             # POST /api/feedback
+│   │   ├── planned-meals/        # GET, POST /api/planned-meals
+│   │   │   └── [id]/             # GET, PATCH, DELETE /api/planned-meals/{id}
+│   │   │       └── replacements/ # GET /api/planned-meals/{id}/replacements
+│   │   ├── profile/              # GET, POST /api/profile
+│   │   │   └── me/               # GET /api/profile/me
+│   │   ├── recipes/              # GET /api/recipes
+│   │   │   └── [id]/             # GET /api/recipes/{id}
+│   │   └── shopping-list/        # GET /api/shopping-list
+│   ├── dashboard/                # Widok Dnia (główny ekran)
+│   │   └── (..)auth/             # Intercepting route dla modala auth
+│   ├── meal-plan/                # Widok tygodniowy
+│   │   └── (..)auth/             # Intercepting route dla modala auth
+│   ├── profile/                  # Profil użytkownika
+│   ├── recipes/                  # Przeglądarka przepisów
+│   │   ├── [id]/                 # Szczegóły przepisu
+│   │   └── (.)[id]/              # Parallel route dla modala
+│   ├── shopping-list/            # Lista zakupów
+│   │   └── (..)auth/             # Intercepting route dla modala auth
+│   ├── layout.tsx                # Root layout (Montserrat font)
+│   ├── page.tsx                  # Landing page
+│   └── loading.tsx               # Global loading state
 │
-├── components/
-│   ├── ui/                  # shadcn/ui components
-│   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   ├── card.tsx
-│   │   ├── progress.tsx     # Paski postępu
-│   │   └── ...
-│   ├── forms/               # Komponenty formularzy
-│   │   ├── OnboardingForm.tsx
-│   │   ├── LoginForm.tsx
-│   │   └── ProfileForm.tsx
-│   ├── layout/              # Layout components
-│   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   ├── Navigation.tsx
-│   │   └── Sidebar.tsx
-│   └── features/            # Feature-specific components
-│       ├── MealCard.tsx
-│       ├── ProgressBars.tsx
-│       ├── MealPlanView.tsx
-│       ├── RecipeDetails.tsx
-│       └── ShoppingListItem.tsx
+├── src/
+│   ├── components/
+│   │   ├── auth/                 # Komponenty autoryzacji
+│   │   │   ├── AuthClient.tsx
+│   │   │   ├── AuthModal.tsx
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   │   ├── ForgotPasswordForm.tsx
+│   │   │   ├── ResetPasswordForm.tsx
+│   │   │   └── SocialAuthButton.tsx
+│   │   ├── dashboard/            # Dashboard components
+│   │   │   ├── CalendarStrip.tsx
+│   │   │   ├── DashboardClient.tsx
+│   │   │   ├── MacroProgressBar.tsx
+│   │   │   ├── MacroProgressSection.tsx
+│   │   │   ├── MealCard.tsx
+│   │   │   ├── MealsList.tsx
+│   │   │   ├── IngredientEditor.tsx
+│   │   │   └── EmptyState.tsx
+│   │   ├── meal-plan/            # Meal plan components
+│   │   │   ├── MealPlanClient.tsx
+│   │   │   ├── DayCard.tsx
+│   │   │   ├── DayList.tsx
+│   │   │   ├── MealCard.tsx
+│   │   │   ├── WeekTable.tsx
+│   │   │   └── RecipeModal.tsx
+│   │   ├── onboarding/           # Onboarding wizard steps
+│   │   │   ├── OnboardingClient.tsx
+│   │   │   ├── GenderStep.tsx
+│   │   │   ├── AgeStep.tsx
+│   │   │   ├── WeightStep.tsx
+│   │   │   ├── HeightStep.tsx
+│   │   │   ├── ActivityLevelStep.tsx
+│   │   │   ├── GoalStep.tsx
+│   │   │   ├── WeightLossRateStep.tsx
+│   │   │   ├── SummaryStep.tsx
+│   │   │   └── GeneratingStep.tsx
+│   │   ├── profile/              # Profile components
+│   │   │   ├── ProfileClient.tsx
+│   │   │   ├── ProfileEditForm.tsx
+│   │   │   ├── CurrentTargetsCard.tsx
+│   │   │   ├── MacroCard.tsx
+│   │   │   └── FeedbackCard.tsx
+│   │   ├── recipes/              # Recipe components
+│   │   │   ├── RecipeCard.tsx
+│   │   │   ├── RecipesGrid.tsx
+│   │   │   ├── RecipesBrowserClient.tsx
+│   │   │   ├── RecipeFilters.tsx
+│   │   │   ├── RecipeModal.tsx
+│   │   │   └── detail/           # Recipe detail subcomponents
+│   │   │       ├── RecipeDetailPage.tsx
+│   │   │       ├── IngredientsList.tsx
+│   │   │       ├── InstructionsList.tsx
+│   │   │       └── MacroSummary.tsx
+│   │   ├── shared/               # Shared components
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   ├── RecipePreviewModal.tsx
+│   │   │   └── SwapRecipeDialog.tsx
+│   │   ├── shopping-list/        # Shopping list components
+│   │   │   ├── ShoppingListClient.tsx
+│   │   │   ├── ShoppingListAccordion.tsx
+│   │   │   ├── ShoppingListItem.tsx
+│   │   │   ├── CategorySection.tsx
+│   │   │   └── EmptyState.tsx
+│   │   ├── layout/               # Layout components
+│   │   │   └── AppShell.tsx
+│   │   └── ui/                   # shadcn/ui components (23 files)
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── dialog.tsx
+│   │       ├── input.tsx
+│   │       ├── progress.tsx
+│   │       ├── charts/           # Recharts wrapper
+│   │       │   └── index.tsx
+│   │       └── ...
+│   │
+│   ├── hooks/                    # Custom React hooks (14 files)
+│   │   ├── useAuth.ts            # Authentication state
+│   │   ├── useUser.ts            # Current user data
+│   │   ├── usePlannedMealsQuery.ts
+│   │   ├── useSwapRecipe.ts
+│   │   ├── useReplacementRecipes.ts
+│   │   ├── useDailyMacros.ts
+│   │   ├── useCalendarDays.ts
+│   │   ├── useMealToggle.ts
+│   │   ├── useWeekMealsCheck.ts
+│   │   ├── useAutoGenerateMealPlan.ts
+│   │   ├── useProfileForm.ts
+│   │   ├── useIngredientEditor.ts
+│   │   ├── useIngredientViewer.ts
+│   │   └── useIsMobile.ts
+│   │
+│   ├── lib/
+│   │   ├── actions/              # Server Actions (business logic)
+│   │   │   ├── feedback.ts
+│   │   │   ├── planned-meals.ts
+│   │   │   ├── profile.ts
+│   │   │   ├── recipes.ts
+│   │   │   └── shopping-list.ts
+│   │   ├── hooks/                # Lib-specific hooks (3 files)
+│   │   │   ├── useAuthCheck.ts
+│   │   │   ├── useAuthPrompt.ts
+│   │   │   └── useRecipesFilter.ts
+│   │   ├── react-query/          # TanStack Query
+│   │   │   ├── query-provider.tsx
+│   │   │   └── queries/
+│   │   │       ├── useRecipeQuery.ts
+│   │   │       └── useRecipesQuery.ts
+│   │   ├── supabase/             # Supabase client setup
+│   │   │   ├── client.ts         # Browser client
+│   │   │   ├── server.ts         # Server client
+│   │   │   └── middleware.ts     # Auth middleware
+│   │   ├── validation/           # Zod schemas
+│   │   │   ├── auth.ts
+│   │   │   ├── feedback.ts
+│   │   │   ├── planned-meals.ts
+│   │   │   ├── profile.ts
+│   │   │   ├── recipes.ts
+│   │   │   └── shopping-list.ts
+│   │   ├── zustand/              # Zustand stores
+│   │   │   └── stores/
+│   │   │       └── useDashboardStore.ts
+│   │   ├── utils/                # Utility functions
+│   │   │   ├── cache-headers.ts
+│   │   │   ├── date-formatting.ts
+│   │   │   ├── rate-limit.ts
+│   │   │   ├── require-auth.ts
+│   │   │   ├── sanitize.ts
+│   │   │   └── type-guards.ts
+│   │   ├── env.ts                # Environment variables validation
+│   │   └── utils.ts              # cn() utility
+│   │
+│   ├── services/                 # Core business logic
+│   │   ├── nutrition-calculator.ts  # BMR/TDEE/Macros
+│   │   ├── meal-plan-generator.ts   # 7-day plan generation
+│   │   └── shopping-list.ts         # Ingredient aggregation
+│   │
+│   └── types/                    # TypeScript types
+│       ├── database.types.ts     # Supabase generated
+│       └── meal-plan-view.types.ts
 │
-├── lib/
-│   ├── supabase/            # Konfiguracja klienta Supabase
-│   │   ├── client.ts        # Client-side client
-│   │   ├── server.ts        # Server-side client (createClient, createAdminClient)
-│   │   └── middleware.ts    # Middleware auth
-│   ├── react-query/         # TanStack Query configuration
-│   │   ├── client.ts        # QueryClient setup
-│   │   └── queries/         # Query hooks
-│   │       ├── useMealPlanQuery.ts
-│   │       ├── useUserProfileQuery.ts
-│   │       ├── useRecipesQuery.ts
-│   │       └── useShoppingListQuery.ts
-│   ├── zustand/             # Zustand stores
-│   │   └── stores/          # Individual stores
-│   │       ├── useUIStore.ts
-│   │       ├── useAuthStore.ts
-│   │       └── useProgressStore.ts
-│   ├── validation/          # Zod schemas (walidacja dla Server Actions)
-│   │   ├── onboarding.ts    # BMR, TDEE validation
-│   │   ├── recipes.ts       # GET /recipes query params, recipe ID
-│   │   ├── planned-meals.ts # GET /planned-meals, PATCH body (discriminated union)
-│   │   ├── mealPlan.ts
-│   │   ├── user.ts
-│   │   └── auth.ts
-│   ├── actions/             # Server Actions (GŁÓWNA LOGIKA BIZNESOWA)
-│   │   ├── recipes.ts       # getRecipes(), getRecipeById()
-│   │   ├── planned-meals.ts # getPlannedMeals(), updatePlannedMeal(), getReplacementRecipes()
-│   │   ├── mealPlans.ts     # Generate, swap meals
-│   │   ├── progress.ts      # Mark as eaten
-│   │   ├── users.ts
-│   │   └── auth.ts
-│   └── utils.ts             # Utility functions
+├── tests/                        # Test files
+│   ├── integration/              # Integration tests
+│   ├── fixtures/                 # Test fixtures
+│   ├── mocks/                    # MSW mocks
+│   └── setup/                    # Test setup
 │
-├── hooks/                   # Custom React hooks
-│   ├── useDebounce.ts
-│   ├── useMediaQuery.ts
-│   └── useMealProgress.ts
-│
-├── types/                   # TypeScript type definitions
-│   ├── database.types.ts    # Supabase generated types
-│   ├── mealPlan.ts
-│   ├── recipe.ts
-│   └── user.ts
-│
-├── constants/               # Constants
-│   ├── macros.ts            # Macro ratios (15/35/50)
-│   ├── bmr.ts               # BMR/TDEE constants
-│   ├── config.ts
-│   └── routes.ts
-│
-├── services/                # Business logic
-│   ├── calculator.ts        # BMR/TDEE calculator
-│   ├── mealGenerator.ts     # Meal plan generation
-│   ├── mealMatcher.ts       # Meal swap algorithm
-│   └── shoppingListAggregator.ts
-│
-├── public/                  # Static assets
-│   ├── images/
-│   │   └── meals/           # Recipe images
-│   ├── icons/
-│   └── fonts/
-│
-└── supabase/
-    ├── migrations/          # Database migrations
-    │   ├── 20250101120000_create_user_profiles.sql
-    │   ├── 20250101130000_create_recipes.sql
-    │   ├── 20250101140000_create_meal_plans.sql
-    │   └── 20250101150000_create_shopping_lists.sql
-    └── seed.sql             # Seed data (recipes database)
+└── supabase/                     # Supabase config (Cloud only)
+    └── migrations/               # SQL migrations
 ```
 
 ---
@@ -172,14 +239,12 @@ lowcarbplaner/
 ```typescript
 // ✅ Poprawnie
 import { Button } from '@/components/ui/button'
-import { supabase } from '@/lib/supabase/client'
-import { useMealPlanQuery } from '@/lib/react-query/queries/useMealPlanQuery'
-import { calculateBMR } from '@/services/calculator'
-import { MACRO_RATIOS } from '@/constants/macros'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
+import { calculateBMR } from '@/services/nutrition-calculator'
 
 // ❌ Niepoprawnie
 import { Button } from '../../../components/ui/button'
-import { supabase } from '../../lib/supabase/client'
 ```
 
 ---
@@ -202,7 +267,10 @@ import { supabase } from '../../lib/supabase/client'
   },
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils"
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/lib/hooks"
   }
 }
 ```
@@ -210,213 +278,36 @@ import { supabase } from '../../lib/supabase/client'
 ### Dodawanie Komponentów
 
 ```bash
-# Pojedynczy komponent
 npx shadcn@latest add button
-
-# Wiele komponentów
-npx shadcn@latest add button input card dialog progress
-
-# Lista dostępnych komponentów
-npx shadcn@latest add
+npx shadcn@latest add card dialog progress
 ```
 
-### Kluczowe Komponenty dla LowCarbPlaner
+### Zainstalowane Komponenty (23)
 
-- **Form Elements**: Button, Input, Select, Checkbox, Radio, Switch
-- **Layout**: Card, Separator, Tabs, Dialog
-- **Feedback**: Alert, Toast, **Progress** (paski postępu), Skeleton
-- **Data Display**: Badge, Tooltip, Popover
-- **Advanced**: Calendar (date picker dla onboardingu)
+accordion, alert, alert-dialog, badge, button, card, checkbox, dialog, form, input, label, progress, radio-group, scroll-area, select, separator, skeleton, slider, sonner, tabs, textarea, visually-hidden, charts
 
 ---
 
-## Stylowanie (Tailwind CSS 4)
+## Intercepting & Parallel Routes
 
-### Design Tokens
+Projekt wykorzystuje zaawansowane wzorce routingu Next.js:
 
-Plik: `app/globals.css`
+### Intercepting Routes `(..)`
 
-```css
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --primary: 142 76% 36%; /* Green for low-carb theme */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
-
-    /* Custom tokens dla macros */
-    --progress-protein: 239 84% 67%; /* Blue */
-    --progress-carbs: 142 76% 36%; /* Green */
-    --progress-fat: 45 93% 47%; /* Yellow */
-    --progress-calories: 262 83% 58%; /* Purple */
-  }
-
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    /* ... */
-  }
-}
-```
-
-### Kluczowe Narzędzia
-
-#### `cn()` Function
-
-Plik: `lib/utils.ts`
-
-```typescript
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-```
-
-**Użycie:**
-
-```typescript
-import { cn } from '@/lib/utils';
-
-// Conditional classes
-<div className={cn('px-4 py-2', isActive && 'bg-primary text-white')} />
-
-// Progress bar colors
-<div className={cn('h-2 rounded',
-  type === 'protein' && 'bg-[hsl(var(--progress-protein))]',
-  type === 'carbs' && 'bg-[hsl(var(--progress-carbs))]'
-)} />
-```
-
----
-
-## TypeScript Configuration
-
-### Konfiguracja (tsconfig.json)
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
-```
-
-### Strict Mode Features
-
-- `noImplicitAny`: true
-- `strictNullChecks`: true
-- `strictFunctionTypes`: true
-- `strictBindCallApply`: true
-- `strictPropertyInitialization`: true
-- `noImplicitThis`: true
-- `alwaysStrict`: true
-
-**Kluczowe dla LowCarbPlaner**: Wszystkie funkcje kalkulacji BMR/TDEE i generowania posiłków muszą być ściśle typowane.
-
----
-
-## Code Formatting (Prettier)
-
-### Konfiguracja (.prettierrc)
-
-```json
-{
-  "printWidth": 100,
-  "tabWidth": 2,
-  "useTabs": false,
-  "semi": true,
-  "singleQuote": false,
-  "quoteProps": "as-needed",
-  "jsxSingleQuote": false,
-  "trailingComma": "es5",
-  "bracketSpacing": true,
-  "bracketSameLine": false,
-  "arrowParens": "always",
-  "endOfLine": "lf"
-}
-```
-
-### Ignorowane Pliki (.prettierignore)
+Używane do wyświetlania modali auth bez opuszczania strony:
 
 ```
-node_modules
-.next
-out
-build
-dist
-.cache
-public
-*.min.js
+app/dashboard/(..)auth/page.tsx    → Przechwytuje /auth z /dashboard
+app/meal-plan/(..)auth/page.tsx    → Przechwytuje /auth z /meal-plan
+app/shopping-list/(..)auth/page.tsx → Przechwytuje /auth z /shopping-list
 ```
 
-### Format Automatyczny
+### Parallel Routes `(.)`
 
-```bash
-# Format all files
-npm run format
+Używane do wyświetlania recipe detail jako modal:
 
-# Check formatting
-npm run format:check
-
-# VS Code (on save)
-# Ctrl+S / Cmd+S
 ```
-
----
-
-## ESLint Configuration
-
-### Konfiguracja (.eslintrc.json)
-
-```json
-{
-  "extends": ["next/core-web-vitals", "next/typescript"],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
-  },
-  "ignorePatterns": ["node_modules/", ".next/", "out/", "build/"]
-}
+app/recipes/(.)[id]/page.tsx       → Recipe detail jako modal overlay
 ```
 
 ---
@@ -425,146 +316,114 @@ npm run format:check
 
 ### Pliki i Katalogi
 
-- **Komponenty**: PascalCase - `MealCard.tsx`, `ProgressBars.tsx`
-- **Utilities**: camelCase - `calculateBMR.ts`, `generateMealPlan.ts`
-- **Hooks**: camelCase z prefixem `use` - `useAuth.ts`, `useMealProgress.ts`
-- **Constants**: UPPER_SNAKE_CASE - `MACRO_RATIOS.ts`, `BMR_CONSTANTS.ts`
-- **Types**: PascalCase - `User.ts`, `MealPlan.ts`, `Recipe.ts`
-
-### Zmienne i Funkcje
-
-```typescript
-// ✅ Poprawnie
-const userName = 'John'
-const dailyCalories = 2000
-const calculateBMR = (weight, height, age, gender) => {}
-const MINIMUM_CALORIES_FEMALE = 1400
-const CARB_PERCENTAGE = 0.15
-
-// ❌ Niepoprawnie
-const UserName = 'John' // PascalCase dla zmiennych
-const daily_calories = 2000 // snake_case
-const CalculateBMR = () => {} // PascalCase dla funkcji
-```
+| Typ            | Konwencja         | Przykład                                |
+| -------------- | ----------------- | --------------------------------------- |
+| Komponenty     | PascalCase        | `MealCard.tsx`, `MacroProgressBar.tsx`  |
+| Hooks          | camelCase z `use` | `useAuth.ts`, `usePlannedMealsQuery.ts` |
+| Utilities      | camelCase         | `nutrition-calculator.ts`               |
+| Server Actions | camelCase         | `planned-meals.ts`                      |
+| Validation     | camelCase         | `profile.ts`                            |
+| Types          | camelCase         | `database.types.ts`                     |
 
 ### Komponenty
 
 ```typescript
-// ✅ Poprawnie
+// ✅ Poprawnie - named export
 export function MealCard() {}
-export default function DashboardPage() {}
-export function ProgressBars() {}
+export function MacroProgressBar() {}
 
-// ❌ Niepoprawnie
-export function mealCard() {} // camelCase
-export default function dashboardpage() {} // lowercase
-```
-
-### Business Logic Naming
-
-```typescript
-// services/calculator.ts
-export const calculateBMR = (params: BMRParams): number => {}
-export const calculateTDEE = (
-  bmr: number,
-  activityLevel: ActivityLevel
-): number => {}
-export const calculateMacros = (calories: number): MacroDistribution => {}
-
-// services/mealGenerator.ts
-export const generateWeeklyMealPlan = (targetCalories: number): MealPlan => {}
-export const findMealReplacement = (
-  currentMeal: Meal,
-  calorieRange: number
-): Meal => {}
-
-// services/shoppingListAggregator.ts
-export const aggregateIngredients = (mealPlan: MealPlan): ShoppingList => {}
+// ✅ Poprawnie - Client Component page
+export default function DashboardClient() {}
 ```
 
 ---
 
 ## Kluczowe Typy Danych
 
-### User Profile
+### ActionResult Pattern
 
 ```typescript
-// types/user.ts
-export interface UserProfile {
-  user_id: string
-  gender: 'male' | 'female'
-  age: number
-  weight: number // kg
-  height: number // cm
-  activity_level: ActivityLevel
-  goal: 'lose_weight' | 'maintain_weight'
-  weight_loss_rate?: 'slow' | 'moderate' | 'fast'
-  target_calories: number
-  target_macros: MacroDistribution
-  onboarding_completed: boolean
-  created_at: string
-  updated_at: string
+type ActionResult<T> = { data: T } | { error: string }
+
+// Użycie
+const result = await getRecipes(params)
+if ('error' in result) {
+  console.error(result.error)
+  return
 }
+const recipes = result.data
+```
 
-export type ActivityLevel =
-  | 'sedentary'
-  | 'light'
-  | 'moderate'
-  | 'active'
-  | 'very_active'
+### Database Types (Supabase Generated)
 
-export interface MacroDistribution {
-  carbs: number // grams
-  protein: number // grams
-  fat: number // grams
+```typescript
+// src/types/database.types.ts - auto-generated
+import type { Database } from '@/types/database.types'
+
+type Recipe = Database['content']['Tables']['recipes']['Row']
+type Profile = Database['public']['Tables']['profiles']['Row']
+type PlannedMeal = Database['public']['Tables']['planned_meals']['Row']
+```
+
+### Enum Types
+
+```typescript
+type GenderEnum = 'male' | 'female'
+type ActivityLevelEnum = 'very_low' | 'low' | 'moderate' | 'high' | 'very_high'
+type GoalEnum = 'weight_maintenance' | 'weight_loss'
+type MealTypeEnum = 'breakfast' | 'lunch' | 'snack' | 'dinner'
+type IngredientCategoryEnum = 'vegetables' | 'meat' | 'dairy' | ...
+```
+
+---
+
+## Stylowanie (Tailwind CSS 4)
+
+### CSS-based Configuration
+
+Tailwind CSS 4 używa konfiguracji w CSS zamiast `tailwind.config.ts`:
+
+```css
+/* app/globals.css */
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #dc2626;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 ```
 
-### Meal Plan
+### cn() Utility
 
 ```typescript
-// types/mealPlan.ts
-export interface MealPlan {
-  id: string
-  user_id: string
-  date: string
-  meals: Meal[]
-  created_at: string
-}
+// src/lib/utils.ts
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
-export interface Meal {
-  id: string
-  type: 'breakfast' | 'lunch' | 'dinner'
-  recipe_id: string
-  recipe: Recipe
-  eaten: boolean
-  modified_ingredients?: ModifiedIngredient[]
-}
-
-export interface Recipe {
-  id: string
-  name: string
-  description: string
-  image_url?: string
-  calories: number
-  protein: number
-  carbs: number
-  fat: number
-  ingredients: Ingredient[]
-  instructions: string[]
-  prep_time: number // minutes
-  cook_time: number // minutes
-}
-
-export interface Ingredient {
-  id: string
-  name: string
-  amount: number
-  unit: string
-  category: string
-  scalable: boolean // Can be modified +/- 10%
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 ```
+
+---
+
+## TypeScript Configuration
+
+### Strict Mode
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+  }
+}
+```
+
+**Kluczowe:** Wszystkie funkcje kalkulacji BMR/TDEE i Server Actions muszą być ściśle typowane.
 
 ---
 

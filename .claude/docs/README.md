@@ -176,7 +176,7 @@ Szczegółowa dokumentacja techniczna podzielona na moduły tematyczne.
 | 12-style-guide      | ~1400 linii     | Design System, komponenty  |
 | **RAZEM**           | **~4500 linii** | **Kompletna dokumentacja** |
 
-**Główny CLAUDE.md**: ~525 linii (zawiera Quick Reference + linki + MVP features)
+**Główny CLAUDE.md**: ~180 linii (Quick Reference + kluczowe informacje)
 
 ---
 
@@ -211,8 +211,8 @@ Dokumentacja jest **living document** - aktualizuj gdy:
 ### Meal Planning
 
 - 7-day rolling plan generation
-- Meal swap algorithm (+/- 15% calories)
-- Ingredient scaling (+/- 10%)
+- Recipe matching: target ± 15% calories
+- Ingredient scaling: ± 10% max change
 - Recipe database integration
 
 ### Progress Tracking

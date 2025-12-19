@@ -167,33 +167,43 @@ npm run build && npm run start
 ### Code Quality
 
 ```bash
+# Walidacja (przed commitem)
+npm run validate             # Type-check + lint + format check
+
 # Linting
-npm run lint                 # Sprawdź błędy
-npm run lint --fix           # Napraw automatyczne błędy
+npm run lint                 # Sprawdź błędy ESLint
+npm run lint:fix             # Napraw automatycznie
 
 # Formatting
-npm run format               # Formatuj wszystkie pliki
+npm run format               # Formatuj wszystkie pliki (Prettier)
 npm run format:check         # Sprawdź formatowanie bez zmian
 
 # Type checking
-npx tsc --noEmit            # Sprawdź typy TypeScript
+npm run type-check           # Sprawdź typy TypeScript
 ```
 
 ### Testing
 
 ```bash
-# Unit tests
+# Unit tests (Vitest)
 npm test                     # Uruchom testy (watch mode)
-npm run test:ci              # Uruchom raz (CI mode)
+npm run test:watch           # Tryb watch (alias)
 npm run test:coverage        # Generuj raport pokrycia
+npm run test:integration     # Tylko testy integracyjne
 
-# E2E tests
-npm run test:e2e            # Uruchom testy Playwright
-npm run test:e2e:ui         # Otwórz Playwright UI
-npm run test:e2e:debug      # Debug mode
+# E2E tests (Playwright)
+npm run test:e2e             # Uruchom wszystkie testy
+npm run test:e2e:ui          # Playwright UI mode
+npm run test:e2e:headed      # Testy z widoczną przeglądarką
+npm run test:e2e:debug       # Debug mode
+npm run test:e2e:chromium    # Tylko Chrome
+npm run test:e2e:firefox     # Tylko Firefox
+npm run test:e2e:webkit      # Tylko Safari
+npm run test:e2e:mobile      # Testy mobilne
+npm run test:e2e:report      # Pokaż raport
 
 # Vitest UI
-npm run test:ui             # Otwórz interaktywny UI
+npm run test:ui              # Otwórz interaktywny UI
 ```
 
 ### Database (Supabase Cloud)
@@ -204,15 +214,20 @@ npm run test:ui             # Otwórz interaktywny UI
 # Połącz z projektem Cloud
 npx supabase link --project-ref <your-project-ref>
 
+# Klonowanie danych (Windows)
+npm run db:clone:win              # Clone schema + test data
+npm run db:clone:full:win         # Full clone with all data
+npm run db:generate-seeds:win     # Generate seed data
+
 # Migracje (na Cloud)
-npx supabase db push --linked       # Zastosuj migracje na Cloud
+npx supabase db push --linked     # Zastosuj migracje na Cloud
 npx supabase migration new nazwa_migracji  # Nowa migracja lokalna
 
 # Typy TypeScript (z Cloud)
 npx supabase gen types typescript --project-id <project-ref> --schema public --schema content > src/types/database.types.ts
 
 # Status (Cloud)
-npx supabase db diff --linked       # Pokaż różnice względem Cloud
+npx supabase db diff --linked     # Pokaż różnice względem Cloud
 ```
 
 ### Inne
@@ -356,13 +371,17 @@ export const logger = {
 
 ### Turbopack
 
-Next.js 15 domyślnie używa Turbopack (szybszy niż Webpack):
+Next.js 16.x obsługuje Turbopack (szybszy niż Webpack):
 
 ```bash
-# Już włączony w `npm run dev`
+# Standardowy dev server
+npm run dev
+
+# Z Turbopack (szybszy)
+npm run dev:turbo
 ```
 
-**Korzyści:**
+**Korzyści Turbopack:**
 
 - 🚀 5-10x szybszy cold start
 - ⚡ Szybsze HMR (Hot Module Replacement)

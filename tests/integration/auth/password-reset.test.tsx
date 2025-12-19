@@ -19,7 +19,7 @@ import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 vi.mock('@/components/auth/ForgotPasswordForm', async () => {
   const actual = await import('../../mocks/ForgotPasswordFormMock')
   return {
-    ForgotPasswordForm: actual.ForgotPasswordForm
+    ForgotPasswordForm: actual.ForgotPasswordForm,
   }
 })
 
@@ -78,9 +78,7 @@ describe('ForgotPasswordForm Component', () => {
       await user.tab()
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/nieprawidłowy.*email/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/nieprawidłowy.*email/i)).toBeInTheDocument()
       })
     })
 
@@ -208,9 +206,7 @@ describe('ForgotPasswordForm Component', () => {
       await user.click(screen.getByRole('button', { name: /wyślij link/i }))
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/wysłaliśmy.*link.*email/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/wysłaliśmy.*link.*email/i)).toBeInTheDocument()
       })
     })
 
@@ -241,7 +237,11 @@ describe('ForgotPasswordForm Component', () => {
   describe('Loading State', () => {
     test('disables email input when isLoading=true', () => {
       render(
-        <ForgotPasswordForm onSubmit={mockSubmit} isLoading={true} error={null} />
+        <ForgotPasswordForm
+          onSubmit={mockSubmit}
+          isLoading={true}
+          error={null}
+        />
       )
 
       expect(screen.getByLabelText(/email/i)).toBeDisabled()
@@ -249,17 +249,23 @@ describe('ForgotPasswordForm Component', () => {
 
     test('disables submit button when isLoading=true', () => {
       render(
-        <ForgotPasswordForm onSubmit={mockSubmit} isLoading={true} error={null} />
+        <ForgotPasswordForm
+          onSubmit={mockSubmit}
+          isLoading={true}
+          error={null}
+        />
       )
 
-      expect(
-        screen.getByRole('button', { name: /wysyłanie/i })
-      ).toBeDisabled()
+      expect(screen.getByRole('button', { name: /wysyłanie/i })).toBeDisabled()
     })
 
     test('shows loading text when isLoading=true', () => {
       render(
-        <ForgotPasswordForm onSubmit={mockSubmit} isLoading={true} error={null} />
+        <ForgotPasswordForm
+          onSubmit={mockSubmit}
+          isLoading={true}
+          error={null}
+        />
       )
 
       expect(screen.getByText(/wysyłanie/i)).toBeInTheDocument()
@@ -378,7 +384,11 @@ describe('ForgotPasswordForm Component', () => {
 
     test('provides aria-busy on submit button when loading', () => {
       render(
-        <ForgotPasswordForm onSubmit={mockSubmit} isLoading={true} error={null} />
+        <ForgotPasswordForm
+          onSubmit={mockSubmit}
+          isLoading={true}
+          error={null}
+        />
       )
 
       const submitButton = screen.getByRole('button', { name: /wysyłanie/i })

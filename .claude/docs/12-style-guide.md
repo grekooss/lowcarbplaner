@@ -506,7 +506,6 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card'
-
 ;<Card variant='default' hoverable>
   <CardHeader>
     {' '}
@@ -584,7 +583,6 @@ import { Badge } from '@/components/ui/badge'
 
 ```tsx
 import { Input } from '@/components/ui/input'
-
 ;<Input type='text' placeholder='Nazwa przepisu' className='w-full' />
 ```
 
@@ -608,7 +606,6 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
-
 ;<Select>
   <SelectTrigger>
     <SelectValue placeholder='Wybierz kategorię' />
@@ -647,7 +644,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-
 ;<Dialog>
   <DialogTrigger asChild>
     <Button>Otwórz</Button>
@@ -690,7 +686,6 @@ import { Progress } from '@/components/ui/progress'
 
 ```tsx
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-
 ;<Alert variant='destructive'>
   <AlertCircle className='h-4 w-4' />
   <AlertTitle>Błąd</AlertTitle>
@@ -1255,7 +1250,6 @@ focus:outline-none
 
 ```tsx
 import { VisuallyHidden } from '@/components/ui/visually-hidden'
-
 ;<Button variant='ghost' size='icon'>
   <X className='size-5' />
   <VisuallyHidden>Zamknij</VisuallyHidden>

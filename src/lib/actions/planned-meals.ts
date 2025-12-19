@@ -16,9 +16,6 @@ import type {
   PlannedMealDTO,
   IngredientOverrides,
   ReplacementRecipeDTO,
-  RecipeDTO,
-  IngredientDTO,
-  RecipeInstructions,
 } from '@/types/dto.types'
 import {
   getPlannedMealsQuerySchema,
@@ -27,86 +24,28 @@ import {
   type GetPlannedMealsQueryInput,
   type UpdatePlannedMealBodyInput,
 } from '@/lib/validation/planned-meals'
+import {
+  transformRecipeToDTO,
+  PLANNED_MEAL_SELECT_FULL,
+} from '@/lib/utils/recipe-transformer'
+import { isValidMealData } from '@/lib/utils/type-guards'
+
+/**
+ * Kody błędów dla akcji planned meals
+ */
+type PlannedMealsErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'UNAUTHORIZED'
+  | 'NOT_FOUND'
+  | 'DATABASE_ERROR'
+  | 'INTERNAL_ERROR'
 
 /**
  * Standardowy typ wyniku Server Action (Discriminated Union)
  */
 type ActionResult<T> =
-  | { data: T; error?: never }
-  | { data?: never; error: string }
-
-/**
- * Transformuje raw recipe row z Supabase do RecipeDTO
- *
- * @param recipe - Raw row z tabeli recipes + joins
- * @returns RecipeDTO - Typowany obiekt zgodny z DTO
- */
-function transformRecipeToDTO(recipe: {
-  id: number
-  name: string
-  instructions: unknown
-  meal_types: unknown
-  tags: string[] | null
-  image_url: string | null
-  difficulty_level: unknown
-  average_rating?: number | null
-  reviews_count?: number
-  prep_time_min?: number | null
-  cook_time_min?: number | null
-  total_calories: number | null
-  total_protein_g: number | null
-  total_carbs_g: number | null
-  total_fats_g: number | null
-  recipe_ingredients?: {
-    base_amount: number
-    unit: string
-    is_scalable: boolean
-    calories: number | null
-    protein_g: number | null
-    carbs_g: number | null
-    fats_g: number | null
-    ingredient: {
-      id: number
-      name: string
-      category: unknown
-    }
-  }[]
-}): RecipeDTO {
-  // Agregacja składników z recipe_ingredients + ingredients
-  const ingredients: IngredientDTO[] = (recipe.recipe_ingredients || []).map(
-    (ri) => ({
-      id: ri.ingredient.id,
-      name: ri.ingredient.name,
-      amount: ri.base_amount,
-      unit: ri.unit,
-      calories: ri.calories || 0,
-      protein_g: ri.protein_g || 0,
-      carbs_g: ri.carbs_g || 0,
-      fats_g: ri.fats_g || 0,
-      category: ri.ingredient.category as IngredientDTO['category'],
-      is_scalable: ri.is_scalable,
-    })
-  )
-
-  return {
-    id: recipe.id,
-    name: recipe.name,
-    instructions: recipe.instructions as RecipeInstructions,
-    meal_types: recipe.meal_types as RecipeDTO['meal_types'],
-    tags: recipe.tags,
-    image_url: recipe.image_url,
-    difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
-    average_rating: recipe.average_rating ?? null,
-    reviews_count: recipe.reviews_count ?? 0,
-    prep_time_minutes: recipe.prep_time_min ?? null,
-    cook_time_minutes: recipe.cook_time_min ?? null,
-    total_calories: recipe.total_calories,
-    total_protein_g: recipe.total_protein_g,
-    total_carbs_g: recipe.total_carbs_g,
-    total_fats_g: recipe.total_fats_g,
-    ingredients,
-  }
-}
+  | { data: T; error?: never; code?: never }
+  | { data?: never; error: string; code: PlannedMealsErrorCode }
 
 /**
  * Transformuje raw planned meal row z Supabase do PlannedMealDTO
@@ -188,6 +127,7 @@ export async function getPlannedMeals(
         error: `Nieprawidłowe parametry zapytania: ${validated.error.issues
           .map((e) => `${e.path.join('.')}: ${e.message}`)
           .join(', ')}`,
+        code: 'VALIDATION_ERROR',
       }
     }
 
@@ -203,51 +143,13 @@ export async function getPlannedMeals(
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return { error: 'Uwierzytelnienie wymagane' }
+      return { error: 'Uwierzytelnienie wymagane', code: 'UNAUTHORIZED' }
     }
 
     // 4. Budowanie zapytania z pełnymi relacjami
     const { data, error } = await supabase
       .from('planned_meals')
-      .select(
-        `
-        id,
-        meal_date,
-        meal_type,
-        is_eaten,
-        ingredient_overrides,
-        created_at,
-        recipe:recipes (
-          id,
-          name,
-          instructions,
-          meal_types,
-          tags,
-          image_url,
-          difficulty_level,
-          prep_time_min,
-          cook_time_min,
-          total_calories,
-          total_protein_g,
-          total_carbs_g,
-          total_fats_g,
-          recipe_ingredients (
-            base_amount,
-            unit,
-            is_scalable,
-            calories,
-            protein_g,
-            carbs_g,
-            fats_g,
-            ingredient:ingredients (
-              id,
-              name,
-              category
-            )
-          )
-        )
-      `
-      )
+      .select(PLANNED_MEAL_SELECT_FULL)
       .eq('user_id', user.id)
       .gte('meal_date', start_date)
       .lte('meal_date', end_date)
@@ -256,22 +158,37 @@ export async function getPlannedMeals(
 
     if (error) {
       console.error('Błąd Supabase w getPlannedMeals:', error)
-      return { error: `Błąd bazy danych: ${error.message}` }
+      return {
+        error: `Błąd bazy danych: ${error.message}`,
+        code: 'DATABASE_ERROR',
+      }
     }
 
     // 5. Transformacja do DTO (filtrujemy posiłki bez przepisu)
-    const meals = (data || [])
-      .filter((meal) => meal.recipe !== null)
-      .map((meal) =>
-        transformPlannedMealToDTO(
-          meal as typeof meal & { recipe: NonNullable<typeof meal.recipe> }
-        )
-      )
+    type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
+    const rawMeals = data ?? []
+    const validMeals: PlannedMealRow[] = []
+
+    for (const meal of rawMeals) {
+      // Skip if meal doesn't have required structure
+      const mealObj = meal as unknown as Record<string, unknown> | null
+      if (
+        mealObj &&
+        typeof mealObj === 'object' &&
+        'id' in mealObj &&
+        'recipe' in mealObj &&
+        mealObj.recipe !== null
+      ) {
+        validMeals.push(mealObj as PlannedMealRow)
+      }
+    }
+
+    const meals = validMeals.map((meal) => transformPlannedMealToDTO(meal))
 
     return { data: meals }
   } catch (err) {
     console.error('Nieoczekiwany błąd w getPlannedMeals:', err)
-    return { error: 'Wewnętrzny błąd serwera' }
+    return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
 
@@ -305,7 +222,10 @@ export async function updatePlannedMeal(
     // 1. Walidacja ID
     const validatedId = mealIdSchema.safeParse(mealId)
     if (!validatedId.success) {
-      return { error: `Nieprawidłowe ID posiłku: ${validatedId.error.message}` }
+      return {
+        error: `Nieprawidłowe ID posiłku: ${validatedId.error.message}`,
+        code: 'VALIDATION_ERROR',
+      }
     }
 
     // 2. Walidacja danych wejściowych
@@ -315,6 +235,7 @@ export async function updatePlannedMeal(
         error: `Nieprawidłowe dane aktualizacji: ${validated.error.issues
           .map((e) => `${e.path.join('.')}: ${e.message}`)
           .join(', ')}`,
+        code: 'VALIDATION_ERROR',
       }
     }
 
@@ -328,7 +249,7 @@ export async function updatePlannedMeal(
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return { error: 'Uwierzytelnienie wymagane' }
+      return { error: 'Uwierzytelnienie wymagane', code: 'UNAUTHORIZED' }
     }
 
     // 5. Wykonanie odpowiedniej akcji na podstawie typu
@@ -357,10 +278,10 @@ export async function updatePlannedMeal(
       )
     }
 
-    return { error: 'Nieznana akcja' }
+    return { error: 'Nieznana akcja', code: 'VALIDATION_ERROR' }
   } catch (err) {
     console.error('Nieoczekiwany błąd w updatePlannedMeal:', err)
-    return { error: 'Wewnętrzny błąd serwera' }
+    return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
 
@@ -382,17 +303,23 @@ async function markMealAsEaten(
 
   if (fetchError) {
     if (fetchError.code === 'PGRST116') {
-      return { error: 'Posiłek nie został znaleziony' }
+      return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
     }
-    return { error: `Błąd bazy danych: ${fetchError.message}` }
+    return {
+      error: `Błąd bazy danych: ${fetchError.message}`,
+      code: 'DATABASE_ERROR',
+    }
   }
 
   if (!existing) {
-    return { error: 'Posiłek nie został znaleziony' }
+    return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
   }
 
   if (existing.user_id !== userId) {
-    return { error: 'Nie masz uprawnień do modyfikacji tego posiłku' }
+    return {
+      error: 'Nie masz uprawnień do modyfikacji tego posiłku',
+      code: 'UNAUTHORIZED',
+    }
   }
 
   // 2. Update
@@ -400,59 +327,29 @@ async function markMealAsEaten(
     .from('planned_meals')
     .update({ is_eaten: isEaten })
     .eq('id', mealId)
-    .select(
-      `
-      id,
-      meal_date,
-      meal_type,
-      is_eaten,
-      ingredient_overrides,
-      created_at,
-      recipe:recipes (
-        id,
-        name,
-        instructions,
-        meal_types,
-        tags,
-        image_url,
-        difficulty_level,
-        prep_time_min,
-        cook_time_min,
-        total_calories,
-        total_protein_g,
-        total_carbs_g,
-        total_fats_g,
-        recipe_ingredients (
-          base_amount,
-          unit,
-          is_scalable,
-          calories,
-          protein_g,
-          carbs_g,
-          fats_g,
-          ingredient:ingredients (
-            id,
-            name,
-            category
-          )
-        )
-      )
-    `
-    )
+    .select(PLANNED_MEAL_SELECT_FULL)
     .single()
 
   if (error) {
-    return { error: `Błąd bazy danych: ${error.message}` }
+    return {
+      error: `Błąd bazy danych: ${error.message}`,
+      code: 'DATABASE_ERROR',
+    }
   }
 
-  if (!data.recipe) {
-    return { error: 'Przepis nie został znaleziony dla tego posiłku' }
+  // Type guard check for recipe
+  type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
+  const mealData = data as unknown
+
+  if (!isValidMealData(mealData)) {
+    return {
+      error: 'Przepis nie został znaleziony dla tego posiłku',
+      code: 'NOT_FOUND',
+    }
   }
 
   return {
-    data: transformPlannedMealToDTO(
-      data as typeof data & { recipe: NonNullable<typeof data.recipe> }
-    ),
+    data: transformPlannedMealToDTO(mealData as PlannedMealRow),
   }
 }
 
@@ -483,17 +380,23 @@ async function swapMealRecipe(
 
   if (fetchError) {
     if (fetchError.code === 'PGRST116') {
-      return { error: 'Posiłek nie został znaleziony' }
+      return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
     }
-    return { error: `Błąd bazy danych: ${fetchError.message}` }
+    return {
+      error: `Błąd bazy danych: ${fetchError.message}`,
+      code: 'DATABASE_ERROR',
+    }
   }
 
   if (!originalMeal) {
-    return { error: 'Posiłek nie został znaleziony' }
+    return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
   }
 
   if (originalMeal.user_id !== userId) {
-    return { error: 'Nie masz uprawnień do modyfikacji tego posiłku' }
+    return {
+      error: 'Nie masz uprawnień do modyfikacji tego posiłku',
+      code: 'UNAUTHORIZED',
+    }
   }
 
   // 2. Pobranie nowego przepisu
@@ -504,18 +407,22 @@ async function swapMealRecipe(
     .single()
 
   if (recipeError || !newRecipe) {
-    return { error: 'Przepis nie został znaleziony' }
+    return { error: 'Przepis nie został znaleziony', code: 'NOT_FOUND' }
   }
 
   // 3. Sprawdzenie czy recipe istnieje
   if (!originalMeal.recipe) {
-    return { error: 'Oryginalny przepis nie został znaleziony' }
+    return {
+      error: 'Oryginalny przepis nie został znaleziony',
+      code: 'NOT_FOUND',
+    }
   }
 
   // 4. Walidacja meal_type
   if (!newRecipe.meal_types.includes(originalMeal.meal_type)) {
     return {
       error: `Przepis nie pasuje do typu posiłku. Wymagany: ${originalMeal.meal_type}, dostępne: ${newRecipe.meal_types.join(', ')}`,
+      code: 'VALIDATION_ERROR',
     }
   }
 
@@ -528,6 +435,7 @@ async function swapMealRecipe(
   if (diffPercent > 15) {
     return {
       error: `Różnica kaloryczna (${diffPercent.toFixed(1)}%) przekracza dozwolone ±15%. Oryginał: ${originalCalories} kcal, nowy: ${newCalories} kcal`,
+      code: 'VALIDATION_ERROR',
     }
   }
 
@@ -539,59 +447,29 @@ async function swapMealRecipe(
       ingredient_overrides: null, // Reset nadpisań
     })
     .eq('id', mealId)
-    .select(
-      `
-      id,
-      meal_date,
-      meal_type,
-      is_eaten,
-      ingredient_overrides,
-      created_at,
-      recipe:recipes (
-        id,
-        name,
-        instructions,
-        meal_types,
-        tags,
-        image_url,
-        difficulty_level,
-        prep_time_min,
-        cook_time_min,
-        total_calories,
-        total_protein_g,
-        total_carbs_g,
-        total_fats_g,
-        recipe_ingredients (
-          base_amount,
-          unit,
-          is_scalable,
-          calories,
-          protein_g,
-          carbs_g,
-          fats_g,
-          ingredient:ingredients (
-            id,
-            name,
-            category
-          )
-        )
-      )
-    `
-    )
+    .select(PLANNED_MEAL_SELECT_FULL)
     .single()
 
   if (error) {
-    return { error: `Błąd bazy danych: ${error.message}` }
+    return {
+      error: `Błąd bazy danych: ${error.message}`,
+      code: 'DATABASE_ERROR',
+    }
   }
 
-  if (!data.recipe) {
-    return { error: 'Przepis nie został znaleziony dla tego posiłku' }
+  // Type guard check for recipe
+  type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
+  const mealData = data as unknown
+
+  if (!isValidMealData(mealData)) {
+    return {
+      error: 'Przepis nie został znaleziony dla tego posiłku',
+      code: 'NOT_FOUND',
+    }
   }
 
   return {
-    data: transformPlannedMealToDTO(
-      data as typeof data & { recipe: NonNullable<typeof data.recipe> }
-    ),
+    data: transformPlannedMealToDTO(mealData as PlannedMealRow),
   }
 }
 
@@ -625,21 +503,30 @@ async function modifyMealIngredients(
 
   if (fetchError) {
     if (fetchError.code === 'PGRST116') {
-      return { error: 'Posiłek nie został znaleziony' }
+      return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
     }
-    return { error: `Błąd bazy danych: ${fetchError.message}` }
+    return {
+      error: `Błąd bazy danych: ${fetchError.message}`,
+      code: 'DATABASE_ERROR',
+    }
   }
 
   if (!meal) {
-    return { error: 'Posiłek nie został znaleziony' }
+    return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
   }
 
   if (meal.user_id !== userId) {
-    return { error: 'Nie masz uprawnień do modyfikacji tego posiłku' }
+    return {
+      error: 'Nie masz uprawnień do modyfikacji tego posiłku',
+      code: 'UNAUTHORIZED',
+    }
   }
 
   if (!meal.recipe) {
-    return { error: 'Przepis nie został znaleziony dla tego posiłku' }
+    return {
+      error: 'Przepis nie został znaleziony dla tego posiłku',
+      code: 'NOT_FOUND',
+    }
   }
 
   // 2. Walidacja każdego override
@@ -651,12 +538,14 @@ async function modifyMealIngredients(
     if (!ingredient) {
       return {
         error: `Składnik o ID ${override.ingredient_id} nie istnieje w przepisie`,
+        code: 'VALIDATION_ERROR',
       }
     }
 
     if (!ingredient.is_scalable) {
       return {
         error: `Składnik o ID ${override.ingredient_id} nie może być skalowany`,
+        code: 'VALIDATION_ERROR',
       }
     }
 
@@ -664,6 +553,7 @@ async function modifyMealIngredients(
     if (override.new_amount <= 0) {
       return {
         error: `Ilość składnika o ID ${override.ingredient_id} musi być większa od 0`,
+        code: 'VALIDATION_ERROR',
       }
     }
 
@@ -676,62 +566,32 @@ async function modifyMealIngredients(
     .from('planned_meals')
     .update({
       ingredient_overrides:
-        overrides.length > 0 ? JSON.parse(JSON.stringify(overrides)) : null,
+        overrides.length > 0 ? structuredClone(overrides) : null,
     })
     .eq('id', mealId)
-    .select(
-      `
-      id,
-      meal_date,
-      meal_type,
-      is_eaten,
-      ingredient_overrides,
-      created_at,
-      recipe:recipes (
-        id,
-        name,
-        instructions,
-        meal_types,
-        tags,
-        image_url,
-        difficulty_level,
-        prep_time_min,
-        cook_time_min,
-        total_calories,
-        total_protein_g,
-        total_carbs_g,
-        total_fats_g,
-        recipe_ingredients (
-          base_amount,
-          unit,
-          is_scalable,
-          calories,
-          protein_g,
-          carbs_g,
-          fats_g,
-          ingredient:ingredients (
-            id,
-            name,
-            category
-          )
-        )
-      )
-    `
-    )
+    .select(PLANNED_MEAL_SELECT_FULL)
     .single()
 
   if (error) {
-    return { error: `Błąd bazy danych: ${error.message}` }
+    return {
+      error: `Błąd bazy danych: ${error.message}`,
+      code: 'DATABASE_ERROR',
+    }
   }
 
-  if (!data.recipe) {
-    return { error: 'Przepis nie został znaleziony dla tego posiłku' }
+  // Type guard check for recipe
+  type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
+  const mealData = data as unknown
+
+  if (!isValidMealData(mealData)) {
+    return {
+      error: 'Przepis nie został znaleziony dla tego posiłku',
+      code: 'NOT_FOUND',
+    }
   }
 
   return {
-    data: transformPlannedMealToDTO(
-      data as typeof data & { recipe: NonNullable<typeof data.recipe> }
-    ),
+    data: transformPlannedMealToDTO(mealData as PlannedMealRow),
   }
 }
 
@@ -758,7 +618,10 @@ export async function getReplacementRecipes(
     // 1. Walidacja ID
     const validatedId = mealIdSchema.safeParse(mealId)
     if (!validatedId.success) {
-      return { error: `Nieprawidłowe ID posiłku: ${validatedId.error.message}` }
+      return {
+        error: `Nieprawidłowe ID posiłku: ${validatedId.error.message}`,
+        code: 'VALIDATION_ERROR',
+      }
     }
 
     // 2. Utworzenie Supabase client
@@ -771,7 +634,7 @@ export async function getReplacementRecipes(
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return { error: 'Uwierzytelnienie wymagane' }
+      return { error: 'Uwierzytelnienie wymagane', code: 'UNAUTHORIZED' }
     }
 
     // 4. Pobranie oryginalnego posiłku z pełnymi danymi
@@ -806,21 +669,30 @@ export async function getReplacementRecipes(
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
-        return { error: 'Posiłek nie został znaleziony' }
+        return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
       }
-      return { error: `Błąd bazy danych: ${fetchError.message}` }
+      return {
+        error: `Błąd bazy danych: ${fetchError.message}`,
+        code: 'DATABASE_ERROR',
+      }
     }
 
     if (!meal) {
-      return { error: 'Posiłek nie został znaleziony' }
+      return { error: 'Posiłek nie został znaleziony', code: 'NOT_FOUND' }
     }
 
     if (meal.user_id !== user.id) {
-      return { error: 'Nie masz uprawnień do przeglądania tego posiłku' }
+      return {
+        error: 'Nie masz uprawnień do przeglądania tego posiłku',
+        code: 'UNAUTHORIZED',
+      }
     }
 
     if (!meal.recipe) {
-      return { error: 'Przepis nie został znaleziony dla tego posiłku' }
+      return {
+        error: 'Przepis nie został znaleziony dla tego posiłku',
+        code: 'NOT_FOUND',
+      }
     }
 
     // 5. Obliczenie aktualnych kalorii z uwzględnieniem ingredient_overrides
@@ -860,7 +732,10 @@ export async function getReplacementRecipes(
       .limit(10)
 
     if (searchError) {
-      return { error: `Błąd bazy danych: ${searchError.message}` }
+      return {
+        error: `Błąd bazy danych: ${searchError.message}`,
+        code: 'DATABASE_ERROR',
+      }
     }
 
     // 6. Dodanie calorie_diff i sortowanie
@@ -887,6 +762,6 @@ export async function getReplacementRecipes(
     return { data: replacementsWithDiff }
   } catch (err) {
     console.error('Nieoczekiwany błąd w getReplacementRecipes:', err)
-    return { error: 'Wewnętrzny błąd serwera' }
+    return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }

@@ -11,20 +11,20 @@ import { useMemo, useState, useEffect } from 'react'
 import {
   PieChart,
   Pie,
-  Cell,
   ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
   YAxis,
-} from 'recharts'
+} from '@/components/ui/charts'
+import { Cell } from 'recharts'
 import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
 
 import { useDailyMacros } from '@/hooks/useDailyMacros'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
-const COLORS = ['var(--primary)', '#ffffff'] // Primary (red) and White
+const COLORS = ['#dc2626', '#ffffff'] // Red (progress) and White (background)
 
 // Color mapping for macros (using CSS variables for consistency)
 const MACRO_COLORS = {

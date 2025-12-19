@@ -11,16 +11,12 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/server'
-import type {
-  RecipeDTO,
-  IngredientDTO,
-  RecipeInstructions,
-} from '@/types/dto.types'
+import type { RecipeDTO } from '@/types/dto.types'
 import {
   recipeQueryParamsSchema,
   type RecipeQueryParamsInput,
 } from '@/lib/validation/recipes'
-import { getRecipeImageUrl } from '@/lib/utils/supabase-storage'
+import { transformRecipeToDTO } from '@/lib/utils/recipe-transformer'
 
 /**
  * Typ odpowiedzi dla listy przepisów (zgodny z planem API)
@@ -33,176 +29,20 @@ type RecipesResponse = {
 }
 
 /**
+ * Kody błędów dla akcji przepisów
+ */
+type RecipeErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'NOT_FOUND'
+  | 'DATABASE_ERROR'
+  | 'INTERNAL_ERROR'
+
+/**
  * Standardowy typ wyniku Server Action (Discriminated Union)
  */
 type ActionResult<T> =
-  | { data: T; error?: never }
-  | { data?: never; error: string }
-
-/**
- * Transformuje raw recipe row z Supabase do RecipeInstructions
- *
- * @param recipe - Raw row z tabeli content.recipes + joins
- * @returns RecipeInstructions - Tablica kroków
- */
-function normalizeInstructions(raw: unknown): RecipeInstructions {
-  const parseSteps = (input: unknown): RecipeInstructions => {
-    if (!Array.isArray(input)) {
-      return []
-    }
-
-    return input
-      .map((item, index) => {
-        if (typeof item === 'string') {
-          const description = item.trim()
-          if (!description) return null
-          return { step: index + 1, description }
-        }
-
-        if (item && typeof item === 'object') {
-          const stepObj = item as Record<string, unknown>
-          const rawDescription =
-            typeof stepObj.description === 'string'
-              ? stepObj.description
-              : typeof stepObj.text === 'string'
-                ? stepObj.text
-                : ''
-          const description = rawDescription.trim()
-          if (!description) return null
-
-          const stepNumber =
-            typeof stepObj.step === 'number' && Number.isFinite(stepObj.step)
-              ? stepObj.step
-              : index + 1
-
-          return {
-            step: stepNumber,
-            description,
-          }
-        }
-
-        return null
-      })
-      .filter(
-        (value): value is { step: number; description: string } =>
-          value !== null
-      )
-  }
-
-  const handleObject = (value: Record<string, unknown>): RecipeInstructions => {
-    const preferredSteps = Array.isArray(value.steps)
-      ? value.steps
-      : Array.isArray(value.step_list)
-        ? value.step_list
-        : []
-
-    let steps = parseSteps(preferredSteps)
-
-    if (steps.length === 0) {
-      const numericKeys = Object.keys(value)
-        .filter((key) => Number.isInteger(Number(key)))
-        .map((key) => value[key])
-
-      steps = parseSteps(numericKeys)
-    }
-
-    return steps
-  }
-
-  if (raw === null || raw === undefined) {
-    return []
-  }
-
-  if (typeof raw === 'string') {
-    try {
-      const parsed = JSON.parse(raw)
-      return normalizeInstructions(parsed)
-    } catch {
-      return []
-    }
-  }
-
-  if (Array.isArray(raw)) {
-    return parseSteps(raw)
-  }
-
-  if (typeof raw === 'object') {
-    return handleObject(raw as Record<string, unknown>)
-  }
-
-  return []
-}
-
-function transformRecipeToDTO(recipe: {
-  id: number
-  name: string
-  instructions: unknown
-  meal_types: unknown
-  tags: string[] | null
-  image_url: string | null
-  difficulty_level: unknown
-  average_rating: number | null
-  reviews_count: number
-  prep_time_min: number | null
-  cook_time_min: number | null
-  total_calories: number | null
-  total_protein_g: number | null
-  total_carbs_g: number | null
-  total_fats_g: number | null
-  recipe_ingredients?: {
-    base_amount: number
-    unit: string
-    is_scalable: boolean
-    calories: number | null
-    protein_g: number | null
-    carbs_g: number | null
-    fats_g: number | null
-    ingredient: {
-      id: number
-      name: string
-      category: unknown
-    }
-  }[]
-}): RecipeDTO {
-  // Agregacja składników z recipe_ingredients + ingredients
-  const ingredients: IngredientDTO[] = (recipe.recipe_ingredients || []).map(
-    (ri) => ({
-      id: ri.ingredient.id,
-      name: ri.ingredient.name,
-      amount: ri.base_amount,
-      unit: ri.unit,
-      calories: ri.calories || 0,
-      protein_g: ri.protein_g || 0,
-      carbs_g: ri.carbs_g || 0,
-      fats_g: ri.fats_g || 0,
-      category: ri.ingredient.category as IngredientDTO['category'],
-      is_scalable: ri.is_scalable,
-    })
-  )
-
-  // Generuj poprawny URL dla zdjęcia z Supabase Storage
-  // Obsługuje zarówno pełne URL-e jak i relatywne ścieżki
-  const cleanImageUrl = getRecipeImageUrl(recipe.image_url)
-
-  return {
-    id: recipe.id,
-    name: recipe.name,
-    instructions: normalizeInstructions(recipe.instructions),
-    meal_types: recipe.meal_types as RecipeDTO['meal_types'],
-    tags: recipe.tags,
-    image_url: cleanImageUrl,
-    difficulty_level: recipe.difficulty_level as RecipeDTO['difficulty_level'],
-    average_rating: recipe.average_rating,
-    reviews_count: recipe.reviews_count,
-    prep_time_minutes: recipe.prep_time_min,
-    cook_time_minutes: recipe.cook_time_min,
-    total_calories: recipe.total_calories,
-    total_protein_g: recipe.total_protein_g,
-    total_carbs_g: recipe.total_carbs_g,
-    total_fats_g: recipe.total_fats_g,
-    ingredients,
-  }
-}
+  | { data: T; error?: never; code?: never }
+  | { data?: never; error: string; code: RecipeErrorCode }
 
 /**
  * GET /recipes - Pobiera listę przepisów z paginacją i filtrowaniem
@@ -231,16 +71,13 @@ export async function getRecipes(
         error: `Nieprawidłowe parametry zapytania: ${validated.error.issues
           .map((e) => `${e.path.join('.')}: ${e.message}`)
           .join(', ')}`,
+        code: 'VALIDATION_ERROR',
       }
     }
 
     const { limit, offset, tags, meal_types } = validated.data
 
     // 2. Utworzenie Supabase Admin client (content schema to publiczne dane)
-    console.log(
-      '[RECIPES] Creating admin client, SERVICE_ROLE_KEY length:',
-      process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0
-    )
     const supabase = createAdminClient()
 
     // 3. Budowanie zapytania z paginacją
@@ -298,11 +135,16 @@ export async function getRecipes(
 
     if (error) {
       console.error('Błąd Supabase w getRecipes:', error)
-      return { error: `Błąd bazy danych: ${error.message}` }
+      return {
+        error: `Błąd bazy danych: ${error.message}`,
+        code: 'DATABASE_ERROR',
+      }
     }
 
-    // 7. Transformacja do DTO
-    const results = (data || []).map(transformRecipeToDTO)
+    // 7. Transformacja do DTO (z przetwarzaniem URL obrazów)
+    const results = (data || []).map((recipe) =>
+      transformRecipeToDTO(recipe, { processImageUrl: true })
+    )
 
     // 8. Generowanie linków next/previous (zgodnie z planem API)
     const totalCount = count ?? 0
@@ -331,6 +173,7 @@ export async function getRecipes(
     console.error('Nieoczekiwany błąd w getRecipes:', err)
     return {
       error: 'Wewnętrzny błąd serwera',
+      code: 'INTERNAL_ERROR',
     }
   }
 }
@@ -357,7 +200,7 @@ export async function getRecipeById(
   try {
     // 1. Walidacja ID
     if (!recipeId || recipeId <= 0) {
-      return { error: 'Nieprawidłowe ID przepisu' }
+      return { error: 'Nieprawidłowe ID przepisu', code: 'VALIDATION_ERROR' }
     }
 
     // 2. Utworzenie Supabase Admin client (content schema to publiczne dane)
@@ -405,18 +248,21 @@ export async function getRecipeById(
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return { error: 'Przepis nie został znaleziony' }
+        return { error: 'Przepis nie został znaleziony', code: 'NOT_FOUND' }
       }
       console.error('Błąd Supabase w getRecipeById:', error)
-      return { error: `Błąd bazy danych: ${error.message}` }
+      return {
+        error: `Błąd bazy danych: ${error.message}`,
+        code: 'DATABASE_ERROR',
+      }
     }
 
-    // 4. Transformacja do DTO
-    const recipe = transformRecipeToDTO(data)
+    // 4. Transformacja do DTO (z przetwarzaniem URL obrazów)
+    const recipe = transformRecipeToDTO(data, { processImageUrl: true })
 
     return { data: recipe }
   } catch (err) {
     console.error('Nieoczekiwany błąd w getRecipeById:', err)
-    return { error: 'Wewnętrzny błąd serwera' }
+    return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }

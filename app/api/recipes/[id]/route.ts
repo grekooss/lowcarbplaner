@@ -13,6 +13,12 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getRecipeById } from '@/lib/actions/recipes'
+import { recipeCacheHeaders } from '@/lib/utils/cache-headers'
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitHeaders,
+} from '@/lib/utils/rate-limit'
 
 /**
  * GET /api/recipes/[id]
@@ -21,10 +27,32 @@ import { getRecipeById } from '@/lib/actions/recipes'
  * GET /api/recipes/101
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 0. Rate limiting check
+    const clientIp = getClientIp(request)
+    const rateLimitResult = rateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
     // 1. Parsowanie ID z URL params
     const { id: idParam } = await params
     const recipeId = parseInt(idParam, 10)
@@ -47,33 +75,29 @@ export async function GET(
 
     // 4. Obsługa błędów z Server Action
     if (result.error) {
-      // 404 Not Found
-      if (result.error.includes('nie został znaleziony')) {
-        return NextResponse.json(
-          {
-            error: {
-              message: result.error,
-              code: 'NOT_FOUND',
-            },
-          },
-          { status: 404 }
-        )
+      const statusMap: Record<string, number> = {
+        VALIDATION_ERROR: 400,
+        NOT_FOUND: 404,
+        DATABASE_ERROR: 500,
+        INTERNAL_ERROR: 500,
       }
 
-      // 500 Internal Server Error
       return NextResponse.json(
         {
           error: {
             message: result.error,
-            code: 'INTERNAL_SERVER_ERROR',
+            code: result.code,
           },
         },
-        { status: 500 }
+        { status: statusMap[result.code] || 500 }
       )
     }
 
-    // 5. Zwrócenie sukcesu (200 OK)
-    return NextResponse.json(result.data, { status: 200 })
+    // 5. Zwrócenie sukcesu (200 OK) z cache headers
+    return NextResponse.json(result.data, {
+      status: 200,
+      headers: recipeCacheHeaders,
+    })
   } catch (err) {
     // 6. Catch-all dla nieoczekiwanych błędów
     console.error('Nieoczekiwany błąd w GET /api/recipes/[id]:', err)

@@ -1407,7 +1407,7 @@ touch app/shopping-list/error.tsx
   - Skeleton dla InfoBanner
   - Skeleton dla Accordion (3-4 kategorie z items)
 
-  6.4. Implementuj error.tsx:
+    6.4. Implementuj error.tsx:
 
 - Error boundary component
 - Button "Spróbuj ponownie" z reset()

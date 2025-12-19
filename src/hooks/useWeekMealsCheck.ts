@@ -7,6 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { getPlannedMeals } from '@/lib/actions/planned-meals'
+import { formatLocalDate } from '@/lib/utils/date-formatting'
 
 /**
  * Hook do sprawdzania kompletności tygodniowego planu posiłków
@@ -23,14 +24,6 @@ import { getPlannedMeals } from '@/lib/actions/planned-meals'
  * ```
  */
 export function useWeekMealsCheck() {
-  // Format daty lokalnie (bez konwersji do UTC)
-  const formatLocalDate = (date: Date): string => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
   // Dzisiejsza data (początek dnia)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -58,14 +51,6 @@ export function useWeekMealsCheck() {
       const mealsCount = meals.length
       const expectedMealsCount = 7 * 3 // 7 dni × 3 posiłki
       const hasIncompletePlan = mealsCount < expectedMealsCount
-
-      console.log('🔍 Week meals check:', {
-        startDate,
-        endDateStr,
-        mealsCount,
-        expectedMealsCount,
-        hasIncompletePlan,
-      })
 
       return {
         mealsCount,

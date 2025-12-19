@@ -5,7 +5,11 @@
  */
 
 import type { PlannedMealDTO } from '@/types/dto.types'
-import { testRecipeBreakfast, testRecipeLunch, testRecipeDinner } from './recipes'
+import {
+  testRecipeBreakfast,
+  testRecipeLunch,
+  testRecipeDinner,
+} from './recipes'
 
 export const testPlannedMeals: PlannedMealDTO[] = [
   // Dzień 1: 2025-01-15

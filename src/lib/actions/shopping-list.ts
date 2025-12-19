@@ -87,20 +87,13 @@ export async function getShoppingList(
     const userId = user.id
 
     // 3. Generowanie listy zakupów przez service layer
-    const startTime = performance.now()
     const shoppingList = await generateShoppingList(
       userId,
       start_date,
       end_date
     )
-    const endTime = performance.now()
 
-    // 4. Logowanie performance metrics
-    console.log(
-      `Shopping list generated in ${Math.round(endTime - startTime)}ms for user ${userId} (${start_date} to ${end_date})`
-    )
-
-    // 5. Zwrócenie wyniku
+    // 4. Zwrócenie wyniku
     return {
       data: shoppingList,
     }

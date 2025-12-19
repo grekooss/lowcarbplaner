@@ -26,13 +26,8 @@ export default async function OnboardingPage() {
 
   // Redirect to auth if not authenticated
   if (authError || !user) {
-    console.log('[ONBOARDING] No user, redirecting to auth', {
-      authError: authError?.message,
-    })
     redirect('/auth')
   }
-
-  console.log('[ONBOARDING] User found:', user.id.slice(0, 8))
 
   // Check if user has completed onboarding (has accepted disclaimer)
   const { data: profile, error: profileError } = await supabase

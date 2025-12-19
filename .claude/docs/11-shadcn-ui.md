@@ -20,19 +20,36 @@ Projekt wykorzystuje **@shadcn/ui** - kolekcję pięknie zaprojektowanych, dost�
 Komponenty są dostępne w folderze zgodnym z `components.json`:
 
 ```
-components/
-  ui/
-    button.tsx
-    card.tsx
-    input.tsx
-    label.tsx
-    tabs.tsx
-    ...
+src/components/ui/
+├── accordion.tsx
+├── alert.tsx
+├── alert-dialog.tsx
+├── badge.tsx
+├── button.tsx
+├── card.tsx
+├── checkbox.tsx
+├── charts/
+│   └── index.tsx      # Recharts wrapper
+├── dialog.tsx
+├── form.tsx
+├── input.tsx
+├── label.tsx
+├── progress.tsx
+├── radio-group.tsx
+├── scroll-area.tsx
+├── select.tsx
+├── separator.tsx
+├── skeleton.tsx
+├── slider.tsx
+├── sonner.tsx         # Toast notifications
+├── tabs.tsx
+├── textarea.tsx
+└── visually-hidden.tsx
 ```
 
-### Obecne Zainstalowane Komponenty
+### Zainstalowane Komponenty (23)
 
-Sprawdź folder `components/ui/` aby zobaczyć aktualnie zainstalowane komponenty.
+accordion, alert, alert-dialog, badge, button, card, checkbox, charts, dialog, form, input, label, progress, radio-group, scroll-area, select, separator, skeleton, slider, sonner, tabs, textarea, visually-hidden
 
 ---
 
@@ -228,7 +245,8 @@ Komponenty są w pełni edytowalne - znajdują się w folderze projektu:
 ```tsx
 // components/ui/button.tsx
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
@@ -411,7 +429,7 @@ export function InteractiveMealCard() {
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   }
 }

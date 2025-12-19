@@ -8,6 +8,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -59,6 +60,8 @@ export function RecipesBrowserClient({
   initialData,
   initialFilters,
 }: RecipesBrowserClientProps) {
+  const router = useRouter()
+
   // Stan lokalny dla widoku i sortowania
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [sortBy, setSortBy] = useState<SortOption>('calories')
@@ -211,26 +214,18 @@ export function RecipesBrowserClient({
   }
 
   const openStepMode = () => {
-    console.log('openStepMode called! totalSteps:', totalSteps)
     setCurrentStep(1)
     setIsStepMode(true)
   }
-
-  // DEBUG
-  console.log('RecipesBrowserClient DEBUG:', {
-    isStepMode,
-    totalSteps,
-    currentStep,
-  })
 
   const closeStepMode = () => {
     setIsStepMode(false)
   }
 
   // Handle Add to Meal Plan
-  const handleAddToMealPlan = (recipeId: number) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleAddToMealPlan = (_recipeId: number) => {
     // TODO: Implementacja dodawania do planu posiłków
-    console.log('Add to meal plan:', recipeId)
   }
 
   // Initial loading - show spinner for entire page
@@ -293,10 +288,7 @@ export function RecipesBrowserClient({
                 Wystąpił błąd:{' '}
                 {error?.message || 'Nie udało się załadować przepisów'}
               </p>
-              <Button
-                variant='outline'
-                onClick={() => window.location.reload()}
-              >
+              <Button variant='outline' onClick={() => router.refresh()}>
                 Spróbuj ponownie
               </Button>
             </div>

@@ -9,138 +9,153 @@
  */
 
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
-import { updatePlannedMeal, getReplacementRecipes } from '@/lib/actions/planned-meals'
-import { testRecipeLunch, testRecipeDinner, createRecipeWithCalories } from '../../fixtures/recipes'
+import {
+  updatePlannedMeal,
+  getReplacementRecipes,
+} from '@/lib/actions/planned-meals'
+import {
+  testRecipeLunch,
+  testRecipeDinner,
+  createRecipeWithCalories,
+} from '../../fixtures/recipes'
 
 // Create recipes with similar calories for testing (within 15% tolerance)
 const originalRecipe = createRecipeWithCalories('lunch', 600, 'Original Lunch')
-const replacementRecipe = createRecipeWithCalories('lunch', 650, 'Replacement Lunch') // 8.3% difference
+const replacementRecipe = createRecipeWithCalories(
+  'lunch',
+  650,
+  'Replacement Lunch'
+) // 8.3% difference
 
 // Create mock factory function
 const createMockSupabaseClient = () => {
   const createQueryBuilder = (tableName: string) => {
-      const builder: any = {
-        _table: tableName,
-        _selectCalled: false,
-        _eqId: null,
+    const builder: any = {
+      _table: tableName,
+      _selectCalled: false,
+      _eqId: null,
 
-        select: vi.fn(function (this: any, columns?: string) {
-          this._selectCalled = true
-          this._selectColumns = columns
-          return this
-        }),
-        update: vi.fn(function (this: any, data: any) {
-          this._updateData = data
-          return this
-        }),
-        eq: vi.fn(function (this: any, column: string, value: any) {
-          if (column === 'id') {
-            this._eqId = value
-          }
-          if (column === 'user_id') {
-            this._eqUserId = value
-          }
-          return this
-        }),
-        single: vi.fn(function (this: any) {
-          // For update operations (when update was called)
-          if (this._updateData) {
+      select: vi.fn(function (this: any, columns?: string) {
+        this._selectCalled = true
+        this._selectColumns = columns
+        return this
+      }),
+      update: vi.fn(function (this: any, data: any) {
+        this._updateData = data
+        return this
+      }),
+      eq: vi.fn(function (this: any, column: string, value: any) {
+        if (column === 'id') {
+          this._eqId = value
+        }
+        if (column === 'user_id') {
+          this._eqUserId = value
+        }
+        return this
+      }),
+      single: vi.fn(function (this: any) {
+        // For update operations (when update was called)
+        if (this._updateData) {
+          return Promise.resolve({
+            data: {
+              id: this._eqId || 123,
+              user_id: 'test-user-id',
+              meal_type: 'lunch',
+              meal_date: '2025-01-15',
+              is_eaten: false,
+              ingredient_overrides: null,
+              created_at: '2025-01-14T00:00:00Z',
+              recipe: replacementRecipe, // After swap
+            },
+            error: null,
+          })
+        }
+        // For planned_meals table (select only)
+        if (this._table === 'planned_meals') {
+          // Check if this is a nested select with recipe:recipes (for getReplacementRecipes)
+          if (
+            this._selectColumns &&
+            this._selectColumns.includes('recipe:recipes')
+          ) {
             return Promise.resolve({
               data: {
-                id: this._eqId || 123,
                 user_id: 'test-user-id',
                 meal_type: 'lunch',
-                meal_date: '2025-01-15',
-                is_eaten: false,
                 ingredient_overrides: null,
-                created_at: '2025-01-14T00:00:00Z',
-                recipe: replacementRecipe, // After swap
-              },
-              error: null,
-            })
-          }
-          // For planned_meals table (select only)
-          if (this._table === 'planned_meals') {
-            // Check if this is a nested select with recipe:recipes (for getReplacementRecipes)
-            if (this._selectColumns && this._selectColumns.includes('recipe:recipes')) {
-              return Promise.resolve({
-                data: {
-                  user_id: 'test-user-id',
-                  meal_type: 'lunch',
-                  ingredient_overrides: null,
-                  recipe: {
-                    id: originalRecipe.id,
-                    total_calories: originalRecipe.total_calories,
-                    total_protein_g: originalRecipe.total_protein_g,
-                    total_carbs_g: originalRecipe.total_carbs_g,
-                    total_fats_g: originalRecipe.total_fats_g,
-                    recipe_ingredients: originalRecipe.ingredients?.map(ing => ({
+                recipe: {
+                  id: originalRecipe.id,
+                  total_calories: originalRecipe.total_calories,
+                  total_protein_g: originalRecipe.total_protein_g,
+                  total_carbs_g: originalRecipe.total_carbs_g,
+                  total_fats_g: originalRecipe.total_fats_g,
+                  recipe_ingredients:
+                    originalRecipe.ingredients?.map((ing) => ({
                       base_amount: ing.amount || 100,
                       calories: ing.calories || 0,
                       protein_g: ing.protein_g || 0,
                       carbs_g: ing.carbs_g || 0,
                       fats_g: ing.fats_g || 0,
                       ingredient: {
-                        id: ing.id
-                      }
-                    })) || []
-                  }
+                        id: ing.id,
+                      },
+                    })) || [],
                 },
-                error: null,
-              })
-            }
-            // Regular select for updatePlannedMeal
-            return Promise.resolve({
-              data: {
-                id: 123,
-                user_id: 'test-user-id',
-                meal_type: 'lunch',
-                meal_date: '2025-01-15',
-                is_eaten: false,
-                ingredient_overrides: null,
-                created_at: '2025-01-14T00:00:00Z',
-                recipe: originalRecipe,
               },
               error: null,
             })
           }
-          // For recipes table
-          if (this._table === 'recipes') {
-            return Promise.resolve({
-              data: {
-                id: this._eqId || replacementRecipe.id,
-                meal_types: replacementRecipe.meal_types,
-                total_calories: replacementRecipe.total_calories,
-              },
-              error: null,
-            })
-          }
-          return Promise.resolve({ data: null, error: { message: 'Not found' } })
-        }),
-        gte: vi.fn(function (this: any) {
-          return this
-        }),
-        lte: vi.fn(function (this: any) {
-          return this
-        }),
-        contains: vi.fn(function (this: any) {
-          return this
-        }),
-        neq: vi.fn(function (this: any) {
-          return this
-        }),
-        order: vi.fn(function (this: any) {
-          return this
-        }),
-        limit: vi.fn(function (this: any) {
+          // Regular select for updatePlannedMeal
           return Promise.resolve({
-            data: [replacementRecipe],
+            data: {
+              id: 123,
+              user_id: 'test-user-id',
+              meal_type: 'lunch',
+              meal_date: '2025-01-15',
+              is_eaten: false,
+              ingredient_overrides: null,
+              created_at: '2025-01-14T00:00:00Z',
+              recipe: originalRecipe,
+            },
             error: null,
           })
-        }),
-      }
-      return builder
+        }
+        // For recipes table
+        if (this._table === 'recipes') {
+          return Promise.resolve({
+            data: {
+              id: this._eqId || replacementRecipe.id,
+              meal_types: replacementRecipe.meal_types,
+              total_calories: replacementRecipe.total_calories,
+            },
+            error: null,
+          })
+        }
+        return Promise.resolve({ data: null, error: { message: 'Not found' } })
+      }),
+      gte: vi.fn(function (this: any) {
+        return this
+      }),
+      lte: vi.fn(function (this: any) {
+        return this
+      }),
+      contains: vi.fn(function (this: any) {
+        return this
+      }),
+      neq: vi.fn(function (this: any) {
+        return this
+      }),
+      order: vi.fn(function (this: any) {
+        return this
+      }),
+      limit: vi.fn(function (this: any) {
+        return Promise.resolve({
+          data: [replacementRecipe],
+          error: null,
+        })
+      }),
     }
+    return builder
+  }
 
   return {
     auth: {
@@ -163,7 +178,9 @@ describe('Recipe Swapping', () => {
     vi.clearAllMocks()
     // Restore original mock after each test
     const { createServerClient } = await import('@/lib/supabase/server')
-    vi.mocked(createServerClient).mockImplementation(() => createMockSupabaseClient())
+    vi.mocked(createServerClient).mockImplementation(() =>
+      createMockSupabaseClient()
+    )
   })
 
   describe('updatePlannedMeal - swap_recipe action', () => {
@@ -253,21 +270,24 @@ describe('Recipe Swapping', () => {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValueOnce({
-            data: {
-              user_id: 'test-user-id',
-              meal_type: 'lunch',
-              recipe: { id: 102, total_calories: 600 },
-            },
-            error: null,
-          }).mockResolvedValueOnce({
-            data: {
-              id: 999,
-              meal_types: ['lunch'],
-              total_calories: 800, // 33% różnica - za dużo!
-            },
-            error: null,
-          }),
+          single: vi
+            .fn()
+            .mockResolvedValueOnce({
+              data: {
+                user_id: 'test-user-id',
+                meal_type: 'lunch',
+                recipe: { id: 102, total_calories: 600 },
+              },
+              error: null,
+            })
+            .mockResolvedValueOnce({
+              data: {
+                id: 999,
+                meal_types: ['lunch'],
+                total_calories: 800, // 33% różnica - za dużo!
+              },
+              error: null,
+            }),
         }),
       } as any)
 

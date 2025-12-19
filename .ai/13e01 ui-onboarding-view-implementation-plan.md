@@ -1852,7 +1852,7 @@ touch src/hooks/useOnboardingForm.ts
   - `calculatedTargets`
   - `weightLossOptions`
 
-  3.3. Testy jednostkowe:
+    3.3. Testy jednostkowe:
 
 ```bash
 touch src/hooks/__tests__/useOnboardingForm.test.ts

@@ -16,6 +16,7 @@ import { createServerClient as createClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
+import { env } from '@/lib/env'
 
 /**
  * Tworzy Supabase client dla Server Components i Server Actions
@@ -46,8 +47,8 @@ export async function createServerClient() {
   const cookieStore = await cookies()
 
   return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -91,15 +92,9 @@ export async function createServerClient() {
  * ```
  */
 export function createAdminClient() {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'SUPABASE_SERVICE_ROLE_KEY nie jest ustawiony w zmiennych środowiskowych'
-    )
-  }
-
   return createSupabaseClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY,
     {
       auth: {
         persistSession: false,

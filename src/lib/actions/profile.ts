@@ -13,6 +13,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { calculateNutritionTargets } from '@/services/nutrition-calculator'
+import { formatLocalDate } from '@/lib/utils/date-formatting'
 import type {
   CreateProfileCommand,
   CreateProfileResponseDTO,
@@ -527,9 +528,8 @@ export async function generateMealPlan(): Promise<
 
     // 3. Sprawdzenie które dni wymagają wygenerowania planu
     // 3a. Wyczyść stare plany posiłków (dni przed dzisiejszym)
-    const { cleanupOldMealPlans } = await import(
-      '@/services/meal-plan-generator'
-    )
+    const { cleanupOldMealPlans } =
+      await import('@/services/meal-plan-generator')
     try {
       await cleanupOldMealPlans(userId)
     } catch (cleanupError) {
@@ -540,14 +540,6 @@ export async function generateMealPlan(): Promise<
     }
 
     const { findMissingDays } = await import('@/services/meal-plan-generator')
-
-    // Format daty lokalnie (bez konwersji do UTC)
-    const formatLocalDate = (date: Date): string => {
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
-    }
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -576,11 +568,6 @@ export async function generateMealPlan(): Promise<
         }
       }
 
-      console.log(
-        `🤖 Generowanie planu dla ${missingDays.length} brakujących dni:`,
-        missingDays
-      )
-
       // Generuj plan tylko dla brakujących dni
       const { generateDayPlan } = await import('@/services/meal-plan-generator')
       plannedMeals = []
@@ -594,10 +581,6 @@ export async function generateMealPlan(): Promise<
         })
         plannedMeals.push(...dayPlan)
       }
-
-      console.log(
-        `✅ Wygenerowano ${plannedMeals.length} posiłków dla ${missingDays.length} dni`
-      )
     } catch (generatorError) {
       console.error('Błąd generatora planu:', generatorError)
       return {

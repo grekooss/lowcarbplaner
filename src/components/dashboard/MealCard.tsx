@@ -6,7 +6,7 @@
  * Glassmorphism style meal card with stepper design.
  */
 
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import Image from 'next/image'
 import {
   Flame,
@@ -67,7 +67,7 @@ const formatNumber = (
   return String(Number(value.toFixed(1)))
 }
 
-export function MealCard({
+export const MealCard = memo(function MealCard({
   meal,
   showSwapButton = false,
   enableEatenCheckbox = true,
@@ -280,4 +280,4 @@ export function MealCard({
       />
     </>
   )
-}
+})

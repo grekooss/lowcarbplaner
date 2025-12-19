@@ -36,15 +36,6 @@ export interface RecipeModalState {
 }
 
 /**
- * Stan modala z zamienników
- */
-export interface ReplacementsModalState {
-  isOpen: boolean
-  mealId: number | null
-  mealType: 'breakfast' | 'lunch' | 'dinner' | null
-}
-
-/**
  * Mapowanie typu posiłku na polską nazwę
  */
 export const MEAL_TYPE_LABELS: Record<

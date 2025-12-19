@@ -14,53 +14,65 @@ Comprehensive integration test suite for the LowCarbPlaner MVP.
 ### 📁 Implemented Test Suites
 
 #### 1. Authentication (3 files, ~60 tests)
+
 - ✅ **registration.test.ts** - Email/password validation, password strength, duplicate handling
 - ✅ **login.test.ts** - Email/password auth, Google OAuth, session management
 - ✅ **password-reset.test.ts** - Forgot password flow, token validation, security
 
 #### 2. Dashboard (1 file, ~40 tests)
+
 - ✅ **daily-view.test.ts** - Meal display, calendar navigation, macro progress, auto-generation
 
 #### 3. Profile (1 file, ~35 tests)
+
 - ✅ **update-goals.test.ts** - Weight updates, activity changes, macro recalculation, feedback
 
 #### 4. Shopping List (1 file, ~30 tests)
+
 - ✅ **aggregation.test.ts** - 6-day aggregation, categories, localStorage, checkboxes
 
 #### 5. Meal Plan Operations (2 files, ~23 tests)
+
 - ✅ **swap-recipe.test.ts** - Recipe swapping, calorie validation, overrides reset
 - ✅ **ingredient-scaling.test.ts** - Scalable ingredients, validation, macro calculation
 
 #### 6. Services (2 files, ~47 tests)
+
 - ✅ **meal-plan-generator.test.ts** - 7-day plans, recipe selection, optimization
 - ✅ **nutrition-calculator.test.ts** - BMR/TDEE calculation, macro split
 
 ### 🛠️ Test Infrastructure
 
 #### Configuration
+
 - ✅ **vitest.config.ts** - Main test configuration with coverage thresholds
 - ✅ **package.json** - All testing dependencies and scripts
 
 #### Setup Files
+
 - ✅ **tests/setup/setup-tests.ts** - Global setup with MSW server
 - ✅ **tests/setup/msw-handlers.ts** - Mock HTTP handlers for Supabase
 
 #### Helpers
+
 - ✅ **tests/helpers/test-utils.tsx** - Custom render with QueryClient provider
 - ✅ **tests/helpers/test-supabase.ts** - Mock Supabase client factory
 
 #### Fixtures
+
 - ✅ **tests/fixtures/users.ts** - User test data
 - ✅ **tests/fixtures/profiles.ts** - Profile test data
 - ✅ **tests/fixtures/recipes.ts** - Recipe test data with ingredients
 - ✅ **tests/fixtures/planned-meals.ts** - Planned meals test data
 
 #### Documentation
+
 - ✅ **tests/README.md** - Comprehensive documentation with examples
 
 ## 🚀 Next Steps
 
 ### Option 1: Run Tests
+
 ```bash
 # Install dependencies
 npm install
@@ -76,18 +88,21 @@ npm run test:coverage
 ```
 
 ### Option 2: Implement Missing Tests
+
 - [ ] **Onboarding Calculator** - Initial profile setup wizard
 - [ ] **Feedback Mechanism** - UI components for user feedback
 - [ ] **Recipe Detail View** - Recipe display and interaction
 - [ ] **Recipe Search & Filters** - Search and filtering functionality
 
 ### Option 3: Add E2E Tests
+
 - [ ] **Playwright Setup** - E2E testing framework
 - [ ] **User Flows** - Complete user journeys
 - [ ] **Visual Regression** - Component visual testing
 - [ ] **Performance Tests** - Load time and performance metrics
 
 ### Option 4: CI/CD Integration
+
 - [ ] **GitHub Actions** - Automated test execution
 - [ ] **Pre-commit Hooks** - Run tests before commit
 - [ ] **Coverage Reports** - Automated coverage tracking
@@ -105,17 +120,18 @@ npm run test:coverage
 
 ## 🎯 Coverage Targets
 
-| Area | Target | Notes |
-|------|--------|-------|
-| Server Actions | ≥90% | Critical business logic |
-| Services | ≥95% | Core calculation engines |
-| Hooks | ≥85% | State management logic |
-| Components | ≥80% | UI rendering and interactions |
-| Validators | 100% | Input validation functions |
+| Area           | Target | Notes                         |
+| -------------- | ------ | ----------------------------- |
+| Server Actions | ≥90%   | Critical business logic       |
+| Services       | ≥95%   | Core calculation engines      |
+| Hooks          | ≥85%   | State management logic        |
+| Components     | ≥80%   | UI rendering and interactions |
+| Validators     | 100%   | Input validation functions    |
 
 ## 📚 Key Testing Patterns
 
 ### 1. Component Testing with Providers
+
 ```typescript
 import { render } from '../../helpers/test-utils'
 
@@ -126,6 +142,7 @@ test('renders with query client', () => {
 ```
 
 ### 2. User Interaction Testing
+
 ```typescript
 import userEvent from '@testing-library/user-event'
 
@@ -138,6 +155,7 @@ test('handles click', async () => {
 ```
 
 ### 3. Async Operations Testing
+
 ```typescript
 test('loads data', async () => {
   render(<DataComponent />)
@@ -148,6 +166,7 @@ test('loads data', async () => {
 ```
 
 ### 4. localStorage Testing
+
 ```typescript
 test('persists state', async () => {
   render(<Component />)
@@ -160,6 +179,7 @@ test('persists state', async () => {
 ## ✅ Quality Checklist
 
 Before committing test changes:
+
 - [ ] All tests pass (`npm test`)
 - [ ] Coverage ≥80% (`npm run test:coverage`)
 - [ ] No TypeScript errors (`npm run type-check`)

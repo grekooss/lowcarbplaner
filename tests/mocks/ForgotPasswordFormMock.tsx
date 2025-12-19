@@ -13,7 +13,12 @@ export interface ForgotPasswordFormProps {
   success: boolean
 }
 
-export function ForgotPasswordForm({ onSubmit, isLoading, error, success }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({
+  onSubmit,
+  isLoading,
+  error,
+  success,
+}: ForgotPasswordFormProps) {
   const [emailError, setEmailError] = useState('')
 
   const validateEmail = (val: string) => {
@@ -32,7 +37,8 @@ export function ForgotPasswordForm({ onSubmit, isLoading, error, success }: Forg
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
-    const emailVal = (form.elements.namedItem('email') as HTMLInputElement).value
+    const emailVal = (form.elements.namedItem('email') as HTMLInputElement)
+      .value
 
     const emailValid = validateEmail(emailVal)
 
@@ -43,38 +49,41 @@ export function ForgotPasswordForm({ onSubmit, isLoading, error, success }: Forg
 
   if (success) {
     return (
-      <div data-testid="success-message" role="status">
+      <div data-testid='success-message' role='status'>
         <h2>Link resetowania wysłany</h2>
-        <p>Sprawdź swoją skrzynkę pocztową. Jeśli konto istnieje, otrzymasz link do zresetowania hasła.</p>
-        <a href="/auth/login">Powrót do logowania</a>
+        <p>
+          Sprawdź swoją skrzynkę pocztową. Jeśli konto istnieje, otrzymasz link
+          do zresetowania hasła.
+        </p>
+        <a href='/auth/login'>Powrót do logowania</a>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} data-testid="forgot-password-form">
+    <form onSubmit={handleSubmit} data-testid='forgot-password-form'>
       <p>Podaj adres email, a wyślemy link resetujący hasło.</p>
       <div>
-        <label htmlFor="email">Email</label>
+        <label htmlFor='email'>Email</label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id='email'
+          name='email'
+          type='email'
           disabled={isLoading}
           aria-invalid={emailError ? 'true' : 'false'}
           aria-describedby={emailError ? 'email-error' : undefined}
           onBlur={(e) => validateEmail(e.target.value)}
         />
-        {emailError && <span id="email-error">{emailError}</span>}
+        {emailError && <span id='email-error'>{emailError}</span>}
       </div>
 
-      {error && <div role="alert">{error}</div>}
+      {error && <div role='alert'>{error}</div>}
 
-      <button type="submit" disabled={isLoading} aria-busy={isLoading}>
+      <button type='submit' disabled={isLoading} aria-busy={isLoading}>
         {isLoading ? 'Wysyłanie...' : 'Wyślij link resetowania'}
       </button>
 
-      <a href="/auth/login">Powrót do logowania</a>
+      <a href='/auth/login'>Powrót do logowania</a>
     </form>
   )
 }

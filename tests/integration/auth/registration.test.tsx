@@ -20,7 +20,7 @@ import { RegisterForm } from '@/components/auth/RegisterForm'
 vi.mock('@/components/auth/RegisterForm', async () => {
   const actual = await import('../../mocks/RegisterFormMock')
   return {
-    RegisterForm: actual.RegisterForm
+    RegisterForm: actual.RegisterForm,
   }
 })
 
@@ -69,9 +69,7 @@ describe('RegisterForm Component', () => {
       await user.tab()
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/nieprawidłowy.*email/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/nieprawidłowy.*email/i)).toBeInTheDocument()
       })
     })
 
@@ -107,9 +105,7 @@ describe('RegisterForm Component', () => {
       await user.tab()
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/hasło.*minimum.*8.*znak/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/hasło.*minimum.*8.*znak/i)).toBeInTheDocument()
       })
     })
 
@@ -182,9 +178,7 @@ describe('RegisterForm Component', () => {
       await user.tab()
 
       await waitFor(() => {
-        expect(
-          screen.queryByText(/hasła.*nie pasują/i)
-        ).not.toBeInTheDocument()
+        expect(screen.queryByText(/hasła.*nie pasują/i)).not.toBeInTheDocument()
       })
     })
   })
@@ -256,7 +250,9 @@ describe('RegisterForm Component', () => {
 
   describe('Loading State', () => {
     test('disables inputs when isLoading=true', () => {
-      render(<RegisterForm onSubmit={mockSubmit} isLoading={true} error={null} />)
+      render(
+        <RegisterForm onSubmit={mockSubmit} isLoading={true} error={null} />
+      )
 
       expect(screen.getByLabelText(/email/i)).toBeDisabled()
       expect(screen.getByLabelText(/^hasło$/i)).toBeDisabled()
@@ -267,7 +263,9 @@ describe('RegisterForm Component', () => {
     })
 
     test('shows loading spinner when isLoading=true', () => {
-      render(<RegisterForm onSubmit={mockSubmit} isLoading={true} error={null} />)
+      render(
+        <RegisterForm onSubmit={mockSubmit} isLoading={true} error={null} />
+      )
 
       expect(screen.getByText(/rejestracja/i)).toBeInTheDocument()
     })
@@ -317,7 +315,9 @@ describe('RegisterForm Component', () => {
         <RegisterForm onSubmit={mockSubmit} isLoading={false} error={null} />
       )
 
-      const passwordInput = screen.getByLabelText(/^hasło$/i) as HTMLInputElement
+      const passwordInput = screen.getByLabelText(
+        /^hasło$/i
+      ) as HTMLInputElement
       const toggleButtons = screen.getAllByLabelText(/pokaż hasło/i)
       const passwordToggle = toggleButtons[0] // First password field
 

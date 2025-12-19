@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { ShoppingListItem } from './ShoppingListItem'
 import {
   sortItemsByPurchasedState,
@@ -22,12 +22,12 @@ interface CategorySectionProps {
  * Sortuje produkty (odznaczone na górze, zaznaczone na dole)
  * i renderuje listę ShoppingListItem.
  */
-export const CategorySection = ({
+export const CategorySection = memo(function CategorySection({
   category,
   items,
   purchasedItems,
   onTogglePurchased,
-}: CategorySectionProps) => {
+}: CategorySectionProps) {
   const sortedItems = useMemo(() => {
     return sortItemsByPurchasedState(items, purchasedItems, category)
   }, [items, purchasedItems, category])
@@ -44,4 +44,4 @@ export const CategorySection = ({
       ))}
     </ul>
   )
-}
+})

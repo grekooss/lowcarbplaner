@@ -41,9 +41,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createProfile } from '@/lib/actions/profile'
 import type { CreateProfileInput } from '@/lib/validation/profile'
+import {
+  strictRateLimit,
+  getClientIp,
+  rateLimitHeaders,
+} from '@/lib/utils/rate-limit'
 
 /**
  * POST /api/profile
+ *
+ * Rate limited: 10 requests per minute per IP.
  *
  * @example
  * POST /api/profile
@@ -62,6 +69,28 @@ import type { CreateProfileInput } from '@/lib/validation/profile'
  */
 export async function POST(request: NextRequest) {
   try {
+    // 0. Rate limiting check
+    const clientIp = getClientIp(request)
+    const rateLimitResult = strictRateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
     // 1. Parsowanie body z request
     let body: CreateProfileInput
     try {

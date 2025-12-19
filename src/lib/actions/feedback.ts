@@ -93,19 +93,17 @@ export async function createFeedback(
       user_id: user.id,
       content: command.content,
       metadata: command.metadata
-        ? JSON.parse(JSON.stringify(command.metadata))
+        ? (command.metadata as TablesInsert<'feedback'>['metadata'])
         : null,
       created_at: new Date().toISOString(),
     }
 
     // 4. Zapis feedbacku do bazy danych
-    const startTime = performance.now()
     const { data: createdFeedback, error: insertError } = await supabase
       .from('feedback')
       .insert(feedbackData)
       .select()
       .single()
-    const endTime = performance.now()
 
     if (insertError) {
       console.error('Błąd podczas tworzenia feedbacku:', insertError)
@@ -115,12 +113,7 @@ export async function createFeedback(
       }
     }
 
-    // 5. Logowanie performance metrics
-    console.log(
-      `Feedback created in ${Math.round(endTime - startTime)}ms for user ${user.id}`
-    )
-
-    // 6. Transformacja do DTO
+    // 5. Transformacja do DTO
     const response: FeedbackResponseDTO = {
       id: createdFeedback.id,
       user_id: createdFeedback.user_id,

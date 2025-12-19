@@ -12,6 +12,7 @@
  */
 
 import { createAdminClient } from '@/lib/supabase/server'
+import { formatLocalDate } from '@/lib/utils/date-formatting'
 import type { Enums, TablesInsert } from '@/types/database.types'
 
 /**
@@ -599,7 +600,6 @@ function optimizeByCalories(
   }
 
   if (bestRecipeIndex === -1 || !bestIngredient) {
-    console.log('⚠️  Nie znaleziono składnika do redukcji kalorii')
     return dayPlan
   }
 
@@ -616,9 +616,6 @@ function optimizeByCalories(
   // Składnik ma `ingredientData.calories` kalorii w `ingredientData.base_amount` gram
   const calories = ingredientData.calories || 0
   if (calories === 0 || ingredientData.base_amount === 0) {
-    console.log(
-      '⚠️  Składnik ma 0 kalorii lub 0 gram - brak możliwości optymalizacji'
-    )
     return dayPlan
   }
 
@@ -636,22 +633,6 @@ function optimizeByCalories(
 
   // Zaokrąglij do wielokrotności 5g
   const roundedAmount = roundIngredientAmount(newAmount)
-
-  // Przelicz rzeczywistą redukcję kalorii po zaokrągleniu
-  const actualCalorieReduction =
-    (ingredientData.base_amount - roundedAmount) * caloriesPerGram
-
-  const changePercent =
-    ((ingredientData.base_amount - roundedAmount) /
-      ingredientData.base_amount) *
-    100
-
-  console.log(
-    `✅ Zmniejszono składnik ID=${bestIngredient.ingredient_id} z ${ingredientData.base_amount}g na ${roundedAmount}g (-${changePercent.toFixed(1)}%)`
-  )
-  console.log(
-    `   Redukcja kalorii: ${actualCalorieReduction.toFixed(0)} kcal (docelowa: ${calorieTarget.toFixed(0)} kcal)`
-  )
 
   const optimizedPlan = [...dayPlan]
   const mealToUpdate = optimizedPlan[bestRecipeIndex]
@@ -716,22 +697,9 @@ function optimizeDayPlan(
     dayMacros.fats_g += macros.fats_g
   }
 
-  console.log(
-    `📊 Plan dnia: ${dayCalories} kcal (cel: ${targets.target_calories}), P: ${dayMacros.protein_g}g, C: ${dayMacros.carbs_g}g, F: ${dayMacros.fats_g}g`
-  )
-
   // 2. PRIORYTET: Sprawdź kalorie - ZAWSZE muszą być ≤100%
   if (dayCalories > targets.target_calories) {
-    const caloriePercent = (
-      (dayCalories / targets.target_calories) *
-      100
-    ).toFixed(1)
     const calorieSurplus = dayCalories - targets.target_calories
-
-    console.log(
-      `🎯 OPTYMALIZACJA KALORII: ${caloriePercent}% zapotrzebowania, nadmiar: ${calorieSurplus.toFixed(0)} kcal`
-    )
-
     // Znajdź składnik z największą liczbą kalorii we wszystkich przepisach
     return optimizeByCalories(dayPlan, selectedRecipes, calorieSurplus)
   }
@@ -741,30 +709,8 @@ function optimizeDayPlan(
   const macroToOptimize = findMacroForOptimization(surplus, dayMacros, targets)
 
   if (!macroToOptimize) {
-    console.log('✅ Plan dnia OK - brak potrzeby optymalizacji')
     return dayPlan
   }
-
-  // Oblicz procent nadmiaru makro
-  const macroValue =
-    macroToOptimize === 'protein'
-      ? dayMacros.protein_g
-      : macroToOptimize === 'carbs'
-        ? dayMacros.carbs_g
-        : dayMacros.fats_g
-
-  const targetValue =
-    macroToOptimize === 'protein'
-      ? targets.target_protein_g
-      : macroToOptimize === 'carbs'
-        ? targets.target_carbs_g
-        : targets.target_fats_g
-
-  const percentOfTarget = ((macroValue / targetValue) * 100).toFixed(1)
-
-  console.log(
-    `🎯 OPTYMALIZACJA MAKRO: nadmiar ${macroToOptimize} = ${surplus[macroToOptimize].toFixed(1)}g (${percentOfTarget}% zapotrzebowania)`
-  )
 
   // 4. Znajdź składnik odpowiedzialny za nadmiar tego makro
   let bestRecipeIndex = -1
@@ -791,7 +737,7 @@ function optimizeDayPlan(
   }
 
   if (bestRecipeIndex === -1 || !bestIngredient) {
-    console.log('⚠️  Nie znaleziono skalowanego składnika do optymalizacji')
+    // No scalable ingredient found for optimization - return unmodified plan
     return dayPlan
   }
 
@@ -810,22 +756,10 @@ function optimizeDayPlan(
   }
 
   const targetReduction = surplus[macroToOptimize]
-  const { newAmount, actualReduction } = calculateAdjustedAmount(
+  const { newAmount } = calculateAdjustedAmount(
     ingredientData,
     macroToOptimize,
     targetReduction
-  )
-
-  // Oblicz procentową zmianę składnika
-  const changePercent =
-    ((ingredientData.base_amount - newAmount) / ingredientData.base_amount) *
-    100
-
-  console.log(
-    `✅ Zmniejszono składnik ID=${bestIngredient.ingredient_id} z ${ingredientData.base_amount}g na ${newAmount}g (-${changePercent.toFixed(1)}%)`
-  )
-  console.log(
-    `   Redukcja ${macroToOptimize}: ${actualReduction.toFixed(1)}g (docelowa: ${targetReduction.toFixed(1)}g)`
   )
 
   // 6. Zaktualizuj ingredient_overrides w odpowiednim posiłku
@@ -1090,20 +1024,10 @@ export async function findMissingDays(
 export async function cleanupOldMealPlans(userId: string): Promise<number> {
   const supabase = createAdminClient()
 
-  // Format daty lokalnie (bez konwersji do UTC)
-  const formatLocalDate = (date: Date): string => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
   // Dzisiejsza data (początek dnia)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayStr = formatLocalDate(today)
-
-  console.log(`🧹 Czyszczenie starych planów przed datą: ${todayStr}`)
 
   // Usuń wszystkie plany starsze niż dzisiaj
   const { data, error } = await supabase
@@ -1119,9 +1043,5 @@ export async function cleanupOldMealPlans(userId: string): Promise<number> {
   }
 
   const deletedCount = data?.length || 0
-  if (deletedCount > 0) {
-    console.log(`✅ Usunięto ${deletedCount} starych posiłków`)
-  }
-
   return deletedCount
 }

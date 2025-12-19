@@ -13,8 +13,9 @@ const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
 
-interface DialogOverlayProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> {
+interface DialogOverlayProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Overlay
+> {
   /**
    * When provided, constrains the overlay to the main panel area
    */
@@ -52,8 +53,9 @@ const DialogOverlay = React.forwardRef<
 })
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-interface DialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+interface DialogContentProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> {
   /**
    * When true, centers the dialog within the main panel area (not the full viewport)
    */

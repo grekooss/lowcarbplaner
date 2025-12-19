@@ -1858,7 +1858,7 @@ test('Register flow', async ({ page }) => {
   - Dodaj redirect URI: `https://[project-id].supabase.co/auth/v1/callback`
   - Skopiuj Client ID i Client Secret do Supabase
 
-  12.2. Environment variables:
+    12.2. Environment variables:
 
 ```bash
 # .env.local

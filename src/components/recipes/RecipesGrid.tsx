@@ -8,6 +8,7 @@
 
 'use client'
 
+import { memo } from 'react'
 import { RecipeCard } from './RecipeCard'
 import { RecipeAdPlaceholder } from './RecipeAdPlaceholder'
 import type { RecipeDTO } from '@/types/dto.types'
@@ -77,7 +78,7 @@ function buildGridItems(
  * />
  * ```
  */
-export function RecipesGrid({
+export const RecipesGrid = memo(function RecipesGrid({
   recipes,
   onRecipeClick,
   hideMealTypeBadge = false,
@@ -99,4 +100,4 @@ export function RecipesGrid({
       {gridItems}
     </div>
   )
-}
+})

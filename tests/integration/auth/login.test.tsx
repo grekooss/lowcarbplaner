@@ -19,7 +19,7 @@ import { LoginForm } from '@/components/auth/LoginForm'
 vi.mock('@/components/auth/LoginForm', async () => {
   const actual = await import('../../mocks/LoginFormMock')
   return {
-    LoginForm: actual.LoginForm
+    LoginForm: actual.LoginForm,
   }
 })
 
@@ -64,9 +64,7 @@ describe('LoginForm Component', () => {
       await user.tab() // Trigger blur
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/nieprawidłowy.*email/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/nieprawidłowy.*email/i)).toBeInTheDocument()
       })
     })
 
@@ -95,9 +93,7 @@ describe('LoginForm Component', () => {
       await user.tab() // Trigger blur
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/hasło.*minimum.*znaki/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/hasło.*minimum.*znaki/i)).toBeInTheDocument()
       })
     })
   })
@@ -114,7 +110,10 @@ describe('LoginForm Component', () => {
       await user.click(screen.getByRole('button', { name: /zaloguj się/i }))
 
       await waitFor(() => {
-        expect(mockSubmit).toHaveBeenCalledWith('test@example.com', 'SecurePass123!')
+        expect(mockSubmit).toHaveBeenCalledWith(
+          'test@example.com',
+          'SecurePass123!'
+        )
       })
     })
 

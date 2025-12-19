@@ -13,6 +13,51 @@ import { toast } from 'sonner'
 import { createClientComponentClient } from '@/lib/supabase/client'
 import { translateAuthError } from '@/lib/utils/auth-errors'
 import type { UseAuthReturn } from '@/types/auth-view.types'
+import type { PostgrestError } from '@supabase/supabase-js'
+
+/**
+ * Helper to extract error message from unknown error
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message
+  }
+  return 'Wystąpił nieznany błąd'
+}
+
+/**
+ * Response type for check_email_exists RPC call
+ * This RPC function is not in generated types
+ */
+interface CheckEmailExistsResponse {
+  data: boolean | null
+  error: PostgrestError | null
+}
+
+/**
+ * Call check_email_exists RPC function
+ * Typed wrapper for custom RPC not in generated types
+ */
+async function checkEmailExists(
+  supabase: ReturnType<typeof createClientComponentClient>,
+  email: string
+): Promise<CheckEmailExistsResponse> {
+  // Using type assertion for custom RPC function not in generated types
+  // The RPC function exists in DB but isn't in auto-generated types
+  const rpcFn = supabase.rpc as unknown as (
+    fn: string,
+    params: Record<string, string>
+  ) => Promise<CheckEmailExistsResponse>
+
+  return rpcFn('check_email_exists', { check_email: email })
+}
 
 /**
  * Hook do zarządzania autentykacją użytkownika
@@ -74,8 +119,8 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
         toast.success('Zalogowano pomyślnie', {
           description: 'Witaj ponownie!',
         })
-      } catch (err: any) {
-        const errorMessage = translateAuthError(err.message)
+      } catch (err: unknown) {
+        const errorMessage = translateAuthError(getErrorMessage(err))
         setError(errorMessage)
         toast.error('Błąd logowania', {
           description: errorMessage,
@@ -125,8 +170,8 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
           })
           router.push('/recipes')
         }
-      } catch (err: any) {
-        const errorMessage = translateAuthError(err.message)
+      } catch (err: unknown) {
+        const errorMessage = translateAuthError(getErrorMessage(err))
         setError(errorMessage)
         toast.error('Błąd rejestracji', {
           description: errorMessage,
@@ -151,8 +196,6 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       // redirectTo must EXACTLY match a Redirect URL in Supabase Dashboard (no query params)
       const callbackUrl = `${siteUrl}/auth/callback`
 
-      console.log('[AUTH] Google OAuth redirectTo:', callbackUrl)
-
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -162,15 +205,15 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
 
       if (authError) throw authError
       // Redirect automatyczny przez Supabase
-    } catch (err: any) {
-      const errorMessage = translateAuthError(err.message)
+    } catch (err: unknown) {
+      const errorMessage = translateAuthError(getErrorMessage(err))
       setError(errorMessage)
       toast.error('Błąd logowania', {
         description: errorMessage,
       })
       setIsGoogleLoading(false)
     }
-  }, [supabase, redirectTo])
+  }, [supabase])
 
   /**
    * Wysyłka email z linkiem do resetowania hasła
@@ -184,10 +227,10 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
 
       try {
         // Sprawdź czy użytkownik z takim emailem istnieje (używamy RPC aby ominąć RLS)
-
-        const { data: emailExists, error: checkError } = await (
-          supabase.rpc as any
-        )('check_email_exists', { check_email: email })
+        const { data: emailExists, error: checkError } = await checkEmailExists(
+          supabase,
+          email
+        )
 
         if (checkError) throw checkError
 
@@ -209,8 +252,8 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
             'Sprawdź swoją skrzynkę i kliknij w link resetujący hasło.',
         })
         return true
-      } catch (err: any) {
-        const errorMessage = translateAuthError(err.message)
+      } catch (err: unknown) {
+        const errorMessage = translateAuthError(getErrorMessage(err))
         setError(errorMessage)
         toast.error('Błąd', {
           description: errorMessage,
@@ -243,8 +286,8 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
         })
 
         router.push('/auth?tab=login')
-      } catch (err: any) {
-        const errorMessage = translateAuthError(err.message)
+      } catch (err: unknown) {
+        const errorMessage = translateAuthError(getErrorMessage(err))
         setError(errorMessage)
         toast.error('Błąd', {
           description: errorMessage,

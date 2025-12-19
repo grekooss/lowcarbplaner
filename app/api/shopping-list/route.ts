@@ -25,6 +25,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getShoppingList } from '@/lib/actions/shopping-list'
 import type { ShoppingListQueryInput } from '@/lib/validation/shopping-list'
+import { shoppingListCacheHeaders } from '@/lib/utils/cache-headers'
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitHeaders,
+} from '@/lib/utils/rate-limit'
 
 /**
  * GET /api/shopping-list
@@ -34,6 +40,28 @@ import type { ShoppingListQueryInput } from '@/lib/validation/shopping-list'
  */
 export async function GET(request: NextRequest) {
   try {
+    // 0. Rate limiting check
+    const clientIp = getClientIp(request)
+    const rateLimitResult = rateLimit.check(clientIp)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Zbyt wiele żądań. Spróbuj ponownie za chwilę.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders(rateLimitResult),
+            'Retry-After': '60',
+          },
+        }
+      )
+    }
+
     // 1. Parsowanie query params z URL
     const searchParams = request.nextUrl.searchParams
     const start_date = searchParams.get('start_date')
@@ -100,8 +128,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 6. Zwrócenie sukcesu (200 OK)
-    return NextResponse.json(result.data, { status: 200 })
+    // 6. Zwrócenie sukcesu (200 OK) z no-cache headers (computed data)
+    return NextResponse.json(result.data, {
+      status: 200,
+      headers: shoppingListCacheHeaders,
+    })
   } catch (err) {
     // 7. Catch-all dla nieoczekiwanych błędów
     console.error('Nieoczekiwany błąd w GET /api/shopping-list:', err)

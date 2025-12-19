@@ -7,8 +7,9 @@ import { cn } from '@/lib/utils'
 
 type ScrollBarVariant = 'default' | 'primary'
 
-interface ScrollAreaProps
-  extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
+interface ScrollAreaProps extends React.ComponentPropsWithoutRef<
+  typeof ScrollAreaPrimitive.Root
+> {
   scrollBarVariant?: ScrollBarVariant
 }
 
@@ -30,10 +31,9 @@ const ScrollArea = React.forwardRef<
 ))
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
 
-interface ScrollBarProps
-  extends React.ComponentPropsWithoutRef<
-    typeof ScrollAreaPrimitive.ScrollAreaScrollbar
-  > {
+interface ScrollBarProps extends React.ComponentPropsWithoutRef<
+  typeof ScrollAreaPrimitive.ScrollAreaScrollbar
+> {
   variant?: ScrollBarVariant
 }
 

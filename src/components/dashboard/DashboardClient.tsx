@@ -15,6 +15,7 @@ import { usePlannedMealsQuery } from '@/hooks/usePlannedMealsQuery'
 import { useAutoGenerateMealPlan } from '@/hooks/useAutoGenerateMealPlan'
 import { useWeekMealsCheck } from '@/hooks/useWeekMealsCheck'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { formatLocalDate } from '@/lib/utils/date-formatting'
 import type { PlannedMealDTO } from '@/types/dto.types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle, Loader2 } from 'lucide-react'
@@ -60,14 +61,6 @@ export function DashboardClient({
       : selectedDate
         ? new Date(selectedDate)
         : new Date()
-
-  // Format daty lokalnie (bez konwersji do UTC)
-  const formatLocalDate = (date: Date): string => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
 
   const selectedDateStr = !Number.isNaN(normalizedSelectedDate.getTime())
     ? formatLocalDate(normalizedSelectedDate)
@@ -137,11 +130,6 @@ export function DashboardClient({
     if (recipeModal.isOpen && recipeModal.meal && meals) {
       const updatedMeal = meals.find((m) => m.id === recipeModal.meal?.id)
       if (updatedMeal) {
-        console.log('🔄 Updating modal with fresh meal data:', {
-          mealId: updatedMeal.id,
-          oldOverrides: recipeModal.meal.ingredient_overrides,
-          newOverrides: updatedMeal.ingredient_overrides,
-        })
         setRecipeModal((prev) => ({
           ...prev,
           meal: updatedMeal,
@@ -174,23 +162,8 @@ export function DashboardClient({
       hasIncompletePlan &&
       !hasAttemptedGeneration.current
 
-    console.log('🔍 DashboardClient auto-generation check:', {
-      mealsCount: weekCheck?.mealsCount,
-      expectedCount: weekCheck?.expectedMealsCount,
-      hasIncompletePlan,
-      hasInitialData,
-      isLoading,
-      isCheckingWeek,
-      isGenerating,
-      hasAttemptedGeneration: hasAttemptedGeneration.current,
-      shouldGenerate,
-    })
-
     if (shouldGenerate) {
       hasAttemptedGeneration.current = true
-      console.log(
-        `🤖 Auto-generating meal plan for week (mają ${weekCheck?.mealsCount}/${weekCheck?.expectedMealsCount} posiłków)`
-      )
       generatePlan()
     }
   }, [

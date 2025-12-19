@@ -18,6 +18,12 @@ import { testProfile } from '../../fixtures/profiles'
 import * as usePlannedMealsQueryModule from '@/hooks/usePlannedMealsQuery'
 import * as useDailyMacrosModule from '@/hooks/useDailyMacros'
 
+// Mock auto-generate function at module level (must be before vi.mock calls)
+const mockAutoGenerate = vi.fn().mockResolvedValue({
+  data: { generated: 3 },
+  error: null,
+})
+
 // Mock hooks
 vi.mock('@/hooks/usePlannedMealsQuery', () => ({
   usePlannedMealsQuery: vi.fn(() => ({
@@ -35,14 +41,26 @@ vi.mock('@/hooks/useUser', () => ({
 
 vi.mock('@/hooks/useDailyMacros', () => ({
   useDailyMacros: vi.fn(() => ({
-    totals: {
-      calories: 1800,
-      protein_g: 176,
-      carbs_g: 68,
-      fats_g: 97,
+    consumed: {
+      calories: 1200,
+      protein_g: 100,
+      carbs_g: 40,
+      fats_g: 60,
     },
-    targets: testProfile,
+    target: {
+      calories: 1800,
+      protein_g: 158,
+      carbs_g: 68,
+      fats_g: 100,
+    },
   })),
+}))
+
+vi.mock('@/hooks/useAutoGenerateMealPlan', () => ({
+  useAutoGenerateMealPlan: () => ({
+    generate: mockAutoGenerate,
+    isGenerating: false,
+  }),
 }))
 
 const mockTargetMacros = {
@@ -405,34 +423,19 @@ describe('Dashboard Daily View', () => {
     })
 
     test('calls auto-generation hook for missing meals', async () => {
-      const mockAutoGenerate = vi.fn()
-
-      vi.mock('@/hooks/useAutoGenerateMealPlan', () => ({
-        useAutoGenerateMealPlan: mockAutoGenerate,
-      }))
-
+      // Uses global mockAutoGenerate from top of file
       const incompletePlan = testPlannedMeals.slice(0, 18)
 
       renderDashboard(incompletePlan)
 
       await waitFor(() => {
+        // The hook should have been called (via useAutoGenerateMealPlan mock)
         expect(mockAutoGenerate).toHaveBeenCalled()
       })
     })
 
     test('shows success message after generation', async () => {
-      const mockAutoGenerate = vi.fn().mockResolvedValue({
-        data: { generated: 3 },
-        error: null,
-      })
-
-      vi.mock('@/hooks/useAutoGenerateMealPlan', () => ({
-        useAutoGenerateMealPlan: () => ({
-          generate: mockAutoGenerate,
-          isGenerating: false,
-        }),
-      }))
-
+      // Uses global mockAutoGenerate which resolves with { generated: 3 }
       const incompletePlan = testPlannedMeals.slice(0, 18)
 
       renderDashboard(incompletePlan)

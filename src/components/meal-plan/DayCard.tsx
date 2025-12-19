@@ -4,6 +4,7 @@
  * DayCard - Karta pojedynczego dnia zawierająca 3 posiłki (widok mobile)
  */
 
+import { memo } from 'react'
 import { MealCard } from './MealCard'
 import type { DayPlanViewModel } from '@/types/meal-plan-view.types'
 import type { PlannedMealDTO } from '@/types/dto.types'
@@ -11,10 +12,12 @@ import type { PlannedMealDTO } from '@/types/dto.types'
 interface DayCardProps {
   day: DayPlanViewModel
   onMealClick: (meal: PlannedMealDTO) => void
-  onSwapClick: (mealId: number, mealType: string) => void
 }
 
-export const DayCard = ({ day, onMealClick }: DayCardProps) => {
+export const DayCard = memo(function DayCard({
+  day,
+  onMealClick,
+}: DayCardProps) {
   // Formatuj pełną datę: "Środa 10 grudzień 2025"
   const fullDate = new Date(day.date)
   const month = fullDate.toLocaleDateString('pl-PL', { month: 'long' })
@@ -75,4 +78,4 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
       </div>
     </div>
   )
-}
+})

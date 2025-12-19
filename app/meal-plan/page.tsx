@@ -3,8 +3,10 @@
  * Server Component odpowiedzialny za initial data fetching
  */
 
+import { redirect } from 'next/navigation'
 import { getPlannedMeals } from '@/lib/actions/planned-meals'
 import { MealPlanClient } from '@/components/meal-plan/MealPlanClient'
+import { createServerClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 // Force dynamic rendering because of Supabase auth (cookies)
@@ -20,16 +22,15 @@ export const metadata: Metadata = {
  * Pobiera posiłki na 7 dni (od dziś) i przekazuje do MealPlanClient
  */
 export default async function MealPlanPage() {
-  // TODO: Odkomentuj po zakończeniu pracy nad UI
-  // const supabase = await createServerClient()
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser()
+  const supabase = await createServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  // // Przekieruj jeśli nie zalogowany
-  // if (!user) {
-  //   redirect('/login')
-  // }
+  // Przekieruj jeśli nie zalogowany
+  if (!user) {
+    redirect('/auth')
+  }
 
   // Oblicz zakres dat (dziś + 6 dni = łącznie 7 dni)
   const today = new Date()
@@ -56,14 +57,6 @@ export default async function MealPlanPage() {
   })
 
   const meals = mealsResult.error ? [] : mealsResult.data || []
-
-  // Debug: log meal count
-  console.log('📅 MealPlanPage fetched meals:', {
-    startDate: startDateStr,
-    endDate: endDateStr,
-    mealsCount: meals.length,
-    expectedMeals: 21, // 7 days × 3 meals
-  })
 
   return (
     <div className='pb-6'>
