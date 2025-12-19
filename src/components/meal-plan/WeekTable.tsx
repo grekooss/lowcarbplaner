@@ -46,14 +46,14 @@ const DayRow = ({ day, date, dateStr, meals, onMealClick }: DayRowProps) => {
     <div className='grid grid-cols-1 gap-4 xl:grid-cols-[80px_1fr_1fr_1fr]'>
       {/* Day Column - Red badge */}
       {/* Mobile/Tablet: full date info */}
-      <div className='flex items-center justify-center gap-1.5 rounded-md bg-red-600 px-4 py-2 text-white shadow-sm xl:hidden'>
+      <div className='bg-primary flex items-center justify-center gap-1.5 rounded-md px-4 py-2 text-white shadow-sm xl:hidden'>
         <span className='font-semibold capitalize'>{day}</span>
         <span className='font-bold'>{date}</span>
         <span>{month}</span>
         <span className='text-sm opacity-80'>{year}</span>
       </div>
       {/* Desktop: compact day + date only, stacked vertically */}
-      <div className='hidden w-20 flex-col items-center justify-center rounded-md bg-red-600 px-2 py-2 text-white shadow-sm xl:flex'>
+      <div className='bg-primary hidden w-20 flex-col items-center justify-center rounded-md px-2 py-2 text-white shadow-sm xl:flex'>
         <span className='text-[10px] font-medium'>{day}</span>
         <span className='text-xl font-bold'>{date}</span>
       </div>
@@ -85,24 +85,24 @@ export function WeekTable({
         <div className='flex w-20 flex-col items-center justify-center'>
           {monthHeader && (
             <>
-              <span className='text-sm font-bold text-gray-900'>
+              <span className='text-text-main text-sm font-bold'>
                 {monthHeader.primary}
               </span>
               {monthHeader.secondary && (
-                <span className='text-xs text-gray-500'>
+                <span className='text-text-muted text-xs'>
                   {monthHeader.secondary}
                 </span>
               )}
             </>
           )}
         </div>
-        <h4 className='rounded-[14px] border-2 border-gray-900 bg-gray-900 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
+        <h4 className='border-text-main bg-text-main rounded-[14px] border-2 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
           Śniadanie
         </h4>
-        <h4 className='rounded-[14px] border-2 border-gray-900 bg-gray-900 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
+        <h4 className='border-text-main bg-text-main rounded-[14px] border-2 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
           Obiad
         </h4>
-        <h4 className='rounded-[14px] border-2 border-gray-900 bg-gray-900 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
+        <h4 className='border-text-main bg-text-main rounded-[14px] border-2 px-3 py-1.5 text-center text-sm font-bold tracking-wider text-white uppercase shadow-sm'>
           Kolacja
         </h4>
       </div>

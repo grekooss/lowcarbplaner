@@ -24,7 +24,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minut
-      cacheTime: 1000 * 60 * 30, // 30 minut
+      gcTime: 1000 * 60 * 30, // 30 minut (TanStack Query v5: gcTime zastępuje cacheTime)
       refetchOnWindowFocus: false,
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

@@ -35,7 +35,7 @@ export const ShoppingListItem = ({
     <li
       className={cn(
         'group flex cursor-pointer items-center gap-4 rounded-lg px-3 py-3 transition-all duration-200',
-        isPurchased ? 'bg-red-50/50' : 'hover:bg-gray-50/50'
+        isPurchased ? 'bg-primary/5' : 'hover:bg-bg-tertiary/50'
       )}
       onClick={onToggle}
       role='button'
@@ -53,8 +53,8 @@ export const ShoppingListItem = ({
         className={cn(
           'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200',
           isPurchased
-            ? 'border-red-500 bg-red-500'
-            : 'border-gray-300 bg-white group-hover:border-red-600'
+            ? 'border-primary bg-primary'
+            : 'border-border group-hover:border-primary bg-white'
         )}
       >
         {isPurchased && (
@@ -66,7 +66,7 @@ export const ShoppingListItem = ({
       <span
         className={cn(
           'flex-1 text-base font-medium transition-all duration-200',
-          isPurchased ? 'text-gray-400 line-through' : 'text-gray-800'
+          isPurchased ? 'text-text-muted line-through' : 'text-text-main'
         )}
       >
         {item.name}
@@ -79,10 +79,10 @@ export const ShoppingListItem = ({
           isPurchased ? 'opacity-50' : ''
         )}
       >
-        <span className='text-lg font-bold text-gray-800'>
+        <span className='text-text-main text-lg font-bold'>
           {formatAmount(item.total_amount)}
         </span>
-        <span className='text-sm text-gray-500'>{item.unit}</span>
+        <span className='text-text-muted text-sm'>{item.unit}</span>
       </div>
     </li>
   )

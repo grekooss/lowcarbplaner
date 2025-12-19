@@ -110,7 +110,7 @@ export function EditableIngredientRow({
       className={cn(
         'space-y-1 rounded-lg',
         compact ? 'px-1 py-2' : 'px-3 py-3',
-        isChecked && 'bg-red-50/50'
+        isChecked && 'bg-primary/5'
       )}
     >
       <div className={cn('flex items-center', compact ? 'gap-2' : 'gap-3')}>
@@ -120,8 +120,8 @@ export function EditableIngredientRow({
             'flex flex-shrink-0 cursor-pointer items-center justify-center rounded-md border-2 transition-all duration-200',
             compact ? 'h-4 w-4 rounded' : 'h-6 w-6',
             isChecked
-              ? 'border-red-500 bg-red-500'
-              : 'border-gray-300 bg-white hover:border-red-600'
+              ? 'border-primary bg-primary'
+              : 'border-border hover:border-primary bg-white'
           )}
           onClick={handleCheckboxClick}
           onKeyDown={handleCheckboxKeyDown}
@@ -148,7 +148,7 @@ export function EditableIngredientRow({
           >
             {ingredient.name}
             {isChanged && !isAutoAdjusted && !compact && (
-              <span className='ml-2 text-xs text-red-500'>(zmieniono)</span>
+              <span className='text-primary ml-2 text-xs'>(zmieniono)</span>
             )}
           </p>
         </div>
@@ -167,7 +167,7 @@ export function EditableIngredientRow({
               onClick={handleDecrement}
               disabled={currentAmount <= 0 || isChecked}
               className={cn(
-                'flex items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50',
+                'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
                 compact ? 'h-5 w-5' : 'h-6 w-6'
               )}
             >
@@ -189,7 +189,7 @@ export function EditableIngredientRow({
                 className={cn(
                   'h-auto [appearance:textfield] border-0 bg-transparent p-0 text-center font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
                   compact ? 'w-10 text-sm' : 'w-14 text-lg',
-                  error && 'text-red-500'
+                  error && 'text-error'
                 )}
                 step='1'
                 min='0'
@@ -210,7 +210,7 @@ export function EditableIngredientRow({
               onClick={handleIncrement}
               disabled={isChecked}
               className={cn(
-                'flex items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all duration-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-50',
+                'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
                 compact ? 'h-5 w-5' : 'h-6 w-6'
               )}
             >
@@ -252,7 +252,7 @@ export function EditableIngredientRow({
 
       {/* Error message */}
       {error && (
-        <p className={cn('text-xs text-red-500', compact ? 'pl-6' : 'pl-10')}>
+        <p className={cn('text-error text-xs', compact ? 'pl-6' : 'pl-10')}>
           {error}
         </p>
       )}

@@ -77,15 +77,15 @@ export const ShoppingListAccordion = ({
         <AccordionTrigger className='px-4 py-3 hover:no-underline sm:px-6 sm:py-4'>
           <div className='flex w-full items-center justify-between pr-4'>
             <span
-              className={`text-base font-bold sm:text-lg ${allPurchased ? 'text-gray-400' : 'text-gray-800'}`}
+              className={`text-base font-bold sm:text-lg ${allPurchased ? 'text-text-muted' : 'text-text-main'}`}
             >
               {categoryLabel}
             </span>
             <span
               className={`rounded-sm px-2.5 py-1 text-xs font-bold ${
                 allPurchased
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  ? 'bg-primary text-white'
+                  : 'bg-bg-tertiary text-text-secondary'
               }`}
             >
               {purchasedCount} / {itemCount}

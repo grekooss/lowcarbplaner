@@ -72,7 +72,7 @@ export function LiveMacroPreview({
   return (
     <div
       data-testid='live-preview'
-      className='rounded-xl border bg-gray-50 p-4'
+      className='bg-bg-secondary rounded-xl border p-4'
     >
       <h4 className='mb-3 text-sm font-semibold'>Wartości odżywcze</h4>
       <div className='grid grid-cols-2 gap-3'>

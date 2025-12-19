@@ -74,7 +74,7 @@ export const ShoppingListClient = ({
   if (!isHydrated) {
     return (
       <div className='flex min-h-[60vh] items-center justify-center'>
-        <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+        <Loader2 className='text-primary h-12 w-12 animate-spin' />
       </div>
     )
   }
@@ -89,30 +89,30 @@ export const ShoppingListClient = ({
       <section className='w-full lg:w-[calc((100%-24px)/2)]'>
         <div className='flex items-center justify-center gap-6 rounded-md border-2 border-white bg-white/40 px-6 py-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl'>
           <div className='flex items-center gap-3'>
-            <div className='flex h-8 w-8 items-center justify-center rounded-sm bg-red-600'>
+            <div className='bg-primary flex h-8 w-8 items-center justify-center rounded-sm'>
               <Circle className='h-4 w-4 text-white' />
             </div>
             <div className='text-center'>
-              <p className='text-xs font-bold tracking-wide text-gray-400 uppercase'>
+              <p className='text-text-muted text-xs font-bold tracking-wide uppercase'>
                 Do kupienia
               </p>
-              <p className='text-lg font-bold text-gray-800'>
+              <p className='text-text-main text-lg font-bold'>
                 {stats.totalItems - stats.purchasedCount}
               </p>
             </div>
           </div>
 
-          <div className='h-8 w-px bg-gray-200' />
+          <div className='bg-border h-8 w-px' />
 
           <div className='flex items-center gap-3'>
-            <div className='flex h-8 w-8 items-center justify-center rounded-sm bg-red-600'>
+            <div className='bg-primary flex h-8 w-8 items-center justify-center rounded-sm'>
               <CheckCircle2 className='h-4 w-4 text-white' />
             </div>
             <div className='text-center'>
-              <p className='text-xs font-bold tracking-wide text-gray-400 uppercase'>
+              <p className='text-text-muted text-xs font-bold tracking-wide uppercase'>
                 Kupione
               </p>
-              <p className='text-lg font-bold text-gray-800'>
+              <p className='text-text-main text-lg font-bold'>
                 {stats.purchasedCount}
               </p>
             </div>

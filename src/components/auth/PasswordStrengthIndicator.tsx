@@ -63,9 +63,9 @@ export function PasswordStrengthIndicator({
           <span
             className={cn(
               'font-medium',
-              strength === 'strong' && 'text-green-600',
-              strength === 'medium' && 'text-yellow-600',
-              strength === 'weak' && 'text-red-600'
+              strength === 'strong' && 'text-success',
+              strength === 'medium' && 'text-warning',
+              strength === 'weak' && 'text-error'
             )}
           >
             {strengthText}
@@ -115,7 +115,7 @@ interface RequirementItemProps {
 
 function RequirementItem({ met, text }: RequirementItemProps) {
   const Icon = met ? Check : X
-  const iconColor = met ? 'text-green-600' : 'text-red-600'
+  const iconColor = met ? 'text-success' : 'text-error'
   const textColor = met ? 'text-foreground' : 'text-muted-foreground'
 
   return (

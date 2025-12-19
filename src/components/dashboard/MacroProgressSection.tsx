@@ -24,14 +24,14 @@ import { useDailyMacros } from '@/hooks/useDailyMacros'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
-const COLORS = ['#dc2626', '#ffffff'] // Red-600 and White
+const COLORS = ['var(--primary)', '#ffffff'] // Primary (red) and White
 
-// Color mapping for macros
+// Color mapping for macros (using CSS variables for consistency)
 const MACRO_COLORS = {
-  carbs: '#f97316', // orange-500
-  protein: '#3b82f6', // blue-500
-  fat: '#22c55e', // green-500
-  calories: '#dc2626', // red-600
+  carbs: 'var(--tertiary)', // orange/tertiary
+  protein: 'var(--info)', // blue/info
+  fat: 'var(--success)', // green/success
+  calories: 'var(--primary)', // red/primary
 }
 
 interface AnimatedProgressBarProps {
@@ -64,7 +64,7 @@ function AnimatedProgressBar({
 
   return (
     <div
-      className='w-full overflow-hidden rounded-full border border-gray-100 bg-gray-100'
+      className='border-border-light bg-bg-tertiary w-full overflow-hidden rounded-full border'
       style={{ height }}
     >
       {isMounted && (
@@ -169,7 +169,7 @@ export function MacroProgressSection({
       consumed: macros.consumed.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
-      bgColor: 'bg-orange-400',
+      bgColor: 'bg-tertiary',
       icon: Wheat,
       iconColor: 'text-white',
     },
@@ -179,7 +179,7 @@ export function MacroProgressSection({
       consumed: macros.consumed.protein_g,
       target: macros.target.protein_g,
       unit: 'g',
-      bgColor: 'bg-blue-400',
+      bgColor: 'bg-info',
       icon: Beef,
       iconColor: 'text-white',
     },
@@ -189,7 +189,7 @@ export function MacroProgressSection({
       consumed: macros.consumed.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
-      bgColor: 'bg-green-400',
+      bgColor: 'bg-success',
       icon: Droplet,
       iconColor: 'text-white',
     },
@@ -203,7 +203,7 @@ export function MacroProgressSection({
       value: plannedTotals.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
-      bgColor: 'bg-orange-400',
+      bgColor: 'bg-tertiary',
       icon: Wheat,
       iconColor: 'text-white',
     },
@@ -213,7 +213,7 @@ export function MacroProgressSection({
       value: plannedTotals.protein_g,
       target: macros.target.protein_g,
       unit: 'g',
-      bgColor: 'bg-blue-400',
+      bgColor: 'bg-info',
       icon: Beef,
       iconColor: 'text-white',
     },
@@ -223,7 +223,7 @@ export function MacroProgressSection({
       value: plannedTotals.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
-      bgColor: 'bg-green-400',
+      bgColor: 'bg-success',
       icon: Droplet,
       iconColor: 'text-white',
     },
@@ -249,7 +249,7 @@ export function MacroProgressSection({
           <div>
             <div className='mb-1 flex items-end justify-between gap-2 sm:mb-2'>
               <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
-                <div className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-sm bg-red-600 sm:h-8 sm:w-8'>
+                <div className='bg-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-sm sm:h-8 sm:w-8'>
                   <Flame className='h-3 w-3 text-white sm:h-4 sm:w-4' />
                 </div>
                 <span className='truncate text-xs font-bold text-gray-700 sm:text-base'>
@@ -354,8 +354,8 @@ export function MacroProgressSection({
             </ResponsiveContainer>
           )}
           <div className='absolute inset-0 flex flex-col items-center justify-center pb-4'>
-            <Flame className='h-6 w-6 text-red-600' />
-            <span className='mb-1 text-sm font-bold text-red-600'>kcal</span>
+            <Flame className='text-primary h-6 w-6' />
+            <span className='text-primary mb-1 text-sm font-bold'>kcal</span>
             <div className='flex items-baseline gap-1'>
               <span className='text-4xl font-bold text-gray-800'>
                 {Math.round(caloriesConsumed)}

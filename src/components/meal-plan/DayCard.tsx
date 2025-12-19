@@ -31,14 +31,14 @@ export const DayCard = ({ day, onMealClick }: DayCardProps) => {
     <div className='space-y-3'>
       {/* Nagłówek dnia */}
       <div className='flex items-baseline gap-2 pl-2'>
-        <span className='font-semibold text-gray-900 capitalize'>
+        <span className='text-text-main font-semibold capitalize'>
           {day.dayName}
         </span>
-        <span className='flex h-9 w-9 items-center justify-center rounded-sm bg-red-600 text-xl font-bold text-white'>
+        <span className='bg-primary flex h-9 w-9 items-center justify-center rounded-sm text-xl font-bold text-white'>
           {day.dayNumber}
         </span>
-        <span className='text-gray-900'>{month}</span>
-        <span className='text-xs text-gray-500'>{year}</span>
+        <span className='text-text-main'>{month}</span>
+        <span className='text-text-muted text-xs'>{year}</span>
       </div>
 
       {/* Posiłki */}

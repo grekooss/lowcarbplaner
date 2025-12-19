@@ -93,9 +93,9 @@ export function CalendarStrip({
               className={cn(
                 'flex h-12 flex-col items-center justify-center rounded-sm border-2 transition-all sm:h-16 sm:rounded-md',
                 isSelected
-                  ? 'border-red-600 bg-red-600 text-white shadow-lg shadow-red-500/30'
-                  : 'border-transparent bg-white text-gray-600 hover:border-red-600 hover:bg-white hover:text-red-600',
-                isToday && !isSelected && 'border-red-300'
+                  ? 'border-primary bg-primary shadow-primary/30 text-white shadow-lg'
+                  : 'text-text-secondary hover:border-primary hover:text-primary border-transparent bg-white hover:bg-white',
+                isToday && !isSelected && 'border-primary/30'
               )}
               aria-pressed={isSelected}
               aria-label={`${day.dayName} ${day.dayNumber} ${day.monthName}`}

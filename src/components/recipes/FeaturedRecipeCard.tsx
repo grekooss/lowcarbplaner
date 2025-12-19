@@ -91,12 +91,12 @@ export function FeaturedRecipeCard({
 
         {/* Inline Nutrition - visible on tablet, hidden on desktop */}
         <div className='mb-4 flex flex-wrap items-center gap-4 lg:hidden'>
-          <span className='inline-flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm shadow-red-500/20'>
+          <span className='bg-primary shadow-primary/20 inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-bold text-white shadow-sm'>
             <Flame className='h-3.5 w-3.5' />
             {calories ?? '—'} kcal
           </span>
           <div className='flex items-center gap-2' title='Węglowodany'>
-            <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-orange-400'>
+            <div className='bg-tertiary flex h-6 w-6 items-center justify-center rounded-sm'>
               <Wheat className='h-4 w-4 text-white' />
             </div>
             <span className='flex items-baseline gap-0.5 text-gray-700'>
@@ -105,7 +105,7 @@ export function FeaturedRecipeCard({
             </span>
           </div>
           <div className='flex items-center gap-2' title='Białko'>
-            <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-blue-400'>
+            <div className='bg-info flex h-6 w-6 items-center justify-center rounded-sm'>
               <Beef className='h-4 w-4 text-white' />
             </div>
             <span className='flex items-baseline gap-0.5 text-gray-700'>
@@ -114,7 +114,7 @@ export function FeaturedRecipeCard({
             </span>
           </div>
           <div className='flex items-center gap-2' title='Tłuszcze'>
-            <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-green-400'>
+            <div className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
               <Droplet className='h-4 w-4 text-white' />
             </div>
             <span className='flex items-baseline gap-0.5 text-gray-700'>
@@ -184,7 +184,7 @@ export function FeaturedRecipeCard({
 
         <button
           onClick={handleClick}
-          className='w-full rounded-sm bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-red-500/20 transition-all hover:bg-red-700 lg:w-auto lg:px-6 lg:py-2.5'
+          className='bg-primary shadow-primary/20 hover:bg-primary-hover w-full rounded-sm px-4 py-2 text-sm font-bold text-white shadow-sm transition-all lg:w-auto lg:px-6 lg:py-2.5'
         >
           Zobacz przepis
         </button>
@@ -192,7 +192,7 @@ export function FeaturedRecipeCard({
 
       {/* Quick Nutrition Panel - hidden on tablet landscape, visible on desktop */}
       <div className='hidden flex-col gap-2 lg:flex lg:w-32'>
-        <div className='rounded-sm bg-red-600 px-2.5 py-2 shadow-sm shadow-red-500/20'>
+        <div className='bg-primary shadow-primary/20 rounded-sm px-2.5 py-2 shadow-sm'>
           <p className='mb-1 text-center text-xs font-bold text-white uppercase'>
             Kalorie
           </p>
@@ -212,7 +212,7 @@ export function FeaturedRecipeCard({
             Węglowodany
           </p>
           <p className='flex items-center justify-center gap-1.5'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-sm bg-orange-400'>
+            <span className='bg-tertiary flex h-6 w-6 items-center justify-center rounded-sm'>
               <Wheat className='h-4 w-4 text-white' />
             </span>
             <span className='flex items-baseline gap-0.5'>
@@ -229,7 +229,7 @@ export function FeaturedRecipeCard({
             Białko
           </p>
           <p className='flex items-center justify-center gap-1.5'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-sm bg-blue-400'>
+            <span className='bg-info flex h-6 w-6 items-center justify-center rounded-sm'>
               <Beef className='h-4 w-4 text-white' />
             </span>
             <span className='flex items-baseline gap-0.5'>
@@ -246,7 +246,7 @@ export function FeaturedRecipeCard({
             Tłuszcze
           </p>
           <p className='flex items-center justify-center gap-1.5'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-sm bg-green-400'>
+            <span className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
               <Droplet className='h-4 w-4 text-white' />
             </span>
             <span className='flex items-baseline gap-0.5'>

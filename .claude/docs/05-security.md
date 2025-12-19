@@ -8,7 +8,8 @@
 
 ```sql
 -- Włączenie RLS
-alter table public.matches enable row level security;
+alter table public.profiles enable row level security;
+alter table public.planned_meals enable row level security;
 ```
 
 ### Kompletny Przykład: Tabela User Profiles
@@ -108,30 +109,21 @@ create policy "Users can update own recipes"
   with check (auth.uid() = created_by);
 ```
 
-#### 3. Polityka z Rolami
+#### 3. Polityka dla Content Schema (Read-Only)
 
 ```sql
--- Administratorzy mogą wszystko
-create policy "Admins can do anything"
-  on public.matches
-  for all
-  to authenticated
-  using (
-    exists (
-      select 1
-      from public.user_roles
-      where user_roles.user_id = auth.uid()
-        and user_roles.role = 'admin'
-    )
-  )
-  with check (
-    exists (
-      select 1
-      from public.user_roles
-      where user_roles.user_id = auth.uid()
-        and user_roles.role = 'admin'
-    )
-  );
+-- Składniki i przepisy są read-only dla użytkowników (zarządzane przez admina)
+create policy "ingredients_select_authenticated"
+  on content.ingredients for select
+  to authenticated using (true);
+
+create policy "recipes_select_authenticated"
+  on content.recipes for select
+  to authenticated using (true);
+
+create policy "recipe_ingredients_select_authenticated"
+  on content.recipe_ingredients for select
+  to authenticated using (true);
 ```
 
 #### 4. Polityka dla Daily Progress
@@ -466,11 +458,14 @@ Supabase automatycznie chroni przed SQL Injection, ale **NIGDY** nie buduj raw S
 
 ```typescript
 // ✅ Poprawnie - parametryzowane zapytanie
-const { data } = await supabase.from('matches').select('*').eq('id', userId)
+const { data } = await supabase
+  .from('planned_meals')
+  .select('*')
+  .eq('user_id', userId)
 
 // ❌ NIGDY nie używaj raw SQL z user input
 const { data } = await supabase.rpc('raw_query', {
-  query: `SELECT * FROM matches WHERE id = '${userId}'`, // SQL INJECTION!
+  query: `SELECT * FROM planned_meals WHERE user_id = '${userId}'`, // SQL INJECTION!
 })
 ```
 

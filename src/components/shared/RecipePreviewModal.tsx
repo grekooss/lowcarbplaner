@@ -105,7 +105,7 @@ export function RecipePreviewModal({
       >
         {/* Fixed Header */}
         <div className='relative flex-shrink-0 border-b-2 border-white bg-[var(--bg-card)] p-4 pb-3'>
-          <DialogTitle className='pr-8 text-center text-base font-bold text-gray-800 sm:pr-8 sm:text-left sm:text-lg lg:pr-0 lg:text-center lg:text-2xl'>
+          <DialogTitle className='text-text-main pr-8 text-center text-base font-bold sm:pr-8 sm:text-left sm:text-lg lg:pr-0 lg:text-center lg:text-2xl'>
             {recipe.name}
           </DialogTitle>
           <button
@@ -153,7 +153,7 @@ export function RecipePreviewModal({
               <div className='flex justify-center border-t-2 border-white bg-[var(--bg-card)] p-3'>
                 <Button
                   onClick={openStepMode}
-                  className='h-7 rounded-sm bg-red-600 px-6 text-sm font-bold tracking-wide text-white shadow-lg shadow-red-500/30 transition-transform hover:bg-red-700 active:scale-95'
+                  className='bg-primary shadow-primary/30 hover:bg-primary-hover h-7 rounded-sm px-6 text-sm font-bold tracking-wide text-white shadow-lg transition-transform active:scale-95'
                 >
                   KROKI
                 </Button>
@@ -163,7 +163,7 @@ export function RecipePreviewModal({
               <div className='border-t-2 border-white bg-[var(--bg-card)] p-4 pb-6 shadow-[0_-4px_20px_rgba(0,0,0,0.15)]'>
                 {/* Header: numer kroku + przycisk zamknięcia */}
                 <div className='mb-3 flex items-center justify-between'>
-                  <h3 className='text-base font-bold text-gray-800'>
+                  <h3 className='text-text-main text-base font-bold'>
                     Krok {currentStep} z {totalSteps}
                   </h3>
                   <Button
@@ -178,10 +178,10 @@ export function RecipePreviewModal({
 
                 {/* Opis kroku */}
                 <div className='mb-4 flex items-start gap-3'>
-                  <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-red-600 text-sm font-bold text-white'>
+                  <div className='bg-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white'>
                     {currentStep}
                   </div>
-                  <p className='flex-1 text-sm leading-relaxed font-medium text-gray-800'>
+                  <p className='text-text-main flex-1 text-sm leading-relaxed font-medium'>
                     {sortedInstructions[currentStep - 1]?.description}
                   </p>
                 </div>
@@ -205,8 +205,8 @@ export function RecipePreviewModal({
                         className={cn(
                           'h-2 rounded-full transition-all',
                           index + 1 === currentStep
-                            ? 'w-5 bg-red-600'
-                            : 'w-2 bg-gray-300 hover:bg-gray-400'
+                            ? 'bg-primary w-5'
+                            : 'bg-border hover:bg-text-muted w-2'
                         )}
                         aria-label={`Krok ${index + 1}`}
                       />

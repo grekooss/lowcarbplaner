@@ -209,7 +209,7 @@ export function DashboardClient({
     return (
       <div className='flex min-h-[60vh] flex-col items-center justify-center space-y-6'>
         <Loader2
-          className='h-16 w-16 animate-spin text-red-600'
+          className='text-primary h-16 w-16 animate-spin'
           strokeWidth={2}
         />
         <div className='space-y-2 text-center'>
@@ -281,7 +281,7 @@ export function DashboardClient({
           {isFetching && isDateChanging ? (
             <div className='flex h-full min-h-[200px] items-center justify-center rounded-md border-2 border-white bg-white/40 shadow-sm backdrop-blur-xl sm:min-h-[300px] sm:rounded-3xl'>
               <Loader2
-                className='h-10 w-10 animate-spin text-red-600'
+                className='text-primary h-10 w-10 animate-spin'
                 strokeWidth={3}
               />
             </div>
@@ -301,7 +301,7 @@ export function DashboardClient({
           {isFetching && !isLoading && isDateChanging ? (
             <div className='flex h-16 items-start justify-center'>
               <Loader2
-                className='h-14 w-14 animate-spin text-red-600'
+                className='text-primary h-14 w-14 animate-spin'
                 strokeWidth={3}
               />
             </div>

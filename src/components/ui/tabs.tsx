@@ -42,13 +42,13 @@ const tabsTriggerVariants = cva(
         default:
           'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-bg-tertiary data-[state=active]:font-semibold',
         breakfast:
-          'data-[state=active]:bg-breakfast-bg data-[state=active]:text-breakfast-text data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-breakfast-bg/30 data-[state=active]:font-semibold',
+          'data-[state=active]:bg-breakfast data-[state=active]:text-breakfast-foreground data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-breakfast/30 data-[state=active]:font-semibold',
         lunch:
-          'data-[state=active]:bg-lunch-bg data-[state=active]:text-lunch-text data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-lunch-bg/30 data-[state=active]:font-semibold',
+          'data-[state=active]:bg-lunch data-[state=active]:text-lunch-foreground data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-lunch/30 data-[state=active]:font-semibold',
         snack:
-          'data-[state=active]:bg-snack-bg data-[state=active]:text-snack-text data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-snack-bg/30 data-[state=active]:font-semibold',
+          'data-[state=active]:bg-snack data-[state=active]:text-snack-foreground data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-snack/30 data-[state=active]:font-semibold',
         dinner:
-          'data-[state=active]:bg-dinner-bg data-[state=active]:text-dinner-text data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-dinner-bg/30 data-[state=active]:font-semibold',
+          'data-[state=active]:bg-dinner data-[state=active]:text-dinner-foreground data-[state=inactive]:bg-background data-[state=inactive]:text-text-muted hover:data-[state=inactive]:bg-dinner/30 data-[state=active]:font-semibold',
       },
     },
     defaultVariants: {

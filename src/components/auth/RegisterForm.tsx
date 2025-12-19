@@ -84,7 +84,7 @@ export function RegisterForm({
       {/* General error from auth */}
       {error && (
         <div
-          className='rounded-md bg-red-50 p-2 text-xs text-red-600 sm:p-3 sm:text-sm'
+          className='bg-error-bg text-error rounded-md p-2 text-xs sm:p-3 sm:text-sm'
           role='alert'
           aria-live='polite'
         >
@@ -111,7 +111,7 @@ export function RegisterForm({
         {errors.email && (
           <p
             id='register-email-error'
-            className='text-xs text-red-600 sm:text-sm'
+            className='text-error text-xs sm:text-sm'
             role='alert'
           >
             {errors.email.message}
@@ -160,7 +160,7 @@ export function RegisterForm({
         {errors.password && (
           <p
             id='register-password-error'
-            className='text-xs text-red-600 sm:text-sm'
+            className='text-error text-xs sm:text-sm'
             role='alert'
           >
             {errors.password.message}
@@ -212,7 +212,7 @@ export function RegisterForm({
         {errors.confirmPassword && (
           <p
             id='confirm-password-error'
-            className='text-xs text-red-600 sm:text-sm'
+            className='text-error text-xs sm:text-sm'
             role='alert'
           >
             {errors.confirmPassword.message}

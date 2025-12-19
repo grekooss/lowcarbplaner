@@ -24,7 +24,7 @@ export function InstructionStep({ step, description }: InstructionStepProps) {
   return (
     <div className='flex items-start gap-3'>
       {/* Numer kroku - czerwony kwadrat z zaokrągleniami */}
-      <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm bg-red-600 text-sm font-bold text-white'>
+      <div className='bg-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm text-sm font-bold text-white'>
         {step}
       </div>
 

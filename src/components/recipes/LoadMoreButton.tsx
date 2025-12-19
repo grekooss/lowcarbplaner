@@ -43,7 +43,7 @@ export function LoadMoreButton({
         type='button'
         onClick={onLoadMore}
         disabled={isLoading || !hasMore}
-        className='min-w-[200px] rounded-sm border-2 border-transparent bg-white px-6 py-3 text-sm font-bold tracking-wider text-gray-800 uppercase transition-all hover:border-red-600 hover:bg-white hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent disabled:hover:text-gray-800'
+        className='text-text-main hover:border-primary hover:text-primary disabled:hover:text-text-main min-w-[200px] rounded-sm border-2 border-transparent bg-white px-6 py-3 text-sm font-bold tracking-wider uppercase transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent'
       >
         {isLoading ? (
           <span className='flex items-center justify-center'>

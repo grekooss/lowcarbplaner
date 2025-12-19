@@ -19,7 +19,7 @@ import { Loader2 } from 'lucide-react'
 export function DashboardSkeleton() {
   return (
     <div className='flex min-h-[60vh] items-center justify-center'>
-      <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+      <Loader2 className='text-primary h-12 w-12 animate-spin' />
     </div>
   )
 }

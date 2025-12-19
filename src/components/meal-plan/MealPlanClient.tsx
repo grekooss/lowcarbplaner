@@ -162,7 +162,7 @@ export const MealPlanClient = ({
   if (isLoading) {
     return (
       <div className='flex min-h-[60vh] items-center justify-center'>
-        <Loader2 className='h-12 w-12 animate-spin text-red-600' />
+        <Loader2 className='text-primary h-12 w-12 animate-spin' />
       </div>
     )
   }
@@ -171,14 +171,14 @@ export const MealPlanClient = ({
     <>
       {/* Wskaźnik generowania planu */}
       {isGenerating && (
-        <div className='mb-6 rounded-md border bg-blue-50 p-4 sm:rounded-2xl'>
+        <div className='bg-info/10 mb-6 rounded-md border p-4 sm:rounded-2xl'>
           <div className='flex items-center gap-3'>
-            <Loader2 className='h-5 w-5 animate-spin text-blue-600' />
+            <Loader2 className='text-info h-5 w-5 animate-spin' />
             <div>
-              <p className='font-semibold text-blue-900'>
+              <p className='text-text-main font-semibold'>
                 Generowanie planu posiłków...
               </p>
-              <p className='text-sm text-blue-700'>
+              <p className='text-text-secondary text-sm'>
                 To może potrwać chwilę. Tworzymy spersonalizowany plan na 7 dni.
               </p>
             </div>

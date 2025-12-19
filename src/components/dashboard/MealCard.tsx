@@ -42,13 +42,13 @@ const DIFFICULTY_LABEL: Record<'easy' | 'medium' | 'hard', string> = {
 const getDifficultyColor = (difficulty: string | undefined) => {
   switch (difficulty?.toLowerCase()) {
     case 'easy':
-      return 'bg-green-500'
+      return 'bg-success'
     case 'medium':
-      return 'bg-orange-500'
+      return 'bg-tertiary'
     case 'hard':
-      return 'bg-red-600'
+      return 'bg-primary'
     default:
-      return 'bg-gray-300'
+      return 'bg-text-muted'
   }
 }
 
@@ -129,8 +129,8 @@ export function MealCard({
                 className={cn(
                   'flex h-7 w-7 items-center justify-center rounded-full border-2 shadow-sm transition-all duration-300 sm:h-10 sm:w-10',
                   meal.is_eaten
-                    ? 'border-red-600 bg-red-600'
-                    : 'border-white bg-white group-hover:border-red-400',
+                    ? 'border-primary bg-primary'
+                    : 'group-hover:border-primary/40 border-white bg-white',
                   isPending && 'pointer-events-none'
                 )}
               >
@@ -187,7 +187,7 @@ export function MealCard({
                       setSwapDialogOpen(true)
                     }}
                     aria-label='Zmień przepis'
-                    className='absolute top-1 right-1 h-8 w-8 rounded-full bg-white/90 p-1.5 text-gray-600 shadow-md transition-all hover:bg-white hover:text-red-600 md:top-1/2 md:right-auto md:left-1/2 md:h-10 md:w-10 md:-translate-x-1/2 md:-translate-y-1/2 md:p-2 md:opacity-0 md:group-hover:opacity-100'
+                    className='text-text-secondary hover:text-primary absolute top-1 right-1 h-8 w-8 rounded-full bg-white/90 p-1.5 shadow-md transition-all hover:bg-white md:top-1/2 md:right-auto md:left-1/2 md:h-10 md:w-10 md:-translate-x-1/2 md:-translate-y-1/2 md:p-2 md:opacity-0 md:group-hover:opacity-100'
                   >
                     <RefreshCw className='h-5 w-5' />
                   </Button>
@@ -197,7 +197,7 @@ export function MealCard({
               <div className='flex flex-1 flex-col justify-center'>
                 <div className='mb-3 flex flex-wrap items-center gap-2'>
                   {/* Calories Badge */}
-                  <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs text-white shadow-sm shadow-red-500/20'>
+                  <div className='bg-primary shadow-primary/20 flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs text-white shadow-sm'>
                     <Flame className='h-3.5 w-3.5' />{' '}
                     <span className='font-bold'>
                       {formatNumber(calories, 'kcal')}
@@ -227,7 +227,7 @@ export function MealCard({
                     className='flex items-center gap-1.5'
                     title='Węglowodany'
                   >
-                    <Wheat className='h-5 w-5 text-orange-500' />
+                    <Wheat className='text-tertiary h-5 w-5' />
                     <span className='flex items-baseline gap-0.5 text-gray-700'>
                       <span className='font-bold'>
                         {formatNumber(carbs, 'g')}
@@ -238,7 +238,7 @@ export function MealCard({
 
                   {/* Protein */}
                   <div className='flex items-center gap-1.5' title='Białko'>
-                    <Beef className='h-5 w-5 text-blue-500' />
+                    <Beef className='text-info h-5 w-5' />
                     <span className='flex items-baseline gap-0.5 text-gray-700'>
                       <span className='font-bold'>
                         {formatNumber(protein, 'g')}
@@ -249,7 +249,7 @@ export function MealCard({
 
                   {/* Fat */}
                   <div className='flex items-center gap-1.5' title='Tłuszcze'>
-                    <Droplet className='h-5 w-5 text-green-500' />
+                    <Droplet className='text-success h-5 w-5' />
                     <span className='flex items-baseline gap-0.5 text-gray-700'>
                       <span className='font-bold'>
                         {formatNumber(fats, 'g')}

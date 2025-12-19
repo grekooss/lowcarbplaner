@@ -108,7 +108,7 @@ export function SwapRecipeDialog({
           {/* Fixed Header */}
           <div className='relative flex-shrink-0 border-b-2 border-white bg-[var(--bg-card)] p-4 pb-3'>
             <DialogHeader>
-              <DialogTitle className='text-center text-base font-bold text-gray-800 sm:text-lg'>
+              <DialogTitle className='text-text-main text-center text-base font-bold sm:text-lg'>
                 Zmień przepis
               </DialogTitle>
             </DialogHeader>
@@ -127,7 +127,7 @@ export function SwapRecipeDialog({
             )}
 
             {error && (
-              <div className='rounded-lg border border-red-200/50 bg-red-50/50 p-3 text-xs text-red-600 backdrop-blur-sm sm:rounded-2xl sm:p-4 sm:text-sm'>
+              <div className='border-error/30 bg-error-bg text-error rounded-lg border p-3 text-xs backdrop-blur-sm sm:rounded-2xl sm:p-4 sm:text-sm'>
                 Błąd podczas wczytywania zamienników: {(error as Error).message}
               </div>
             )}
@@ -146,7 +146,7 @@ export function SwapRecipeDialog({
                 {/* Aktualny przepis */}
                 <div className='relative flex gap-3 rounded-lg border-2 border-white bg-white/40 p-2.5 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:gap-4 sm:rounded-2xl sm:p-3'>
                   {/* Aktualny Badge - prawy górny róg */}
-                  <div className='absolute top-1.5 right-2 flex items-center gap-1 rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase sm:top-2 sm:right-4 sm:px-2 sm:text-xs'>
+                  <div className='bg-primary absolute top-1.5 right-2 flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase sm:top-2 sm:right-4 sm:px-2 sm:text-xs'>
                     Aktualny
                   </div>
 
@@ -160,7 +160,7 @@ export function SwapRecipeDialog({
                         sizes='(max-width: 640px) 64px, 80px'
                       />
                     ) : (
-                      <div className='flex h-full w-full items-center justify-center text-gray-400'>
+                      <div className='text-text-muted flex h-full w-full items-center justify-center'>
                         <UtensilsCrossed className='h-8 w-8 sm:h-10 sm:w-10' />
                       </div>
                     )}
@@ -169,7 +169,7 @@ export function SwapRecipeDialog({
                   <div className='flex flex-1 flex-col justify-center'>
                     <div className='mb-1.5 flex flex-wrap items-center gap-1.5 sm:mb-2 sm:gap-2'>
                       {/* Calories Badge */}
-                      <div className='flex items-center gap-0.5 rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] text-white shadow-sm shadow-red-500/20 sm:gap-1 sm:px-2 sm:text-xs'>
+                      <div className='bg-primary shadow-primary/20 flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 text-[10px] text-white shadow-sm sm:gap-1 sm:px-2 sm:text-xs'>
                         <Flame className='h-2.5 w-2.5 sm:h-3 sm:w-3' />
                         <span className='font-bold'>
                           {originalCalories}
@@ -178,7 +178,7 @@ export function SwapRecipeDialog({
                       </div>
                     </div>
 
-                    <h3 className='mb-1.5 text-sm leading-tight font-bold text-gray-800 sm:mb-2 sm:text-base'>
+                    <h3 className='text-text-main mb-1.5 text-sm leading-tight font-bold sm:mb-2 sm:text-base'>
                       {meal.recipe.name}
                     </h3>
 
@@ -187,8 +187,8 @@ export function SwapRecipeDialog({
                         className='flex items-center gap-1'
                         title='Węglowodany'
                       >
-                        <Wheat className='h-4 w-4 text-orange-500 sm:h-5 sm:w-5' />
-                        <span className='flex items-baseline gap-0.5 text-gray-700'>
+                        <Wheat className='text-tertiary h-4 w-4 sm:h-5 sm:w-5' />
+                        <span className='text-text-secondary flex items-baseline gap-0.5'>
                           <span className='font-bold'>
                             {Math.round(currentNutrition.carbs_g)}
                           </span>
@@ -196,8 +196,8 @@ export function SwapRecipeDialog({
                         </span>
                       </div>
                       <div className='flex items-center gap-1' title='Białko'>
-                        <Beef className='h-4 w-4 text-blue-500 sm:h-5 sm:w-5' />
-                        <span className='flex items-baseline gap-0.5 text-gray-700'>
+                        <Beef className='text-info h-4 w-4 sm:h-5 sm:w-5' />
+                        <span className='text-text-secondary flex items-baseline gap-0.5'>
                           <span className='font-bold'>
                             {Math.round(currentNutrition.protein_g)}
                           </span>
@@ -205,8 +205,8 @@ export function SwapRecipeDialog({
                         </span>
                       </div>
                       <div className='flex items-center gap-1' title='Tłuszcze'>
-                        <Droplet className='h-4 w-4 text-green-500 sm:h-5 sm:w-5' />
-                        <span className='flex items-baseline gap-0.5 text-gray-700'>
+                        <Droplet className='text-success h-4 w-4 sm:h-5 sm:w-5' />
+                        <span className='text-text-secondary flex items-baseline gap-0.5'>
                           <span className='font-bold'>
                             {Math.round(currentNutrition.fats_g)}
                           </span>
@@ -233,7 +233,7 @@ export function SwapRecipeDialog({
                       onClick={() => setSelectedRecipeId(replacement.id)}
                       className={cn(
                         'relative flex w-full gap-3 rounded-lg border-2 bg-white/40 p-2.5 text-left shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all hover:scale-[1.01] sm:gap-4 sm:rounded-2xl sm:p-3',
-                        isSelected ? 'border-red-600' : 'border-white'
+                        isSelected ? 'border-primary' : 'border-white'
                       )}
                     >
                       {/* Zobacz Button - prawy górny róg */}
@@ -250,7 +250,7 @@ export function SwapRecipeDialog({
                             setPreviewRecipeId(replacement.id)
                           }
                         }}
-                        className='absolute top-1.5 right-2 flex cursor-pointer items-center gap-1 rounded-sm bg-white px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-gray-800 uppercase transition-colors hover:text-red-600 sm:top-2 sm:right-4 sm:px-2 sm:text-xs'
+                        className='text-text-main hover:text-primary absolute top-1.5 right-2 flex cursor-pointer items-center gap-1 rounded-sm bg-white px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase transition-colors sm:top-2 sm:right-4 sm:px-2 sm:text-xs'
                       >
                         Zobacz
                       </span>
@@ -265,7 +265,7 @@ export function SwapRecipeDialog({
                             sizes='(max-width: 640px) 64px, 80px'
                           />
                         ) : (
-                          <div className='flex h-full w-full items-center justify-center text-gray-400'>
+                          <div className='text-text-muted flex h-full w-full items-center justify-center'>
                             <UtensilsCrossed className='h-8 w-8 sm:h-10 sm:w-10' />
                           </div>
                         )}
@@ -274,7 +274,7 @@ export function SwapRecipeDialog({
                       <div className='flex flex-1 flex-col justify-center'>
                         <div className='mb-1.5 flex flex-wrap items-center gap-1.5 sm:mb-2 sm:gap-2'>
                           {/* Calories Badge */}
-                          <div className='flex items-center gap-0.5 rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] text-white shadow-sm shadow-red-500/20 sm:gap-1 sm:px-2 sm:text-xs'>
+                          <div className='bg-primary shadow-primary/20 flex items-center gap-0.5 rounded-sm px-1.5 py-0.5 text-[10px] text-white shadow-sm sm:gap-1 sm:px-2 sm:text-xs'>
                             <Flame className='h-2.5 w-2.5 sm:h-3 sm:w-3' />
                             <span className='font-bold'>
                               {replacement.total_calories}
@@ -283,7 +283,7 @@ export function SwapRecipeDialog({
                           </div>
                         </div>
 
-                        <h3 className='mb-1.5 text-sm leading-tight font-bold text-gray-800 sm:mb-2 sm:text-base'>
+                        <h3 className='text-text-main mb-1.5 text-sm leading-tight font-bold sm:mb-2 sm:text-base'>
                           {replacement.name}
                         </h3>
 
@@ -292,8 +292,8 @@ export function SwapRecipeDialog({
                             className='flex items-center gap-1'
                             title='Węglowodany'
                           >
-                            <Wheat className='h-4 w-4 text-orange-500 sm:h-5 sm:w-5' />
-                            <span className='flex items-baseline gap-0.5 text-gray-700'>
+                            <Wheat className='text-tertiary h-4 w-4 sm:h-5 sm:w-5' />
+                            <span className='text-text-secondary flex items-baseline gap-0.5'>
                               <span className='font-bold'>
                                 {Math.round(replacement.total_carbs_g ?? 0)}
                               </span>
@@ -304,8 +304,8 @@ export function SwapRecipeDialog({
                             className='flex items-center gap-1'
                             title='Białko'
                           >
-                            <Beef className='h-4 w-4 text-blue-500 sm:h-5 sm:w-5' />
-                            <span className='flex items-baseline gap-0.5 text-gray-700'>
+                            <Beef className='text-info h-4 w-4 sm:h-5 sm:w-5' />
+                            <span className='text-text-secondary flex items-baseline gap-0.5'>
                               <span className='font-bold'>
                                 {Math.round(replacement.total_protein_g ?? 0)}
                               </span>
@@ -316,8 +316,8 @@ export function SwapRecipeDialog({
                             className='flex items-center gap-1'
                             title='Tłuszcze'
                           >
-                            <Droplet className='h-4 w-4 text-green-500 sm:h-5 sm:w-5' />
-                            <span className='flex items-baseline gap-0.5 text-gray-700'>
+                            <Droplet className='text-success h-4 w-4 sm:h-5 sm:w-5' />
+                            <span className='text-text-secondary flex items-baseline gap-0.5'>
                               <span className='font-bold'>
                                 {Math.round(replacement.total_fats_g ?? 0)}
                               </span>

@@ -4,25 +4,27 @@
 
 ### 1. Image Optimization - Meal Images
 
+> **Uwaga**: Zdjęcia przepisów przechowywane są w Supabase Storage, nie lokalnie w `/public`.
+
 ```typescript
 import Image from 'next/image';
 
-// ✅ Poprawnie - zdjęcia posiłków
+// ✅ Z remote images (Supabase Storage)
 <Image
-  src="/meals/salad.jpg"
-  alt="Low-carb salad"
+  src="https://your-project.supabase.co/storage/v1/object/public/recipe-images/meal.jpg"
+  alt="Meal photo"
   width={800}
   height={600}
   priority // dla LCP images
 />
 
-// ✅ Z remote images (storage Supabase)
+// ✅ Z dynamicznym URL z bazy danych
 <Image
-  src="https://your-project.supabase.co/storage/v1/object/public/recipes/meal.jpg"
-  alt="Meal photo"
+  src={recipe.image_url || '/placeholder-meal.jpg'}
+  alt={recipe.name}
   width={800}
   height={600}
-  loader={({ src, width }) => `${src}?w=${width}`}
+  className="object-cover"
 />
 ```
 
@@ -57,8 +59,10 @@ const HeavyComponent = dynamic(() => import('@/components/HeavyComponent'), {
 
 ## Bundle Analysis
 
+> **Uwaga**: `@next/bundle-analyzer` nie jest zainstalowany domyślnie. Zainstaluj w razie potrzeby.
+
 ```bash
-# Zainstaluj analyzer
+# Zainstaluj analyzer (opcjonalnie)
 npm install -D @next/bundle-analyzer
 
 # Konfiguracja (next.config.js)
@@ -79,8 +83,13 @@ ANALYZE=true npm run build
 ### 1. Indeksy
 
 ```sql
-create index matches_date_idx on public.matches(date);
-create index matches_created_by_idx on public.matches(created_by);
+-- Indeksy dla planned_meals
+create index idx_planned_meals_user_date on public.planned_meals (user_id, meal_date);
+create index idx_planned_meals_recipe on public.planned_meals (recipe_id);
+
+-- Indeksy dla recipes (content schema)
+create index idx_recipes_tags_gin on content.recipes using gin (tags);
+create index idx_recipes_meal_types_gin on content.recipes using gin (meal_types);
 ```
 
 ### 2. Optymalizacja Zapytań - Meal Plans
@@ -108,8 +117,8 @@ const { data } = await supabase
 ```typescript
 import { cache } from 'react'
 
-export const getMatches = cache(async () => {
-  const { data } = await supabase.from('matches').select('*')
+export const getRecipes = cache(async () => {
+  const { data } = await supabase.from('recipes').select('*')
   return data
 })
 ```
@@ -117,11 +126,11 @@ export const getMatches = cache(async () => {
 ### 2. Revalidate
 
 ```typescript
-// app/matches/page.tsx
+// app/recipes/page.tsx
 export const revalidate = 60; // 60 sekund
 
-export default async function MatchesPage() {
-  const matches = await getMatches();
+export default async function RecipesPage() {
+  const recipes = await getRecipes();
   return <div>{/* ... */}</div>;
 }
 ```

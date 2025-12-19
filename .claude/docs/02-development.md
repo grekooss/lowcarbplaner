@@ -26,20 +26,19 @@
    # Edytuj plik .env.local i uzupełnij wartości
    ```
 
-4. **Konfiguracja Supabase (opcjonalnie lokalnie)**
+4. **Konfiguracja Supabase Cloud**
+
+   > ⚠️ **WAŻNE**: Projekt używa wyłącznie **Supabase Cloud**. Nigdy nie używaj lokalnego Dockera ani `supabase start`.
 
    ```bash
-   # Zainstaluj Supabase CLI
+   # Zainstaluj Supabase CLI (do generowania typów i migracji zdalnych)
    npm install -g supabase
 
-   # Inicjalizuj projekt
-   npx supabase init
+   # Połącz się z projektem Cloud
+   npx supabase link --project-ref <your-project-ref>
 
-   # Uruchom lokalnie
-   npx supabase start
-
-   # Zastosuj migracje
-   npx supabase db push
+   # Zastosuj migracje na Cloud
+   npx supabase db push --linked
    ```
 
 5. **Uruchom Serwer Deweloperski**
@@ -197,20 +196,23 @@ npm run test:e2e:debug      # Debug mode
 npm run test:ui             # Otwórz interaktywny UI
 ```
 
-### Database (Supabase)
+### Database (Supabase Cloud)
+
+> ⚠️ **WAŻNE**: Używaj wyłącznie Supabase Cloud. Nigdy nie uruchamiaj `supabase start`.
 
 ```bash
-# Migracje
-npx supabase db push        # Zastosuj migracje
-npx supabase db reset       # Reset bazy (OSTROŻNIE!)
-npx supabase migration new nazwa_migracji  # Nowa migracja
+# Połącz z projektem Cloud
+npx supabase link --project-ref <your-project-ref>
 
-# Typy TypeScript
-npx supabase gen types typescript --local > types/database.types.ts
+# Migracje (na Cloud)
+npx supabase db push --linked       # Zastosuj migracje na Cloud
+npx supabase migration new nazwa_migracji  # Nowa migracja lokalna
 
-# Status
-npx supabase status         # Status lokalnej instancji
-npx supabase db diff        # Pokaż zmiany w schemacie
+# Typy TypeScript (z Cloud)
+npx supabase gen types typescript --project-id <project-ref> --schema public --schema content > src/types/database.types.ts
+
+# Status (Cloud)
+npx supabase db diff --linked       # Pokaż różnice względem Cloud
 ```
 
 ### Inne
@@ -260,19 +262,21 @@ await calculateBMR()
 console.timeEnd('calculateBMR')
 ```
 
-### Supabase Studio
+### Supabase Studio (Cloud)
+
+> ⚠️ **WAŻNE**: Używaj Supabase Studio w Cloud Dashboard, nie lokalnie.
 
 ```bash
-# Lokalny Supabase Studio
-npx supabase start
-# Otwórz: http://localhost:54323
+# Otwórz Supabase Studio w przeglądarce:
+# https://supabase.com/dashboard/project/<your-project-ref>
 
-# Features:
+# Features w Cloud Dashboard:
 # - Table Editor
 # - SQL Editor
 # - Auth Manager
 # - Storage Browser
 # - Database Logs
+# - Real-time monitoring
 ```
 
 ### VS Code Debug Configuration
@@ -372,7 +376,7 @@ Next.js 15 domyślnie używa Turbopack (szybszy niż Webpack):
 
 ```bash
 # Main branch (produkcja)
-main
+master
 
 # Feature branches
 git checkout -b feature/user-onboarding

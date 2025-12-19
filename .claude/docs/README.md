@@ -6,6 +6,24 @@ Szczegółowa dokumentacja techniczna podzielona na moduły tematyczne.
 
 ## 📖 Spis Treści
 
+### 🎨 Style i Design System
+
+**[12-style-guide.md](./12-style-guide.md)**
+
+- Kompletny przewodnik po systemie stylów
+- Paleta kolorów (primary, meal categories, semantic)
+- Typografia (Montserrat, skala rozmiarów)
+- Komponenty UI (Button, Card, Badge, Dialog, Tabs, Input, Select)
+- Glassmorphism - implementacja efektu szkła
+- System spacingu i border radius
+- Animacje i przejścia
+- Responsywność i breakpoints
+- Zmienne CSS i tokeny Tailwind v4
+- Wzorce layoutu (AppShell, siatki)
+- Dostępność (WCAG 2.1 AA)
+
+---
+
 ### 🏗️ Architektura i Konfiguracja
 
 **[01-architecture.md](./01-architecture.md)**
@@ -124,6 +142,8 @@ Szczegółowa dokumentacja techniczna podzielona na moduły tematyczne.
 
 ### Podczas Developmentu
 
+- **Tworzysz komponent UI?** → [12-style-guide.md](./12-style-guide.md)
+- **Stylowanie, kolory, glassmorphism?** → [12-style-guide.md](./12-style-guide.md)
 - **Tworzysz onboarding?** → [04-forms-validation.md](./04-forms-validation.md)
 - **Implementujesz BMR calculator?** → [10-examples.md](./10-examples.md)
 - **Zarządzasz stanem postępu?** → [03-state-management.md](./03-state-management.md)
@@ -153,7 +173,8 @@ Szczegółowa dokumentacja techniczna podzielona na moduły tematyczne.
 | 08-performance      | ~150 linii      | Optymalizacja              |
 | 09-ci-cd            | ~100 linii      | GitHub Actions             |
 | 10-examples         | ~300 linii      | Przykłady kodu             |
-| **RAZEM**           | **~3100 linii** | **Kompletna dokumentacja** |
+| 12-style-guide      | ~1400 linii     | Design System, komponenty  |
+| **RAZEM**           | **~4500 linii** | **Kompletna dokumentacja** |
 
 **Główny CLAUDE.md**: ~525 linii (zawiera Quick Reference + linki + MVP features)
 

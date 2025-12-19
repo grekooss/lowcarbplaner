@@ -160,15 +160,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               'flex items-center gap-3 rounded-md border-2 px-4 py-3 text-sm font-medium transition-all',
               isActive
-                ? 'border-white bg-white/60 font-bold text-gray-800 shadow-lg backdrop-blur-xl'
-                : 'border-transparent text-gray-700 hover:bg-white/10 hover:text-gray-900'
+                ? 'text-text-main border-white bg-white/60 font-bold shadow-lg backdrop-blur-xl'
+                : 'text-text-secondary hover:text-text-main border-transparent hover:bg-white/10'
             )}
             aria-current={isActive ? 'page' : undefined}
           >
             <Icon
               className={cn(
                 'h-5 w-5',
-                isActive ? 'text-gray-500' : 'text-gray-600'
+                isActive ? 'text-text-muted' : 'text-text-secondary'
               )}
             />
             <span>{item.label}</span>
@@ -184,13 +184,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className={cn(
             'flex items-center gap-3 rounded-md border-2 px-4 py-3 text-sm font-medium transition-all',
             isActive
-              ? 'border-white bg-white/60 font-bold text-gray-800 shadow-lg backdrop-blur-xl'
+              ? 'text-text-main border-white bg-white/60 font-bold shadow-lg backdrop-blur-xl'
               : 'border-transparent text-white hover:bg-white/10 hover:text-white'
           )}
           aria-current={isActive ? 'page' : undefined}
         >
           <Icon
-            className={cn('h-5 w-5', isActive ? 'text-gray-500' : 'text-white')}
+            className={cn(
+              'h-5 w-5',
+              isActive ? 'text-text-muted' : 'text-white'
+            )}
             style={
               !isActive
                 ? { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }
@@ -227,7 +230,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <aside className='hidden h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white xl:flex'>
               {/* Logo */}
               <div className='mb-10 flex items-center gap-3 px-2'>
-                <div className='rounded-lg bg-red-600 p-1.5 shadow-lg shadow-red-500/30'>
+                <div className='bg-primary shadow-primary/30 rounded-lg p-1.5 shadow-lg'>
                   <Hexagon className='h-5 w-5 fill-current text-white' />
                 </div>
                 <span
@@ -302,15 +305,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 >
                   <button
                     onClick={() => setMobileNavOpen(false)}
-                    className='absolute top-0.5 right-0.5 rounded-lg p-2 hover:bg-gray-100'
+                    className='hover:bg-bg-tertiary absolute top-0.5 right-0.5 rounded-lg p-2'
                   >
-                    <X className='h-5 w-5 text-gray-600' />
+                    <X className='text-text-secondary h-5 w-5' />
                   </button>
                   <div className='mt-4 mb-8 flex items-center gap-3'>
-                    <div className='rounded-lg bg-red-600 p-1.5'>
+                    <div className='bg-primary rounded-lg p-1.5'>
                       <Hexagon className='h-5 w-5 fill-current text-white' />
                     </div>
-                    <span className='text-xl font-bold text-gray-800'>
+                    <span className='text-text-main text-xl font-bold'>
                       LowCarbPlaner
                     </span>
                   </div>
@@ -330,12 +333,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className='absolute left-3 rounded-sm bg-white p-1.5 transition-colors hover:bg-white/70'
                   onClick={() => setMobileNavOpen(true)}
                 >
-                  <Menu className='h-5 w-5 text-gray-600' />
+                  <Menu className='text-text-secondary h-5 w-5' />
                 </button>
 
                 {/* Centered Title */}
                 {!pathname.includes('/auth') && getViewInfo(pathname).title && (
-                  <h1 className='text-base font-bold text-gray-800'>
+                  <h1 className='text-text-main text-base font-bold'>
                     {getViewInfo(pathname).title}
                   </h1>
                 )}
@@ -354,12 +357,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       className='rounded-sm p-1 transition-opacity hover:opacity-70'
                     >
                       {user ? (
-                        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-red-600'>
+                        <div className='bg-primary flex h-7 w-7 items-center justify-center rounded-full'>
                           <UserCircle className='h-4 w-4 text-white' />
                         </div>
                       ) : (
-                        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-gray-200'>
-                          <User className='h-4 w-4 text-gray-500' />
+                        <div className='bg-bg-tertiary flex h-7 w-7 items-center justify-center rounded-full'>
+                          <User className='text-text-muted h-4 w-4' />
                         </div>
                       )}
                     </button>
@@ -369,15 +372,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
                         <Link
                           href='/profile'
-                          className='flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                          className='text-text-secondary hover:bg-bg-tertiary flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors'
                           onClick={() => setHeaderMenuOpen(false)}
                         >
-                          <Settings className='h-4 w-4 text-gray-500' />
+                          <Settings className='text-text-muted h-4 w-4' />
                           <span>Ustawienia profilu</span>
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className='flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
+                          className='text-primary hover:bg-primary/5 flex w-full items-center gap-3 px-4 py-3 text-sm font-medium transition-colors'
                         >
                           <LogOut className='h-4 w-4' />
                           <span>Wyloguj się</span>
@@ -402,19 +405,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 xl:hidden'
                         onClick={() => setMobileNavOpen(true)}
                       >
-                        <Menu className='h-6 w-6 text-gray-600' />
+                        <Menu className='text-text-secondary h-6 w-6' />
                       </button>
 
                       {/* View Title with Red Bar - hide when auth modal is open or on root path */}
                       {!pathname.includes('/auth') &&
                         getViewInfo(pathname).title && (
                           <div className='flex items-center gap-3'>
-                            <div className='h-10 w-1 rounded-full bg-red-600 shadow-sm shadow-red-500/50' />
+                            <div className='bg-primary shadow-primary/50 h-10 w-1 rounded-full shadow-sm' />
                             <div className='flex flex-col justify-center'>
-                              <h1 className='mb-1 text-2xl leading-none font-bold tracking-tight text-gray-800 lg:mb-1.5 lg:text-3xl'>
+                              <h1 className='text-text-main mb-1 text-2xl leading-none font-bold tracking-tight lg:mb-1.5 lg:text-3xl'>
                                 {getViewInfo(pathname).title}
                               </h1>
-                              <p className='text-sm leading-none font-medium text-gray-600 lg:text-base'>
+                              <p className='text-text-secondary text-sm leading-none font-medium lg:text-base'>
                                 {getViewInfo(pathname).subtitle}
                               </p>
                             </div>
@@ -437,20 +440,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         >
                           {user ? (
                             <>
-                              <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-600'>
+                              <div className='bg-primary flex h-8 w-8 items-center justify-center rounded-full'>
                                 <UserCircle className='h-5 w-5 text-white' />
                               </div>
-                              <span className='text-sm font-bold text-gray-700 transition-colors group-hover:text-gray-900'>
+                              <span className='text-text-secondary group-hover:text-text-main text-sm font-bold transition-colors'>
                                 Witaj {displayName}
                               </span>
-                              <ChevronDown className='h-4 w-4 text-gray-500' />
+                              <ChevronDown className='text-text-muted h-4 w-4' />
                             </>
                           ) : (
                             <>
-                              <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
-                                <User className='h-4 w-4 text-gray-500' />
+                              <div className='bg-bg-tertiary flex h-8 w-8 items-center justify-center rounded-full'>
+                                <User className='text-text-muted h-4 w-4' />
                               </div>
-                              <span className='text-sm font-bold text-gray-700'>
+                              <span className='text-text-secondary text-sm font-bold'>
                                 Zaloguj się
                               </span>
                             </>
@@ -462,15 +465,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           <div className='absolute top-full right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-white bg-white/90 shadow-lg backdrop-blur-xl'>
                             <Link
                               href='/profile'
-                              className='flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                              className='text-text-secondary hover:bg-bg-tertiary flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors'
                               onClick={() => setHeaderMenuOpen(false)}
                             >
-                              <Settings className='h-4 w-4 text-gray-500' />
+                              <Settings className='text-text-muted h-4 w-4' />
                               <span>Ustawienia profilu</span>
                             </Link>
                             <button
                               onClick={handleLogout}
-                              className='flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
+                              className='text-primary hover:bg-primary/5 flex w-full items-center gap-3 px-4 py-3 text-sm font-medium transition-colors'
                             >
                               <LogOut className='h-4 w-4' />
                               <span>Wyloguj się</span>
@@ -491,13 +494,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Global Right Side Ad Panel (Visible on Large Screens - Desktop) */}
           <div className='hidden h-full w-80 flex-shrink-0 2xl:flex'>
             <div className='group flex h-full w-full flex-col rounded-2xl border-2 border-white bg-white/20 p-6 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 md:rounded-3xl lg:rounded-3xl'>
-              <h3 className='mb-6 text-lg font-bold text-gray-800'>Reklama</h3>
-              <div className='flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50'>
-                <MonitorPlay className='h-12 w-12 text-gray-600 transition-colors group-hover:text-red-500' />
-                <div className='text-xl font-bold text-gray-700 transition-colors group-hover:text-red-600'>
+              <h3 className='text-text-main mb-6 text-lg font-bold'>Reklama</h3>
+              <div className='group-hover:border-primary/50 flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors'>
+                <MonitorPlay className='text-text-secondary group-hover:text-primary h-12 w-12 transition-colors' />
+                <div className='text-text-secondary group-hover:text-primary text-xl font-bold transition-colors'>
                   Google Ads
                 </div>
-                <span className='text-xs font-medium text-gray-500'>
+                <span className='text-text-muted text-xs font-medium'>
                   Treść sponsorowana
                 </span>
               </div>
@@ -507,15 +510,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Mobile/Tablet Ad Panel - Landscape (Right Side) */}
           <div className='ad-panel-landscape h-full w-48 flex-shrink-0 pr-[env(safe-area-inset-right,8px)] md:w-56'>
             <div className='group flex h-full w-full flex-col rounded-lg border-2 border-white bg-white/20 p-3 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 sm:rounded-2xl md:p-4 lg:rounded-3xl'>
-              <h3 className='mb-3 text-xs font-bold text-gray-800 md:mb-4 md:text-sm'>
+              <h3 className='text-text-main mb-3 text-xs font-bold md:mb-4 md:text-sm'>
                 Reklama
               </h3>
-              <div className='flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50 sm:rounded-xl'>
-                <MonitorPlay className='h-8 w-8 text-gray-600 transition-colors group-hover:text-red-500 md:h-10 md:w-10' />
-                <div className='text-base font-bold text-gray-700 transition-colors group-hover:text-red-600 md:text-lg'>
+              <div className='group-hover:border-primary/50 flex w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors sm:rounded-xl'>
+                <MonitorPlay className='text-text-secondary group-hover:text-primary h-8 w-8 transition-colors md:h-10 md:w-10' />
+                <div className='text-text-secondary group-hover:text-primary text-base font-bold transition-colors md:text-lg'>
                   Google Ads
                 </div>
-                <span className='text-[10px] font-medium text-gray-500'>
+                <span className='text-text-muted text-[10px] font-medium'>
                   Treść sponsorowana
                 </span>
               </div>
@@ -525,13 +528,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Mobile/Tablet Ad Panel - Portrait (Bottom) */}
           <div className='ad-panel-portrait h-24 w-full flex-shrink-0 pb-[env(safe-area-inset-bottom,8px)] md:h-28'>
             <div className='group flex h-full w-full flex-col rounded-lg border-2 border-white bg-white/20 p-2 shadow-2xl backdrop-blur-md transition-colors hover:bg-white/30 sm:rounded-2xl md:p-3 lg:rounded-3xl'>
-              <div className='flex h-full w-full cursor-pointer flex-row items-center justify-center gap-3 rounded-md border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors group-hover:border-red-400/50 sm:rounded-xl md:gap-4'>
-                <MonitorPlay className='h-7 w-7 text-gray-600 transition-colors group-hover:text-red-500 md:h-8 md:w-8' />
+              <div className='group-hover:border-primary/50 flex h-full w-full cursor-pointer flex-row items-center justify-center gap-3 rounded-md border-2 border-dashed border-white/50 bg-white/40 shadow-inner transition-colors sm:rounded-xl md:gap-4'>
+                <MonitorPlay className='text-text-secondary group-hover:text-primary h-7 w-7 transition-colors md:h-8 md:w-8' />
                 <div className='flex flex-col items-start'>
-                  <div className='text-sm font-bold text-gray-700 transition-colors group-hover:text-red-600 md:text-base'>
+                  <div className='text-text-secondary group-hover:text-primary text-sm font-bold transition-colors md:text-base'>
                     Google Ads
                   </div>
-                  <span className='text-[10px] font-medium text-gray-500'>
+                  <span className='text-text-muted text-[10px] font-medium'>
                     Treść sponsorowana
                   </span>
                 </div>

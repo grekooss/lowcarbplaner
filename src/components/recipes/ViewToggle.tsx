@@ -37,8 +37,8 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
         aria-label='Widok siatki'
         className={`h-6 w-6 rounded-sm transition-all ${
           mode === 'grid'
-            ? 'bg-red-600 text-white shadow-sm shadow-red-500/20 hover:bg-red-600'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+            ? 'bg-primary shadow-primary/20 hover:bg-primary text-white shadow-sm'
+            : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-main'
         }`}
       >
         <Grid3x3 className='h-3.5 w-3.5' />
@@ -50,8 +50,8 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
         aria-label='Widok listy'
         className={`h-6 w-6 rounded-sm transition-all ${
           mode === 'list'
-            ? 'bg-red-600 text-white shadow-sm shadow-red-500/20 hover:bg-red-600'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+            ? 'bg-primary shadow-primary/20 hover:bg-primary text-white shadow-sm'
+            : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-main'
         }`}
       >
         <List className='h-3.5 w-3.5' />

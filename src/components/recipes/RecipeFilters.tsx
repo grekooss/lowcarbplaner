@@ -64,8 +64,8 @@ export function RecipeFilters({
             onClick={() => handleSelect(type)}
             className={`h-[34px] rounded-sm border px-3 text-xs font-bold tracking-wide uppercase transition-all ${
               isSelected(type)
-                ? 'border-red-600 bg-red-600 text-white shadow-sm shadow-red-500/20'
-                : 'border-transparent bg-white text-gray-800 hover:border-red-600 hover:bg-white hover:text-red-600'
+                ? 'border-primary bg-primary shadow-primary/20 text-white shadow-sm'
+                : 'text-text-main hover:border-primary hover:text-primary border-transparent bg-white hover:bg-white'
             }`}
           >
             {type === 'all' ? 'Wszystkie' : MEAL_TYPE_LABELS[type]}
@@ -78,13 +78,13 @@ export function RecipeFilters({
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
-          className='flex h-[34px] w-full items-center justify-between gap-1.5 rounded-sm border border-white bg-white px-3 text-xs font-bold text-gray-800 shadow-sm transition-all hover:border-red-600'
+          className='text-text-main hover:border-primary flex h-[34px] w-full items-center justify-between gap-1.5 rounded-sm border border-white bg-white px-3 text-xs font-bold shadow-sm transition-all'
           aria-expanded={isOpen}
           aria-haspopup='listbox'
         >
           <span className='tracking-wide uppercase'>{getSelectedLabel()}</span>
           <ChevronDown
-            className={`h-3.5 w-3.5 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            className={`text-text-muted h-3.5 w-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
 
@@ -108,8 +108,8 @@ export function RecipeFilters({
                   onClick={() => handleSelect(type)}
                   className={`flex w-full items-center justify-between rounded-sm px-3 py-1.5 text-left text-xs font-bold tracking-wide uppercase transition-colors ${
                     isSelected(type)
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
+                      ? 'bg-primary text-white'
+                      : 'text-text-secondary hover:bg-primary/10 hover:text-primary'
                   }`}
                   role='option'
                   aria-selected={isSelected(type)}

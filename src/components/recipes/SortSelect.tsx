@@ -66,7 +66,7 @@ export function SortSelect({
         <button
           type='button'
           onClick={toggleDirection}
-          className='flex h-6 w-6 items-center justify-center rounded-sm bg-red-600 text-white shadow-sm shadow-red-500/20 transition-colors hover:bg-red-700'
+          className='bg-primary shadow-primary/20 hover:bg-primary-hover flex h-6 w-6 items-center justify-center rounded-sm text-white shadow-sm transition-colors'
           title={direction === 'asc' ? 'Rosnąco' : 'Malejąco'}
         >
           <DirectionIcon className='h-3.5 w-3.5' />
@@ -88,7 +88,7 @@ export function SortSelect({
               key={option.value}
               value={option.value}
               textValue={option.label}
-              className='cursor-pointer rounded-sm px-3 py-1.5 text-xs font-bold tracking-wide text-gray-600 uppercase outline-none focus:bg-red-50 focus:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 data-[state=checked]:bg-red-600 data-[state=checked]:text-white'
+              className='text-text-secondary focus:bg-primary/10 focus:text-primary data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary data-[state=checked]:bg-primary cursor-pointer rounded-sm px-3 py-1.5 text-xs font-bold tracking-wide uppercase outline-none data-[state=checked]:text-white'
             >
               {option.label}
             </SelectItem>

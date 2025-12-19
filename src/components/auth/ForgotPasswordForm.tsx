@@ -76,7 +76,7 @@ export function ForgotPasswordForm({
     return (
       <div className='space-y-3 text-center sm:space-y-4'>
         <div className='flex justify-center'>
-          <CheckCircle2 className='h-10 w-10 text-red-600 sm:h-12 sm:w-12' />
+          <CheckCircle2 className='text-primary h-10 w-10 sm:h-12 sm:w-12' />
         </div>
         <div className='space-y-1 sm:space-y-2'>
           <h3 className='text-base font-semibold sm:text-lg'>Email wysłany!</h3>
@@ -96,7 +96,7 @@ export function ForgotPasswordForm({
       {/* General error from auth */}
       {error && (
         <div
-          className='rounded-md bg-red-50 p-2 text-xs text-red-600 sm:p-3 sm:text-sm'
+          className='bg-error-bg text-error rounded-md p-2 text-xs sm:p-3 sm:text-sm'
           role='alert'
           aria-live='polite'
         >
@@ -123,7 +123,7 @@ export function ForgotPasswordForm({
         {errors.email && (
           <p
             id='forgot-email-error'
-            className='text-xs text-red-600 sm:text-sm'
+            className='text-error text-xs sm:text-sm'
             role='alert'
           >
             {errors.email.message}

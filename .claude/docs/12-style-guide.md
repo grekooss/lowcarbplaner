@@ -29,17 +29,17 @@ Ten dokument stanowi przewodnik po systemie stylów dla projektu LowCarbPlaner -
 
 | Technologia         | Wersja  | Przeznaczenie                 |
 | ------------------- | ------- | ----------------------------- |
-| **Next.js**         | 15.5.4  | Framework React z App Router  |
-| **React**           | 19.1.0  | Biblioteka UI                 |
+| **Next.js**         | 16.x    | Framework React z App Router  |
+| **React**           | 19.x    | Biblioteka UI                 |
 | **TypeScript**      | 5.x     | Typowanie statyczne           |
 | **Tailwind CSS**    | v4      | Framework CSS (utility-first) |
 | **Radix UI**        | Latest  | Headless komponenty UI        |
 | **lucide-react**    | 0.545.0 | Biblioteka ikon               |
-| **Recharts**        | 3.5.1   | Wykresy i wizualizacje        |
-| **Zustand**         | 5.0.8   | Zarządzanie stanem            |
-| **React Hook Form** | 7.65.0  | Obsługa formularzy            |
-| **Zod**             | 4.1.12  | Walidacja schematów           |
-| **Supabase**        | 2.75.0  | Backend i baza danych         |
+| **Recharts**        | 3.x     | Wykresy i wizualizacje        |
+| **Zustand**         | 5.x     | Zarządzanie stanem            |
+| **React Hook Form** | 7.x     | Obsługa formularzy            |
+| **Zod**             | 4.x     | Walidacja schematów           |
+| **Supabase**        | 2.x     | Backend i baza danych         |
 
 ### Biblioteki UI (Radix)
 
@@ -51,12 +51,26 @@ Ten dokument stanowi przewodnik po systemie stylów dla projektu LowCarbPlaner -
 - `@radix-ui/react-progress` - Paski postępu
 - `@radix-ui/react-radio-group` - Grupy radio
 - `@radix-ui/react-scroll-area` - Obszary przewijania
+- `@radix-ui/react-slider` - Suwaki
 
 ### Narzędzia Stylowania
 
 - **class-variance-authority (CVA)** - Warianty komponentów
 - **clsx** - Kompozycja klas CSS
 - **tailwind-merge** - Inteligentne łączenie klas Tailwind
+
+### Komponenty UI w Projekcie
+
+Projekt zawiera **22 komponenty bazowe** w katalogu `src/components/ui/`:
+
+```
+accordion.tsx     alert-dialog.tsx  alert.tsx        badge.tsx
+button.tsx        card.tsx          checkbox.tsx     dialog.tsx
+form.tsx          input.tsx         label.tsx        progress.tsx
+radio-group.tsx   scroll-area.tsx   select.tsx       separator.tsx
+skeleton.tsx      slider.tsx        sonner.tsx       tabs.tsx
+textarea.tsx      visually-hidden.tsx
+```
 
 ---
 
@@ -79,9 +93,9 @@ Użyteczność > Czytelność > Estetyka > Efekty wizualne
 ### Charakterystyka Wizualna
 
 - Ciepłe, jasne tło (#f3f4f6)
-- Białe karty z efektem szkła
+- Białe karty z efektem szkła (bg-white/20 do bg-white/60)
 - Czerwony akcent jako kolor główny (#dc2626)
-- Zaokrąglone krawędzie (12-20px)
+- Zaokrąglone krawędzie (8-24px responsywnie)
 - Subtelne cienie i przejścia
 - Font Montserrat dla czytelności
 
@@ -110,22 +124,27 @@ Użyteczność > Czytelność > Estetyka > Efekty wizualne
 
 ### Kolory Kategorii Posiłków
 
-| Posiłek       | Tło       | Tekst     | Przeznaczenie              |
-| ------------- | --------- | --------- | -------------------------- |
-| **Śniadanie** | `#fef3c7` | `#92400e` | Żółty - poranna energia    |
-| **Obiad**     | `#dcfce7` | `#166534` | Zielony - główny posiłek   |
-| **Przekąska** | `#fce7f3` | `#9d174d` | Różowy - lekka przekąska   |
-| **Kolacja**   | `#e0e7ff` | `#3730a3` | Indygo - wieczorny posiłek |
+| Posiłek       | Tło (CSS)     | Tekst (CSS)              | Hex Tło   | Hex Tekst |
+| ------------- | ------------- | ------------------------ | --------- | --------- |
+| **Śniadanie** | `--breakfast` | `--breakfast-foreground` | `#fef3c7` | `#92400e` |
+| **Obiad**     | `--lunch`     | `--lunch-foreground`     | `#dcfce7` | `#166534` |
+| **Przekąska** | `--snack`     | `--snack-foreground`     | `#fce7f3` | `#9d174d` |
+| **Kolacja**   | `--dinner`    | `--dinner-foreground`    | `#e0e7ff` | `#3730a3` |
+
+**Dodatkowy kolor dla Day Card:**
+
+- `--dayCard`: `#dc2626` (używany dla wyróżnienia dni)
 
 ### Kolory Semantyczne
 
-| Stan         | Zmienna CSS  | Hex       | Przeznaczenie           |
-| ------------ | ------------ | --------- | ----------------------- |
-| **Success**  | `--success`  | `#22c55e` | Sukces, potwierdzenia   |
-| **Warning**  | `--warning`  | `#f59e0b` | Ostrzeżenia, uwagi      |
-| **Error**    | `--error`    | `#ef4444` | Błędy, usuwanie         |
-| **Error BG** | `--error-bg` | `#fef2f2` | Tło komunikatów błędów  |
-| **Info**     | `--info`     | `#3b82f6` | Informacje, podpowiedzi |
+| Stan            | Zmienna CSS     | Hex       | Przeznaczenie            |
+| --------------- | --------------- | --------- | ------------------------ |
+| **Success**     | `--success`     | `#22c55e` | Sukces, potwierdzenia    |
+| **Warning**     | `--warning`     | `#f59e0b` | Ostrzeżenia, uwagi       |
+| **Error**       | `--error`       | `#ef4444` | Błędy, usuwanie          |
+| **Error BG**    | `--error-bg`    | `#fef2f2` | Tło komunikatów błędów   |
+| **Error Hover** | `--error-hover` | `#dc2626` | Hover dla destrukcyjnych |
+| **Info**        | `--info`        | `#3b82f6` | Informacje, podpowiedzi  |
 
 ### Kolory Tekstu
 
@@ -138,12 +157,13 @@ Użyteczność > Czytelność > Estetyka > Efekty wizualne
 
 ### Kolory Tła
 
-| Warstwa          | Zmienna CSS      | Wartość   | Przeznaczenie     |
-| ---------------- | ---------------- | --------- | ----------------- |
-| **Background**   | `--background`   | `#f3f4f6` | Główne tło strony |
-| **BG Main**      | `--bg-main`      | `#ffffff` | Białe tło kart    |
-| **BG Secondary** | `--bg-secondary` | `#f9fafb` | Tło sekcji        |
-| **BG Tertiary**  | `--bg-tertiary`  | `#f3f4f6` | Tło hover         |
+| Warstwa          | Zmienna CSS      | Wartość                 | Przeznaczenie         |
+| ---------------- | ---------------- | ----------------------- | --------------------- |
+| **Background**   | `--background`   | `#f3f4f6`               | Główne tło strony     |
+| **BG Main**      | `--bg-main`      | `#ffffff`               | Białe tło kart        |
+| **BG Secondary** | `--bg-secondary` | `#f9fafb`               | Tło sekcji            |
+| **BG Tertiary**  | `--bg-tertiary`  | `#f3f4f6`               | Tło hover             |
+| **BG Card**      | `--bg-card`      | `rgba(255,255,255,0.4)` | Tło kart glassmorphic |
 
 ---
 
@@ -152,7 +172,8 @@ Użyteczność > Czytelność > Estetyka > Efekty wizualne
 ### Font Family
 
 ```css
---font-sans: var(--font-montserrat);
+--font-sans:
+  var(--font-montserrat), 'Montserrat', system-ui, -apple-system, sans-serif;
 --font-mono: var(--font-geist-mono);
 ```
 
@@ -180,7 +201,7 @@ Użyteczność > Czytelność > Estetyka > Efekty wizualne
 | `--font-size-3xl`  | 1.875rem  | 30px   | Tytuły stron                          |
 | `--font-size-4xl`  | 2rem      | 32px   | Hero, główne tytuły                   |
 
-### Wagi Fontów
+### Wagi Fontów (rzeczywiste użycie)
 
 | Waga      | Wartość | Przeznaczenie               |
 | --------- | ------- | --------------------------- |
@@ -199,9 +220,9 @@ body {
 }
 ```
 
-- **Tight (1.2)**: Nagłówki, tytuły
+- **Tight (leading-tight)**: Nagłówki, tytuły
 - **Normal (1.5)**: Tekst główny
-- **Relaxed (1.75)**: Długie opisy
+- **Relaxed (leading-relaxed)**: Długie opisy
 
 ---
 
@@ -229,27 +250,36 @@ body {
 
 **Przyciski:**
 
-- Default: `h-10 (40px) px-6 (24px) py-2.5 (10px)`
-- Small: `h-9 (36px) px-4 (16px) py-2 (8px)`
-- Large: `h-11 (44px) px-8 (32px) py-3 (12px)`
-- Icon: `h-9 w-9 (36x36px) p-2 (8px)`
+- Default: `h-10 px-6 py-2.5` (40px height)
+- Small: `h-9 px-4 py-2` (36px height)
+- Large: `h-11 px-8 py-3` (44px height)
+- Icon: `h-9 w-9 p-2` (36x36px)
+- Icon-sm: `h-8 w-8 p-1.5` (32x32px)
+- Icon-lg: `h-10 w-10 p-2.5` (40x40px)
 
 **Inputy:**
 
 - Height: `40px (h-10)`
-- Padding: `px-4 (16px) py-2.5 (10px)`
+- Padding: `px-4 py-2.5`
+- Border: `border-[1.5px]`
 
 **Karty:**
 
 - Padding: `16px (p-4)`
-- Header/Footer: `16px`
+- Header/Footer: `p-4`
+- Content: `p-4 pt-0`
 - Content spacing: `space-y-1.5`
 
 **Badge:**
 
-- Default: `h-7 (28px) px-3 (12px)`
-- Small: `h-6 (24px) px-2 (8px)`
-- Large: `h-8 (32px) px-4 (16px)`
+- Default: `h-7 px-3 py-1.5`
+- Small: `h-6 px-2`
+- Large: `h-8 px-4`
+
+**Tabs:**
+
+- TabsList: `p-1 gap-2`
+- TabsTrigger: `px-6 py-3`
 
 ---
 
@@ -267,21 +297,19 @@ body {
 | `--radius-2xl`  | 28px    | Extra duże komponenty               |
 | `--radius-full` | 9999px  | Pełne zaokrąglenie (pills, avatary) |
 
-### Zastosowanie
+### Zastosowanie w Komponentach
 
-```tsx
-// Inputy
-className = 'rounded-[8px]'
-
-// Karty standardowe
-className = 'rounded-[12px]'
-
-// Karty glassmorphism
-className = 'rounded-[16px]'
-
-// Badge, pills
-className = 'rounded-full'
-```
+| Komponent | Border Radius | Klasa Tailwind                             |
+| --------- | ------------- | ------------------------------------------ |
+| Button    | 8px           | `rounded-[8px]`                            |
+| Card      | 12px          | `rounded-[12px]`                           |
+| Badge     | 6px           | `rounded-[6px]`                            |
+| Tab       | 8px           | `rounded-[8px]`                            |
+| Input     | 8px           | `rounded-[8px]`                            |
+| Progress  | 9999px        | `rounded-full`                             |
+| Dialog    | responsive    | `sm:rounded-lg lg:rounded-3xl`             |
+| Select    | 6px           | `rounded-sm` (small)                       |
+| AppShell  | responsive    | `rounded-lg sm:rounded-2xl lg:rounded-3xl` |
 
 ---
 
@@ -297,17 +325,25 @@ className = 'rounded-full'
 | `--shadow-elevated`   | `0 25px 50px -12px rgba(0, 0, 0, 0.25)` | Modalne, dropdown   |
 | `--shadow-glass`      | `0 8px 32px rgba(0, 0, 0, 0.1)`         | Efekt glassmorphism |
 
-### Użycie w Tailwind
+### Rzeczywiste Użycie Tailwind
 
 ```tsx
-// Karta standardowa
-className = 'shadow-[var(--shadow-card)]'
+// Przycisk - delikatny cień
+className='shadow-sm hover:shadow-md active:shadow-none'
 
-// Hover effect
-className = 'hover:shadow-[var(--shadow-card-hover)]'
+// Karta z hover efektem
+className='hover:shadow-[0_4px_16px_rgba(0,0,0,0.1),0_2px_8px_rgba(0,0,0,0.06)]'
 
-// Modal/Dialog
-className = 'shadow-[var(--shadow-elevated)]'
+// Select dropdown
+className='shadow-[0_14px_36px_rgba(15,23,42,0.12)]'
+
+// AppShell main panel
+className='shadow-2xl ring-1 ring-black/5'
+
+// Card soft style
+.card-soft {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
 ```
 
 ---
@@ -350,50 +386,72 @@ className = 'shadow-[var(--shadow-elevated)]'
 --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 ```
 
-### Użycie
+### Rzeczywiste Użycie w Tailwind
 
 ```tsx
-// Karta ze szklanym efektem
-<div className="card-glass">
-  {/* content */}
-</div>
+// AppShell Main Panel
+className =
+  'bg-white/20 backdrop-blur-md border-2 border-white ring-1 ring-black/5'
 
-// Silniejszy efekt
-<div className="card-glass-strong">
-  {/* content */}
-</div>
+// Sidebar
+className = 'bg-white/30 backdrop-blur-xl border-white/30'
+
+// Featured Card
+className = 'bg-white/40 backdrop-blur-xl border-2 border-white'
+
+// Menu Dropdown
+className = 'bg-white/90 backdrop-blur-sm'
+
+// Navigation Active State
+className = 'bg-white/60 backdrop-blur-xl border-white shadow-lg'
+
+// Navigation Hover
+className = 'hover:bg-white/10'
 ```
+
+### Poziomy Przezroczystości
+
+| Poziom | Opacity | Blur      | Użycie                  |
+| ------ | ------- | --------- | ----------------------- |
+| Light  | 0.2     | md (12px) | Main panel background   |
+| Medium | 0.4     | xl (24px) | Featured cards          |
+| Strong | 0.6     | xl (24px) | Active states, overlays |
+| Solid  | 0.9     | sm (4px)  | Menu dropdowns          |
 
 ---
 
 ## 9. Komponenty UI
 
-Projekt wykorzystuje **21 komponentów bazowych** w katalogu `src/components/ui/`.
-
 ### Button
 
 **Warianty:**
 
-| Wariant       | Styl                      | Przeznaczenie                |
-| ------------- | ------------------------- | ---------------------------- |
-| `default`     | Czerwony, biały tekst     | Główne akcje (CTA)           |
-| `secondary`   | Szary, biały tekst        | Akcje drugorzędne            |
-| `tertiary`    | Pomarańczowy, biały tekst | Akcje alternatywne           |
-| `outline`     | Przezroczysty, border     | Akcje neutralne              |
-| `ghost`       | Przezroczysty             | Akcje subtelne               |
-| `destructive` | Czerwony error            | Usuwanie, akcje destrukcyjne |
-| `link`        | Tekst z underline         | Linki w tekście              |
+| Wariant       | Styl                                                         | Przeznaczenie                |
+| ------------- | ------------------------------------------------------------ | ---------------------------- |
+| `default`     | `bg-primary text-white shadow-sm hover:shadow-md`            | Główne akcje (CTA)           |
+| `secondary`   | `bg-secondary text-white`                                    | Akcje drugorzędne            |
+| `tertiary`    | `bg-tertiary text-white`                                     | Akcje alternatywne           |
+| `outline`     | `border-[1.5px] border-border bg-white hover:border-primary` | Akcje neutralne              |
+| `ghost`       | `bg-transparent hover:bg-bg-tertiary`                        | Akcje subtelne               |
+| `destructive` | `bg-error text-white`                                        | Usuwanie, akcje destrukcyjne |
+| `link`        | `text-primary underline-offset-4 hover:underline`            | Linki w tekście              |
 
 **Rozmiary:**
 
-| Rozmiar   | Wymiary   | Przeznaczenie |
-| --------- | --------- | ------------- |
-| `default` | h-10 px-6 | Standardowy   |
-| `sm`      | h-9 px-4  | Kompaktowy    |
-| `lg`      | h-11 px-8 | Wyróżniony    |
-| `icon`    | h-9 w-9   | Tylko ikona   |
-| `icon-sm` | h-8 w-8   | Mała ikona    |
-| `icon-lg` | h-10 w-10 | Duża ikona    |
+| Rozmiar   | Klasy              | Przeznaczenie |
+| --------- | ------------------ | ------------- |
+| `default` | `h-10 px-6 py-2.5` | Standardowy   |
+| `sm`      | `h-9 px-4 py-2`    | Kompaktowy    |
+| `lg`      | `h-11 px-8 py-3`   | Wyróżniony    |
+| `icon`    | `h-9 w-9 p-2`      | Tylko ikona   |
+| `icon-sm` | `h-8 w-8 p-1.5`    | Mała ikona    |
+| `icon-lg` | `h-10 w-10 p-2.5`  | Duża ikona    |
+
+**Styl bazowy:**
+
+```tsx
+'font-semibold transition-all rounded-[8px] [&_svg]:size-5 [&_svg]:shrink-0'
+```
 
 **Przykład:**
 
@@ -419,17 +477,23 @@ import { Button } from '@/components/ui/button'
 
 **Warianty:**
 
-| Wariant     | Opis                       | Przeznaczenie           |
-| ----------- | -------------------------- | ----------------------- |
-| `default`   | Białe tło z borderem       | Standardowa karta       |
-| `hero`      | Bez bordera i cienia       | Sekcje wyróżnione       |
-| `elevated`  | Bez bordera, cień elevated | Dropdown, modal content |
-| `flat`      | Bez cienia                 | Płaska karta            |
-| `breakfast` | Żółte tło                  | Karta śniadania         |
-| `lunch`     | Zielone tło                | Karta obiadu            |
-| `snack`     | Różowe tło                 | Karta przekąski         |
-| `dinner`    | Indygo tło                 | Karta kolacji           |
-| `panel`     | Szare tło                  | Panel informacyjny      |
+| Wariant     | Opis                     | Przeznaczenie           |
+| ----------- | ------------------------ | ----------------------- |
+| `default`   | Białe tło z borderem     | Standardowa karta       |
+| `hero`      | Bez bordera              | Sekcje wyróżnione       |
+| `elevated`  | Bez bordera              | Dropdown, modal content |
+| `flat`      | Border, bez shadow       | Płaska karta            |
+| `breakfast` | Żółte tło (breakfast-bg) | Karta śniadania         |
+| `lunch`     | Zielone tło (lunch-bg)   | Karta obiadu            |
+| `snack`     | Różowe tło (snack-bg)    | Karta przekąski         |
+| `dinner`    | Indygo tło (dinner-bg)   | Karta kolacji           |
+| `panel`     | Szare tło (bg-secondary) | Panel informacyjny      |
+
+**Hover Effect:**
+
+```tsx
+hoverable={true} // Dodaje: cursor-pointer hover:-translate-y-0.5 hover:shadow-[...]
+```
 
 **Struktura:**
 
@@ -445,11 +509,22 @@ import {
 
 ;<Card variant='default' hoverable>
   <CardHeader>
-    <CardTitle>Tytuł karty</CardTitle>
-    <CardDescription>Opis karty</CardDescription>
+    {' '}
+    {/* p-4 space-y-1.5 */}
+    <CardTitle>Tytuł karty</CardTitle> {/* text-base font-semibold */}
+    <CardDescription>Opis karty</CardDescription>{' '}
+    {/* text-sm text-text-secondary */}
   </CardHeader>
-  <CardContent>{/* Treść */}</CardContent>
-  <CardFooter>{/* Stopka z akcjami */}</CardFooter>
+  <CardContent>
+    {' '}
+    {/* p-4 pt-0 */}
+    {/* Treść */}
+  </CardContent>
+  <CardFooter>
+    {' '}
+    {/* flex items-center p-4 pt-0 */}
+    {/* Stopka z akcjami */}
+  </CardFooter>
 </Card>
 ```
 
@@ -465,7 +540,15 @@ import {
 | **Kategorie produktów** | `grains`, `veggies`, `protein`, `fruits`, `dairy`, `others` |
 | **Neutralne**           | `default`, `secondary`, `tertiary`, `outline`               |
 
-**Rozmiary:** `default`, `sm`, `lg`
+**Rozmiary:**
+
+| Rozmiar   | Klasy                  |
+| --------- | ---------------------- |
+| `default` | `h-7 px-3 text-xs`     |
+| `sm`      | `h-6 px-2 text-[11px]` |
+| `lg`      | `h-8 px-4 text-sm`     |
+
+**Border radius:** `rounded-[6px]`
 
 ```tsx
 import { Badge } from '@/components/ui/badge'
@@ -474,6 +557,28 @@ import { Badge } from '@/components/ui/badge'
 <Badge variant="success" size="sm">Gotowe</Badge>
 <Badge variant="protein">Białko</Badge>
 ```
+
+### Tabs
+
+**Warianty TabsList:**
+
+- `default` - bg-bg-secondary
+- `transparent` - bg-transparent
+
+**Warianty TabsTrigger:**
+
+| Wariant     | Active State                          |
+| ----------- | ------------------------------------- |
+| `default`   | `bg-primary text-primary-foreground`  |
+| `breakfast` | `bg-breakfast-bg text-breakfast-text` |
+| `lunch`     | `bg-lunch-bg text-lunch-text`         |
+| `snack`     | `bg-snack-bg text-snack-text`         |
+| `dinner`    | `bg-dinner-bg text-dinner-text`       |
+
+**Style:**
+
+- TabsList: `rounded-[8px] p-1 gap-2`
+- TabsTrigger: `rounded-[8px] px-6 py-3 text-sm font-medium`
 
 ### Input
 
@@ -485,11 +590,13 @@ import { Input } from '@/components/ui/input'
 
 **Stylowanie:**
 
-- Border radius: 8px
-- Height: 40px (h-10)
-- Padding: px-4 py-2.5
-- Focus: `border-primary ring-primary/10`
-- Placeholder: `text-text-disabled`
+- Border radius: `rounded-[8px]`
+- Height: `h-10`
+- Padding: `px-4 py-2.5`
+- Border: `border-[1.5px] border-border`
+- Focus: `focus:border-primary focus:ring-0`
+- Placeholder: `placeholder:text-text-disabled`
+- Disabled: `disabled:bg-bg-tertiary disabled:cursor-not-allowed`
 
 ### Select
 
@@ -515,7 +622,20 @@ import {
 </Select>
 ```
 
+**SelectContent Style:**
+
+- Background: `bg-white/90 backdrop-blur-sm`
+- Shadow: `shadow-[0_14px_36px_rgba(15,23,42,0.12)]`
+- Border radius: `rounded-sm`
+
 ### Dialog
+
+**Props specjalne:**
+
+- `constrainToMainPanel` - centruje dialog w głównym panelu
+- `coverMainPanel` - dialog pokrywa cały główny panel
+- `coverMainPanelOnMobile` - pokrywa panel na mobile, modal na desktop
+- `hideCloseButton` - ukrywa domyślny przycisk zamknięcia
 
 ```tsx
 import {
@@ -532,7 +652,7 @@ import {
   <DialogTrigger asChild>
     <Button>Otwórz</Button>
   </DialogTrigger>
-  <DialogContent>
+  <DialogContent coverMainPanelOnMobile>
     <DialogHeader>
       <DialogTitle>Tytuł dialogu</DialogTitle>
       <DialogDescription>Opis dialogu</DialogDescription>
@@ -560,6 +680,12 @@ import { Progress } from '@/components/ui/progress'
 />
 ```
 
+**Style:**
+
+- Background: `bg-primary/20`
+- Indicator: `bg-primary`
+- Border radius: `rounded-full`
+
 ### Alert
 
 ```tsx
@@ -572,53 +698,10 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 </Alert>
 ```
 
-### Form (React Hook Form)
+**Warianty:**
 
-```tsx
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-} from '@/components/ui/form'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-
-const schema = z.object({
-  name: z.string().min(2, 'Nazwa musi mieć min. 2 znaki'),
-})
-
-function RecipeForm() {
-  const form = useForm({
-    resolver: zodResolver(schema),
-  })
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          control={form.control}
-          name='name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nazwa przepisu</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormDescription>Podaj nazwę przepisu</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
-  )
-}
-```
+- `default` - neutralny
+- `destructive` - dla błędów
 
 ---
 
@@ -628,33 +711,88 @@ function RecipeForm() {
 
 ```tsx
 import {
+  // Navigation
   LayoutDashboard,
   CalendarRange,
-  Utensils,
-  ShoppingCart,
-  User,
-  Settings,
-  Plus,
-  X,
+  Menu,
   ChevronDown,
-  Search,
+  ChevronLeft,
+  ChevronRight,
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+
+  // Actions
+  Plus,
+  Minus,
+  X,
+  Check,
+  Save,
+  RefreshCw,
   Edit,
   Trash2,
-  Check,
+
+  // UI States
   AlertCircle,
+  AlertTriangle,
   Info,
+  Eye,
+  EyeOff,
+  Loader2,
+  SearchX,
+
+  // Food & Meals
+  Utensils,
+  UtensilsCrossed,
+  ChefHat,
+  Beef,
+  Wheat,
+  ShoppingBasket,
+
+  // Data & Analytics
+  BarChart3,
+  Flame,
+  Clock,
+  Timer,
+  Droplet,
+  Star,
+
+  // Layout
+  Grid3x3,
+  List,
+  ListOrdered,
+  MonitorPlay,
+
+  // Status
+  CheckCircle2,
+  Circle,
+
+  // Auth
+  User,
   LogOut,
-  Menu,
+  Settings,
 } from 'lucide-react'
+```
+
+### Radix UI Icons (uzupełniające)
+
+```tsx
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  Cross2Icon,
+  ChevronUpIcon,
+} from '@radix-ui/react-icons'
 ```
 
 ### Rozmiary Ikon
 
-| Klasa    | Rozmiar | Przeznaczenie                          |
-| -------- | ------- | -------------------------------------- |
-| `size-4` | 16px    | Małe ikony (input, badge)              |
-| `size-5` | 20px    | **Standardowy** (przyciski, nawigacja) |
-| `size-6` | 24px    | Duże ikony (hero, nagłówki)            |
+| Klasa       | Rozmiar | Przeznaczenie                          |
+| ----------- | ------- | -------------------------------------- |
+| `size-4`    | 16px    | Małe ikony (input, badge)              |
+| `size-5`    | 20px    | **Standardowy** (przyciski, nawigacja) |
+| `size-6`    | 24px    | Duże ikony (hero, nagłówki)            |
+| `h-12 w-12` | 48px    | Extra duże (empty states)              |
 
 ### Konwencja Użycia
 
@@ -675,6 +813,9 @@ import {
 <div className="p-2 rounded-full bg-primary/10">
   <Utensils className="size-5 text-primary" />
 </div>
+
+// Loading spinner
+<Loader2 className="size-5 animate-spin" />
 ```
 
 ### SVG Management w Przyciskach
@@ -698,12 +839,13 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 }
 ```
 
-### Wyłączenia
+### Wyłączenia dla Radix UI
 
 ```css
 /* Radix UI dropdowns - bez animacji transform */
 [data-radix-select-content],
-[data-radix-popper-content-wrapper] {
+[data-radix-popper-content-wrapper],
+[data-radix-popper-content-wrapper] * {
   transition: none !important;
 }
 ```
@@ -713,7 +855,7 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 **animate-in** (500ms)
 
 ```css
-@keyframes animate-in {
+@keyframes animateIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -728,7 +870,7 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 **fade-in** (500ms)
 
 ```css
-@keyframes fade-in {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -741,10 +883,10 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 **slide-in-from-bottom-10** (1s)
 
 ```css
-@keyframes slide-in-from-bottom-10 {
+@keyframes slideInFromBottom {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(40px);
   }
   to {
     opacity: 1;
@@ -753,11 +895,25 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 }
 ```
 
-### Hover na Kartach
+### Użycie w Komponentach
 
 ```tsx
-// Z prop hoverable na Card
-<Card hoverable>{/* Na hover: -translate-y-0.5 shadow-card-hover */}</Card>
+// Dialog - wbudowane animacje Radix
+className='data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95'
+
+// Card hover
+<Card hoverable>  {/* hover:-translate-y-0.5 */}
+
+// Accordion chevron rotation
+className='transition-transform duration-200'
+```
+
+### Klasy Utility
+
+```tsx
+.animate-in     // animateIn 0.5s ease-out forwards
+.fade-in        // fadeIn 0.5s ease-out forwards
+.slide-in-from-bottom-10  // slideInFromBottom 1s ease-out forwards
 ```
 
 ---
@@ -775,30 +931,55 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 | X-Large    | `xl:`     | ≥ 1280px | Desktopy           |
 | 2X-Large   | `2xl:`    | ≥ 1536px | Duże ekrany        |
 
+### Mobile Ad Layout (Orientation-based)
+
+```css
+/* Portrait mode - column layout */
+.ad-layout-container {
+  flex-direction: column !important;
+  padding-bottom: 3.5rem !important;
+}
+
+/* Landscape mode (max-width: 1535px) - row layout */
+@media screen and (orientation: landscape) and (max-width: 1535px) {
+  .ad-layout-container {
+    flex-direction: row !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* 2xl screens - desktop ads */
+@media screen and (min-width: 1536px) {
+  .ad-panel-landscape,
+  .ad-panel-portrait {
+    display: none !important;
+  }
+}
+```
+
 ### Przykłady Użycia
 
 ```tsx
 // Responsywna siatka
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
   <Card>...</Card>
-  <Card>...</Card>
-  <Card>...</Card>
 </div>
 
 // Ukrywanie elementów
-<div className="hidden md:block">
-  Widoczne od tabletu
-</div>
+<div className="hidden md:block">Widoczne od tabletu</div>
+<div className="xl:hidden">Ukryte na desktopie</div>
 
 // Responsywny tekst
-<h1 className="text-2xl md:text-3xl lg:text-4xl">
-  Tytuł
-</h1>
+<h1 className="text-2xl md:text-3xl lg:text-4xl">Tytuł</h1>
 
 // Responsywny padding
-<section className="px-4 md:px-6 lg:px-8">
-  Treść
-</section>
+<section className="px-2 sm:px-4 md:px-6 lg:px-8">Treść</section>
+
+// Responsywny border-radius
+<div className="rounded-lg sm:rounded-2xl lg:rounded-3xl">Panel</div>
+
+// Responsywny spacing
+<div className="gap-1 sm:gap-2 lg:gap-6">...</div>
 ```
 
 ---
@@ -847,6 +1028,9 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
   --snack-foreground: #9d174d;
   --dinner: #e0e7ff;
   --dinner-foreground: #3730a3;
+
+  /* Day Card */
+  --dayCard: #dc2626;
 
   /* Stany */
   --success: #22c55e;
@@ -898,7 +1082,8 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
   --radius-full: 9999px;
 
   /* Typografia */
-  --font-sans: var(--font-montserrat);
+  --font-sans:
+    var(--font-montserrat), 'Montserrat', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono);
 
   --font-size-tiny: 0.6875rem;
@@ -932,20 +1117,24 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 
 ```tsx
 <div className='bg-background min-h-screen'>
-  {/* Sidebar (desktop) */}
-  <aside className='fixed top-0 left-0 hidden h-full w-64 lg:block'>
-    <Navigation />
-  </aside>
+  {/* Glassmorphic Main Container */}
+  <div className='ad-layout-container flex'>
+    {/* Main Panel */}
+    <div className='relative flex h-full w-full flex-1 overflow-hidden rounded-lg border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md sm:rounded-2xl lg:rounded-3xl'>
+      {/* Desktop Sidebar */}
+      <aside className='hidden w-64 flex-col bg-white/30 backdrop-blur-xl xl:flex'>
+        <Navigation />
+      </aside>
 
-  {/* Main Content */}
-  <main className='min-h-screen lg:ml-64'>
-    <div className='container mx-auto px-4 py-6'>{children}</div>
-  </main>
+      {/* Content Area */}
+      <main className='flex-1 overflow-y-auto'>{children}</main>
+    </div>
 
-  {/* Mobile Bottom Navigation */}
-  <nav className='fixed right-0 bottom-0 left-0 lg:hidden'>
-    <MobileNav />
-  </nav>
+    {/* Mobile Bottom Navigation */}
+    <nav className='fixed right-0 bottom-0 left-0 xl:hidden'>
+      <MobileNav />
+    </nav>
+  </div>
 </div>
 ```
 
@@ -1036,7 +1225,8 @@ className = '[&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:pointer-events-none'
 
 ```css
 focus-visible:ring-3
-focus:ring-primary/10
+focus-visible:ring-primary/10
+focus:ring-primary
 focus:outline-none
 ```
 
@@ -1055,7 +1245,7 @@ focus:outline-none
 <Button>Akcja</Button>           // Dla akcji
 <Link href="/page">Nawigacja</Link>  // Dla nawigacji
 
-// Alertyr
+// Alert z role
 <Alert role="alert">
   <AlertDescription>Błąd</AlertDescription>
 </Alert>
@@ -1066,7 +1256,7 @@ focus:outline-none
 ```tsx
 import { VisuallyHidden } from '@/components/ui/visually-hidden'
 
-;<Button variant='icon'>
+;<Button variant='ghost' size='icon'>
   <X className='size-5' />
   <VisuallyHidden>Zamknij</VisuallyHidden>
 </Button>
@@ -1202,186 +1392,6 @@ export function MacroProgress({
 }
 ```
 
-### Formularz Dodawania Przepisu
-
-```tsx
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-
-const recipeSchema = z.object({
-  name: z.string().min(2, 'Nazwa musi mieć min. 2 znaki'),
-  category: z.enum(['breakfast', 'lunch', 'snack', 'dinner']),
-  description: z.string().optional(),
-  prepTime: z.number().min(1, 'Podaj czas przygotowania'),
-  servings: z.number().min(1, 'Podaj liczbę porcji'),
-})
-
-export function AddRecipeForm() {
-  const form = useForm({
-    resolver: zodResolver(recipeSchema),
-    defaultValues: {
-      name: '',
-      category: 'lunch',
-      description: '',
-      prepTime: 30,
-      servings: 2,
-    },
-  })
-
-  const onSubmit = (data) => {
-    console.log(data)
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Dodaj nowy przepis</CardTitle>
-      </CardHeader>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className='space-y-4'>
-            <FormField
-              control={form.control}
-              name='name'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nazwa przepisu</FormLabel>
-                  <FormControl>
-                    <Input placeholder='np. Jajecznica z awokado' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='category'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kategoria</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder='Wybierz kategorię' />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value='breakfast'>Śniadanie</SelectItem>
-                      <SelectItem value='lunch'>Obiad</SelectItem>
-                      <SelectItem value='snack'>Przekąska</SelectItem>
-                      <SelectItem value='dinner'>Kolacja</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className='grid grid-cols-2 gap-4'>
-              <FormField
-                control={form.control}
-                name='prepTime'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Czas przygotowania (min)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='servings'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Liczba porcji</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name='description'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Opis (opcjonalnie)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder='Krótki opis przepisu...'
-                      className='min-h-[100px]'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-
-          <CardFooter className='flex justify-end gap-3'>
-            <Button type='button' variant='outline'>
-              Anuluj
-            </Button>
-            <Button type='submit'>Zapisz przepis</Button>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
-  )
-}
-```
-
 ### Toast Notifications
 
 ```tsx
@@ -1411,26 +1421,27 @@ toast('Przepis usunięty', {
 
 ### Kluczowe Zasady
 
-1. **Glassmorphism**: Używaj `.card-glass` i `.card-glass-strong` dla efektu szkła
+1. **Glassmorphism**: Używaj `bg-white/[20-60]` + `backdrop-blur-[md-xl]` + `border-2 border-white`
 2. **Kolory Posiłków**: Zawsze stosuj odpowiednie kolory dla kategorii (breakfast/lunch/snack/dinner)
 3. **Spacing 4px**: Wszystkie odstępy w wielokrotnościach 4px
 4. **Radix + CVA**: Komponenty oparte na Radix UI z wariantami CVA
 5. **Mobile-First**: Zawsze zaczynaj od mobile, rozszerzaj dla większych ekranów
 6. **Dostępność**: Semantyczny HTML, focus states, ARIA labels
+7. **Border Radius**: 6px (badge) → 8px (input/button) → 12px (card) → responsywnie do 24px
 
 ### Checklist dla Nowych Komponentów
 
 - [ ] Użyj istniejących komponentów z `@/components/ui/`
-- [ ] Zastosuj zmienne CSS (`var(--...)`) zamiast hardcoded wartości
+- [ ] Zastosuj zmienne CSS (`var(--...)`) lub tokeny Tailwind
 - [ ] Dodaj warianty przez CVA jeśli komponent ma różne stany
 - [ ] Zapewnij responsywność (mobile → tablet → desktop)
 - [ ] Dodaj focus states i hover effects
 - [ ] Przetestuj z czytnikiem ekranu
 - [ ] Użyj odpowiednich kolorów kategorii dla posiłków
+- [ ] Sprawdź glassmorphism na różnych tłach
 
 ### Pliki Konfiguracyjne
 
 - `app/globals.css` - Zmienne CSS i globalne style
-- `tailwind.config.ts` - Konfiguracja Tailwind
-- `src/components/ui/` - Komponenty bazowe
+- `src/components/ui/` - Komponenty bazowe (22 pliki)
 - `src/lib/utils.ts` - Funkcja `cn()` do łączenia klas

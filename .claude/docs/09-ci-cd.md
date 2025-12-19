@@ -4,16 +4,16 @@
 
 ### Kompletny Workflow
 
-Plik: `.github/workflows/ci.yml`
+Plik: `.github/workflows/e2e-tests.yml`
 
 ```yaml
 name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   test:
@@ -52,7 +52,7 @@ jobs:
 
       - name: E2E tests
         run: npm run test:e2e
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 ```
 
 ---
@@ -61,7 +61,7 @@ jobs:
 
 ### 1. Automatic Deployment
 
-- **Main Branch**: Automatycznie deploy do produkcji
+- **Master Branch**: Automatycznie deploy do produkcji
 - **Pull Requests**: Preview deployments
 
 ### 2. Environment Variables

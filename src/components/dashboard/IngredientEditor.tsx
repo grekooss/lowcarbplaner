@@ -102,7 +102,7 @@ export function IngredientEditor({
         )}
 
         {isSaveSuccessful && (
-          <div className='text-sm font-medium text-green-600'>✓ Zapisano</div>
+          <div className='text-success text-sm font-medium'>✓ Zapisano</div>
         )}
       </div>
 
@@ -131,7 +131,7 @@ export function IngredientEditor({
 
       {/* Error message */}
       {error && (
-        <p className='rounded-lg bg-red-50 p-3 text-sm text-red-600'>{error}</p>
+        <p className='bg-error-bg text-error rounded-lg p-3 text-sm'>{error}</p>
       )}
 
       {/* Info message */}

@@ -29,19 +29,19 @@ function getProgressColor(current: number, target: number): string {
 
   const percent = (current / target) * 100
 
-  if (percent < 90) return 'bg-green-500'
-  if (percent <= 100) return 'bg-yellow-500'
-  return 'bg-red-500'
+  if (percent < 90) return 'bg-success'
+  if (percent <= 100) return 'bg-warning'
+  return 'bg-error'
 }
 
 /**
  * Helper: Mapowanie variant na kolor paska (alternatywna wersja)
  */
 const variantColors = {
-  calories: 'bg-green-500',
-  protein: 'bg-orange-500',
-  carbs: 'bg-yellow-500',
-  fat: 'bg-gray-500',
+  calories: 'bg-success',
+  protein: 'bg-tertiary',
+  carbs: 'bg-warning',
+  fat: 'bg-text-muted',
 }
 
 /**
@@ -103,9 +103,9 @@ export function MacroProgressBar({
         <span
           className={cn(
             'text-xs font-semibold',
-            actualPercent < 90 && 'text-green-600',
-            actualPercent >= 90 && actualPercent <= 100 && 'text-yellow-600',
-            actualPercent > 100 && 'text-red-600'
+            actualPercent < 90 && 'text-success',
+            actualPercent >= 90 && actualPercent <= 100 && 'text-warning',
+            actualPercent > 100 && 'text-error'
           )}
         >
           {Math.round(actualPercent)}%

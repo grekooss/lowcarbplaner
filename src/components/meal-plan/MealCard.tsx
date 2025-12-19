@@ -34,11 +34,11 @@ export const MealCard = ({
   if (!meal) {
     return (
       <div className='group relative flex h-[72px] cursor-pointer items-center gap-3 rounded-md border-2 border-white bg-white/40 px-3 py-2 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.01]'>
-        <div className='flex h-full flex-1 flex-col items-center justify-center text-gray-300'>
-          <div className='mb-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed border-gray-200 text-xs text-gray-300 transition-colors group-hover:border-red-400 group-hover:text-red-400'>
+        <div className='text-text-disabled flex h-full flex-1 flex-col items-center justify-center'>
+          <div className='border-border text-text-disabled group-hover:border-primary/60 group-hover:text-primary/60 mb-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed text-xs transition-colors'>
             +
           </div>
-          <span className='text-[9px] font-bold tracking-wider text-gray-300 uppercase transition-colors group-hover:text-red-400'>
+          <span className='text-text-disabled group-hover:text-primary/60 text-[9px] font-bold tracking-wider uppercase transition-colors'>
             Dodaj
           </span>
         </div>
@@ -70,7 +70,7 @@ export const MealCard = ({
               sizes='56px'
             />
           ) : (
-            <div className='flex h-full w-full items-center justify-center text-gray-400'>
+            <div className='text-text-muted flex h-full w-full items-center justify-center'>
               <UtensilsCrossed className='h-6 w-6' />
             </div>
           )}
@@ -84,7 +84,7 @@ export const MealCard = ({
                 setSwapDialogOpen(true)
               }}
               aria-label='Zmień przepis'
-              className='absolute top-1/2 left-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60 p-1 text-gray-600 shadow-md transition-all hover:bg-white hover:text-red-600 xl:bg-white/90 xl:opacity-0 xl:group-hover:opacity-100 [&_svg]:size-3.5 xl:[&_svg]:size-4'
+              className='text-text-secondary hover:text-primary absolute top-1/2 left-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60 p-1 shadow-md transition-all hover:bg-white xl:bg-white/90 xl:opacity-0 xl:group-hover:opacity-100 [&_svg]:size-3.5 xl:[&_svg]:size-4'
             >
               <RefreshCw />
             </Button>
@@ -94,10 +94,10 @@ export const MealCard = ({
         {/* Content */}
         <div className='min-w-0 flex-1'>
           {/* Mobile meal type label */}
-          <span className='mb-0.5 block text-[9px] font-bold tracking-wider text-gray-400 uppercase xl:hidden'>
+          <span className='text-text-muted mb-0.5 block text-[9px] font-bold tracking-wider uppercase xl:hidden'>
             {mealTypeLabels[mealType]}
           </span>
-          <p className='line-clamp-3 text-sm leading-snug font-semibold text-gray-800'>
+          <p className='text-text-main line-clamp-3 text-sm leading-snug font-semibold'>
             {meal.recipe.name}
           </p>
         </div>

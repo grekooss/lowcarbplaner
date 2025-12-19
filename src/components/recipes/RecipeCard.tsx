@@ -28,13 +28,13 @@ const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
 const getDifficultyColor = (difficulty: RecipeDTO['difficulty_level']) => {
   switch (difficulty) {
     case 'easy':
-      return 'bg-green-500'
+      return 'bg-success'
     case 'medium':
-      return 'bg-orange-500'
+      return 'bg-tertiary'
     case 'hard':
-      return 'bg-red-600'
+      return 'bg-primary'
     default:
-      return 'bg-gray-300'
+      return 'bg-text-muted'
   }
 }
 
@@ -103,7 +103,7 @@ export function RecipeCard({
           )}
 
         {/* Calories Badge */}
-        <div className='flex items-center gap-1.5 rounded-sm bg-red-600 px-2.5 py-1 text-xs text-white shadow-sm shadow-red-500/20'>
+        <div className='bg-primary shadow-primary/20 flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs text-white shadow-sm'>
           <Flame className='h-3.5 w-3.5' />
           <span className='flex items-baseline gap-0.5'>
             <span className='font-bold'>{calories ?? '—'}</span>
@@ -129,7 +129,7 @@ export function RecipeCard({
       <div className='mt-auto flex flex-wrap items-center justify-center gap-4 text-sm text-black'>
         {/* Carbs */}
         <div className='flex items-center gap-1.5' title='Węglowodany'>
-          <Wheat className='h-5 w-5 text-orange-500' />
+          <Wheat className='text-tertiary h-5 w-5' />
           <span className='flex items-baseline gap-0.5 text-gray-700'>
             <span className='font-bold'>{carbs ?? '—'}</span>
             <span>g</span>
@@ -138,7 +138,7 @@ export function RecipeCard({
 
         {/* Protein */}
         <div className='flex items-center gap-1.5' title='Białko'>
-          <Beef className='h-5 w-5 text-blue-500' />
+          <Beef className='text-info h-5 w-5' />
           <span className='flex items-baseline gap-0.5 text-gray-700'>
             <span className='font-bold'>{protein ?? '—'}</span>
             <span>g</span>
@@ -147,7 +147,7 @@ export function RecipeCard({
 
         {/* Fat */}
         <div className='flex items-center gap-1.5' title='Tłuszcze'>
-          <Droplet className='h-5 w-5 text-green-500' />
+          <Droplet className='text-success h-5 w-5' />
           <span className='flex items-baseline gap-0.5 text-gray-700'>
             <span className='font-bold'>{fats ?? '—'}</span>
             <span>g</span>

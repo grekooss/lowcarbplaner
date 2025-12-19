@@ -17,10 +17,10 @@ const cardVariants = cva(
         // Flat Panel (bez cienia)
         flat: 'border-border-light border shadow-none',
         // Meal Card Categories
-        breakfast: 'bg-breakfast-bg border-none shadow-none',
-        lunch: 'bg-lunch-bg border-none shadow-none',
-        snack: 'bg-snack-bg border-none shadow-none',
-        dinner: 'bg-dinner-bg border-none shadow-none',
+        breakfast: 'bg-breakfast border-none shadow-none',
+        lunch: 'bg-lunch border-none shadow-none',
+        snack: 'bg-snack border-none shadow-none',
+        dinner: 'bg-dinner border-none shadow-none',
         // Info Panel (szare tło)
         panel: 'bg-bg-secondary border-border-light border shadow-none',
       },

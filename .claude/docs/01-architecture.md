@@ -161,13 +161,7 @@ lowcarbplaner/
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"],
-      "@/components": ["./components"],
-      "@/lib": ["./lib"],
-      "@/hooks": ["./hooks"],
-      "@/types": ["./types"],
-      "@/constants": ["./constants"],
-      "@/services": ["./services"]
+      "@/*": ["./src/*"]
     }
   }
 }
@@ -329,7 +323,7 @@ import { cn } from '@/lib/utils';
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -337,7 +331,7 @@ import { cn } from '@/lib/utils';
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

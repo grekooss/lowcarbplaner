@@ -9,15 +9,15 @@ const badgeVariants = cva(
     variants: {
       variant: {
         // Meal Category Badges
-        breakfast: 'bg-breakfast-bg text-breakfast-text border-none',
-        lunch: 'bg-lunch-bg text-lunch-text border-none',
-        snack: 'bg-snack-bg text-snack-text border-none',
-        dinner: 'bg-dinner-bg text-dinner-text border-none',
+        breakfast: 'bg-breakfast text-breakfast-foreground border-none',
+        lunch: 'bg-lunch text-lunch-foreground border-none',
+        snack: 'bg-snack text-snack-foreground border-none',
+        dinner: 'bg-dinner text-dinner-foreground border-none',
 
         // Status Badges
-        success: 'bg-breakfast-bg text-breakfast-text border-none',
+        success: 'bg-success/20 text-success border-none',
         pending: 'bg-bg-tertiary text-text-muted border-none',
-        warning: 'bg-lunch-bg text-lunch-text border-none',
+        warning: 'bg-warning/20 text-warning border-none',
         error: 'text-error bg-error-bg border-none',
         destructive: 'text-error bg-error-bg border-none',
 
@@ -28,17 +28,17 @@ const badgeVariants = cva(
         outline: 'text-text-main border-border border bg-transparent',
 
         // Difficulty Levels
-        easy: 'bg-breakfast-bg text-breakfast-text border-none',
-        medium: 'bg-lunch-bg text-lunch-text border-none',
-        hard: 'bg-snack-bg text-snack-text border-none',
+        easy: 'bg-success/20 text-success border-none',
+        medium: 'bg-warning/20 text-warning border-none',
+        hard: 'bg-error/20 text-error border-none',
 
         // Grocery Categories
-        grains: 'bg-lunch-bg text-lunch-text border-none',
-        veggies: 'bg-breakfast-bg text-breakfast-text border-none',
-        protein: 'bg-snack-bg text-snack-text border-none',
-        fruits: 'bg-lunch-bg text-lunch-text border-none',
-        dairy: 'bg-snack-bg text-snack-text border-none',
-        others: 'bg-dinner-bg text-dinner-text border-none',
+        grains: 'bg-lunch text-lunch-foreground border-none',
+        veggies: 'bg-breakfast text-breakfast-foreground border-none',
+        protein: 'bg-snack text-snack-foreground border-none',
+        fruits: 'bg-lunch text-lunch-foreground border-none',
+        dairy: 'bg-snack text-snack-foreground border-none',
+        others: 'bg-dinner text-dinner-foreground border-none',
       },
       size: {
         default: 'h-7 px-3 text-xs',

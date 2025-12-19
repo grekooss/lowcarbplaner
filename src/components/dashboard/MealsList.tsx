@@ -58,7 +58,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
       </div>
 
       {mealsForDate.length > 0 && mealsForDate.length < 3 && (
-        <div className='mt-6 ml-16 text-sm text-gray-500'>
+        <div className='text-text-muted mt-6 ml-16 text-sm'>
           Nie wszystkie posiłki zostały jeszcze zaplanowane na ten dzień.
         </div>
       )}
