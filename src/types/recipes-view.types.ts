@@ -89,6 +89,7 @@ export const MEAL_TYPE_LABELS: Record<Enums<'meal_type_enum'>, string> = {
   breakfast: 'Śniadanie',
   lunch: 'Obiad',
   dinner: 'Kolacja',
+  snack: 'Przekąska',
 }
 
 // ============================================================================
