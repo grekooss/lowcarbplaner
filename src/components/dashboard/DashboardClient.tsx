@@ -6,11 +6,12 @@
 
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useMemo, useCallback } from 'react'
 import { CalendarStrip } from './CalendarStrip'
 import { MacroProgressSection } from './MacroProgressSection'
 import { MealsList } from './MealsList'
 import { useDashboardStore } from '@/lib/zustand/stores/useDashboardStore'
+import { useCheckedIngredientsStore } from '@/lib/zustand/stores/useCheckedIngredientsStore'
 import { usePlannedMealsQuery } from '@/hooks/usePlannedMealsQuery'
 import { useAutoGenerateMealPlan } from '@/hooks/useAutoGenerateMealPlan'
 import { useWeekMealsCheck } from '@/hooks/useWeekMealsCheck'
@@ -47,6 +48,32 @@ export function DashboardClient({
     isOpen: false,
     meal: null,
   })
+
+  // Global checked ingredients state from Zustand store
+  // Shared between Dashboard and Meal Plan
+  const checkedIngredientsMap = useCheckedIngredientsStore(
+    (state) => state.checkedIngredientsMap
+  )
+  const toggleIngredientChecked = useCheckedIngredientsStore(
+    (state) => state.toggleIngredientChecked
+  )
+
+  // Get checked ingredients for current meal
+  const currentMealCheckedIngredients = useMemo(() => {
+    const mealId = recipeModal.meal?.id
+    if (!mealId) return new Set<number>()
+    return checkedIngredientsMap.get(mealId) ?? new Set<number>()
+  }, [checkedIngredientsMap, recipeModal.meal?.id])
+
+  // Toggle handler with current meal ID
+  const handleToggleChecked = useCallback(
+    (ingredientId: number) => {
+      const mealId = recipeModal.meal?.id
+      if (!mealId) return
+      toggleIngredientChecked(mealId, ingredientId)
+    },
+    [recipeModal.meal?.id, toggleIngredientChecked]
+  )
 
   // Initialize the selected date once from server data
   useEffect(() => {
@@ -293,6 +320,8 @@ export function DashboardClient({
         meal={recipeModal.meal}
         onOpenChange={handleRecipeModalChange}
         enableIngredientEditing={true}
+        checkedIngredients={currentMealCheckedIngredients}
+        onToggleChecked={handleToggleChecked}
       />
     </div>
   )

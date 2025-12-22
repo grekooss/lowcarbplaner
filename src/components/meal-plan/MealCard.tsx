@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { UtensilsCrossed, RefreshCw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { SwapRecipeDialog } from '@/components/shared/SwapRecipeDialog'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
@@ -50,13 +51,20 @@ export const MealCard = memo(function MealCard({
     if ((e.target as HTMLElement).closest('button')) {
       return
     }
+    // Blokuj kliknięcie dla zjedzonych posiłków
+    if (meal.is_eaten) return
     onMealClick(meal)
   }
 
   return (
     <>
       <div
-        className='group relative flex h-[72px] cursor-pointer items-center gap-3 rounded-md border-2 border-white bg-white/40 px-3 py-2 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.01]'
+        className={cn(
+          'group relative flex h-[72px] items-center gap-3 rounded-md border-2 border-white bg-white/40 px-3 py-2 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all duration-300',
+          meal.is_eaten
+            ? 'pointer-events-none opacity-60 grayscale-[40%]'
+            : 'cursor-pointer hover:scale-[1.01]'
+        )}
         onClick={handleCardClick}
       >
         {/* Image */}
@@ -75,7 +83,8 @@ export const MealCard = memo(function MealCard({
             </div>
           )}
           {/* Swap button on image - center on mobile, hover-reveal on desktop */}
-          {showSwapButton && (
+          {/* Ukryj przycisk swap dla zjedzonych posiłków */}
+          {showSwapButton && !meal.is_eaten && (
             <Button
               variant='ghost'
               size='icon-sm'

@@ -58,6 +58,7 @@ export function useIngredientViewer({ recipe }: UseIngredientViewerParams) {
 
   /**
    * Update ingredient amount
+   * Note: amount = 0 is allowed for excluding ingredients from the recipe
    */
   const updateIngredientAmount = useCallback(
     (
@@ -69,8 +70,8 @@ export function useIngredientViewer({ recipe }: UseIngredientViewerParams) {
         return { success: false, error: 'Składnik nie znaleziony' }
       }
 
-      if (newAmount <= 0) {
-        return { success: false, error: 'Ilość musi być większa od 0' }
+      if (newAmount < 0) {
+        return { success: false, error: 'Ilość nie może być ujemna' }
       }
 
       // If new amount equals original, remove override
@@ -79,7 +80,7 @@ export function useIngredientViewer({ recipe }: UseIngredientViewerParams) {
           prev.filter((o) => o.ingredient_id !== ingredientId)
         )
       } else {
-        // Add or update override
+        // Add or update override (including 0 for excluded ingredients)
         setOverrides((prev) => {
           const filtered = prev.filter((o) => o.ingredient_id !== ingredientId)
           return [

@@ -29,6 +29,12 @@ import {
   PLANNED_MEAL_SELECT_FULL,
 } from '@/lib/utils/recipe-transformer'
 import { isValidMealData } from '@/lib/utils/type-guards'
+import {
+  recordMealEaten,
+  removeMealEaten,
+  type MealEatenData,
+} from '@/lib/actions/user-history'
+import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
 
 /**
  * Kody błędów dla akcji planned meals
@@ -80,6 +86,7 @@ function transformPlannedMealToDTO(meal: {
       protein_g: number | null
       carbs_g: number | null
       fats_g: number | null
+      step_number: number | null
       ingredient: {
         id: number
         name: string
@@ -348,8 +355,42 @@ async function markMealAsEaten(
     }
   }
 
+  const transformedMeal = transformPlannedMealToDTO(mealData as PlannedMealRow)
+
+  // 3. Aktualizuj historię w zależności od stanu is_eaten
+  if (isEaten) {
+    // Posiłek oznaczony jako zjedzony - zapisz do historii
+    const nutrition = calculateRecipeNutritionWithOverrides(
+      transformedMeal.recipe,
+      transformedMeal.ingredient_overrides
+    )
+
+    const mealEatenData: MealEatenData = {
+      planned_meal_id: transformedMeal.id,
+      recipe_id: transformedMeal.recipe.id,
+      recipe_name: transformedMeal.recipe.name,
+      meal_type: transformedMeal.meal_type,
+      meal_date: transformedMeal.meal_date,
+      calories: Math.round(nutrition.calories),
+      protein_g: Math.round(nutrition.protein_g * 10) / 10,
+      carbs_g: Math.round(nutrition.carbs_g * 10) / 10,
+      fats_g: Math.round(nutrition.fats_g * 10) / 10,
+      ingredient_overrides: transformedMeal.ingredient_overrides,
+    }
+
+    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+    recordMealEaten(mealEatenData).catch((err) => {
+      console.warn('Błąd zapisu historii meal_eaten:', err)
+    })
+  } else {
+    // Posiłek odkliknięty - usuń z historii
+    removeMealEaten(transformedMeal.id).catch((err) => {
+      console.warn('Błąd usuwania historii meal_eaten:', err)
+    })
+  }
+
   return {
-    data: transformPlannedMealToDTO(mealData as PlannedMealRow),
+    data: transformedMeal,
   }
 }
 
@@ -542,18 +583,22 @@ async function modifyMealIngredients(
       }
     }
 
-    if (!ingredient.is_scalable) {
+    // Walidacja podstawowa (ilość >= 0, 0 oznacza wykluczenie składnika)
+    if (override.new_amount < 0) {
       return {
-        error: `Składnik o ID ${override.ingredient_id} nie może być skalowany`,
+        error: `Ilość składnika o ID ${override.ingredient_id} nie może być ujemna`,
         code: 'VALIDATION_ERROR',
       }
     }
 
-    // Walidacja podstawowa (ilość > 0)
-    if (override.new_amount <= 0) {
-      return {
-        error: `Ilość składnika o ID ${override.ingredient_id} musi być większa od 0`,
-        code: 'VALIDATION_ERROR',
+    // Składniki nie-skalowalne mogą być tylko wykluczane (0) lub przywracane do oryginalnej wartości
+    if (!ingredient.is_scalable && override.new_amount !== 0) {
+      // Allow restoring to original amount
+      if (Math.abs(override.new_amount - ingredient.base_amount) > 0.01) {
+        return {
+          error: `Składnik o ID ${override.ingredient_id} nie może być skalowany (tylko wykluczenie lub oryginalna wartość)`,
+          code: 'VALIDATION_ERROR',
+        }
       }
     }
 

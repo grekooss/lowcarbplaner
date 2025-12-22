@@ -10,6 +10,7 @@
 import {
   ACTIVITY_LEVEL_LABELS,
   GOAL_LABELS,
+  MEAL_PLAN_TYPE_LABELS,
   type OnboardingFormData,
   type CalculatedTargets,
 } from '@/types/onboarding-view.types'
@@ -90,6 +91,15 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                   </div>
                 </>
               )}
+            <Separator />
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Plan posiłków:</span>
+              <span className='font-medium'>
+                {formData.meal_plan_type
+                  ? MEAL_PLAN_TYPE_LABELS[formData.meal_plan_type]
+                  : '-'}
+              </span>
+            </div>
           </div>
         </div>
 

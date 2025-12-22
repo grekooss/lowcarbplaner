@@ -27,6 +27,11 @@ import {
   type CreateProfileInput,
   type UpdateProfileInput,
 } from '@/lib/validation/profile'
+import {
+  recordProfileCreated,
+  recordProfileUpdated,
+  type ProfileSnapshot,
+} from '@/lib/actions/user-history'
 
 /**
  * Standardowy typ wyniku Server Action (Discriminated Union)
@@ -138,6 +143,7 @@ export async function createProfile(
       activity_level: command.activity_level,
       goal: command.goal,
       weight_loss_rate_kg_week: command.weight_loss_rate_kg_week ?? null,
+      meal_plan_type: command.meal_plan_type,
       disclaimer_accepted_at: command.disclaimer_accepted_at,
       target_calories: nutritionTargets.target_calories,
       target_carbs_g: nutritionTargets.target_carbs_g,
@@ -163,7 +169,27 @@ export async function createProfile(
       }
     }
 
-    // 7. Transformacja do DTO
+    // 7. Zapisz zdarzenie profile_created do historii
+    const profileSnapshot: ProfileSnapshot = {
+      weight_kg: createdProfile.weight_kg,
+      height_cm: createdProfile.height_cm,
+      age: createdProfile.age,
+      gender: createdProfile.gender,
+      activity_level: createdProfile.activity_level,
+      goal: createdProfile.goal,
+      weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
+      target_calories: createdProfile.target_calories,
+      target_protein_g: createdProfile.target_protein_g,
+      target_carbs_g: createdProfile.target_carbs_g,
+      target_fats_g: createdProfile.target_fats_g,
+    }
+
+    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+    recordProfileCreated(profileSnapshot).catch((err) => {
+      console.warn('Błąd zapisu historii profile_created:', err)
+    })
+
+    // 8. Transformacja do DTO
     const response: CreateProfileResponseDTO = {
       id: createdProfile.id,
       email: createdProfile.email,
@@ -174,6 +200,7 @@ export async function createProfile(
       activity_level: createdProfile.activity_level,
       goal: createdProfile.goal,
       weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
+      meal_plan_type: createdProfile.meal_plan_type,
       disclaimer_accepted_at:
         createdProfile.disclaimer_accepted_at || new Date().toISOString(),
       target_calories: createdProfile.target_calories,
@@ -262,6 +289,7 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       activity_level: profile.activity_level,
       goal: profile.goal,
       weight_loss_rate_kg_week: profile.weight_loss_rate_kg_week,
+      meal_plan_type: profile.meal_plan_type,
       disclaimer_accepted_at:
         profile.disclaimer_accepted_at || new Date().toISOString(),
       target_calories: profile.target_calories,
@@ -373,6 +401,7 @@ export async function updateMyProfile(
       weight_loss_rate_kg_week:
         command.weight_loss_rate_kg_week ??
         currentProfile.weight_loss_rate_kg_week,
+      meal_plan_type: command.meal_plan_type ?? currentProfile.meal_plan_type,
     }
 
     // 5. Przeliczenie celów żywieniowych
@@ -418,7 +447,27 @@ export async function updateMyProfile(
       }
     }
 
-    // 8. Usunięcie wszystkich zaplanowanych posiłków (regeneracja planu)
+    // 8. Zapisz zdarzenie profile_updated do historii
+    const profileSnapshotUpdate: ProfileSnapshot = {
+      weight_kg: updatedProfile.weight_kg,
+      height_cm: updatedProfile.height_cm,
+      age: updatedProfile.age,
+      gender: updatedProfile.gender,
+      activity_level: updatedProfile.activity_level,
+      goal: updatedProfile.goal,
+      weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
+      target_calories: updatedProfile.target_calories,
+      target_protein_g: updatedProfile.target_protein_g,
+      target_carbs_g: updatedProfile.target_carbs_g,
+      target_fats_g: updatedProfile.target_fats_g,
+    }
+
+    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+    recordProfileUpdated(profileSnapshotUpdate).catch((err) => {
+      console.warn('Błąd zapisu historii profile_updated:', err)
+    })
+
+    // 9. Usunięcie wszystkich zaplanowanych posiłków (regeneracja planu)
     const { error: deleteMealsError } = await supabase
       .from('planned_meals')
       .delete()
@@ -431,7 +480,7 @@ export async function updateMyProfile(
       )
     }
 
-    // 9. Transformacja do DTO
+    // 10. Transformacja do DTO
     const profileDTO: ProfileDTO = {
       email: updatedProfile.email,
       gender: updatedProfile.gender,
@@ -441,6 +490,7 @@ export async function updateMyProfile(
       activity_level: updatedProfile.activity_level,
       goal: updatedProfile.goal,
       weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
+      meal_plan_type: updatedProfile.meal_plan_type,
       disclaimer_accepted_at:
         updatedProfile.disclaimer_accepted_at || new Date().toISOString(),
       target_calories: updatedProfile.target_calories,

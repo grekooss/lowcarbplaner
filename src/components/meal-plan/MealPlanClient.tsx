@@ -5,9 +5,10 @@
  * Zarządza stanem modali, responsywnością i integracją z TanStack Query
  */
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { usePlannedMealsQuery } from '@/hooks/usePlannedMealsQuery'
 import { useAutoGenerateMealPlan } from '@/hooks/useAutoGenerateMealPlan'
+import { useCheckedIngredientsStore } from '@/lib/zustand/stores/useCheckedIngredientsStore'
 import { transformToWeekPlan } from '@/lib/utils/meal-plan'
 import { WeekTable } from './WeekTable'
 import { DayList } from './DayList'
@@ -36,6 +37,32 @@ export const MealPlanClient = ({
     isOpen: false,
     meal: null,
   })
+
+  // Global checked ingredients state from Zustand store
+  // Shared between Dashboard and Meal Plan
+  const checkedIngredientsMap = useCheckedIngredientsStore(
+    (state) => state.checkedIngredientsMap
+  )
+  const toggleIngredientChecked = useCheckedIngredientsStore(
+    (state) => state.toggleIngredientChecked
+  )
+
+  // Get checked ingredients for current meal
+  const currentMealCheckedIngredients = useMemo(() => {
+    const mealId = recipeModal.meal?.id
+    if (!mealId) return new Set<number>()
+    return checkedIngredientsMap.get(mealId) ?? new Set<number>()
+  }, [checkedIngredientsMap, recipeModal.meal?.id])
+
+  // Toggle handler with current meal ID
+  const handleToggleChecked = useCallback(
+    (ingredientId: number) => {
+      const mealId = recipeModal.meal?.id
+      if (!mealId) return
+      toggleIngredientChecked(mealId, ingredientId)
+    },
+    [recipeModal.meal?.id, toggleIngredientChecked]
+  )
 
   // Oblicz endDate (startDate + 6 dni)
   const endDate = useMemo(() => {
@@ -127,6 +154,20 @@ export const MealPlanClient = ({
     })
   }
 
+  // Sync modal meal data with fresh query data (after save or refetch)
+  const currentMealId = recipeModal.meal?.id
+  useEffect(() => {
+    if (recipeModal.isOpen && currentMealId) {
+      const freshMeal = meals.find((m) => m.id === currentMealId)
+      if (freshMeal) {
+        setRecipeModal((prev) => ({
+          ...prev,
+          meal: freshMeal,
+        }))
+      }
+    }
+  }, [meals, recipeModal.isOpen, currentMealId])
+
   // Initial loading - show spinner
   if (isLoading) {
     return (
@@ -179,6 +220,8 @@ export const MealPlanClient = ({
           setRecipeModal((prev) => ({ ...prev, isOpen: open }))
         }
         enableIngredientEditing={true}
+        checkedIngredients={currentMealCheckedIngredients}
+        onToggleChecked={handleToggleChecked}
       />
     </>
   )

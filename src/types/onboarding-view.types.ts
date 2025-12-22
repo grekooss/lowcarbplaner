@@ -21,6 +21,7 @@ export interface OnboardingFormData {
   activity_level: Enums<'activity_level_enum'> | null
   goal: Enums<'goal_enum'> | null
   weight_loss_rate_kg_week: number | null
+  meal_plan_type: Enums<'meal_plan_type_enum'> | null
   disclaimer_accepted: boolean
 }
 
@@ -99,4 +100,30 @@ export const GOAL_LABELS: Record<Enums<'goal_enum'>, string> = {
 export const GOAL_DESCRIPTIONS: Record<Enums<'goal_enum'>, string> = {
   weight_loss: 'Chcę schudnąć i obniżyć wagę ciała',
   weight_maintenance: 'Chcę utrzymać obecną wagę',
+}
+
+/**
+ * Mapowanie meal_plan_type na polskie nazwy
+ */
+export const MEAL_PLAN_TYPE_LABELS: Record<
+  Enums<'meal_plan_type_enum'>,
+  string
+> = {
+  '3_main_2_snacks': '3 główne + 2 przekąski',
+  '3_main_1_snack': '3 główne + 1 przekąska',
+  '3_main': '3 główne posiłki',
+  '2_main': '2 główne posiłki',
+}
+
+/**
+ * Opisy typów planu posiłków
+ */
+export const MEAL_PLAN_TYPE_DESCRIPTIONS: Record<
+  Enums<'meal_plan_type_enum'>,
+  string
+> = {
+  '3_main_2_snacks': 'Śniadanie, przekąska, obiad, przekąska, kolacja',
+  '3_main_1_snack': 'Śniadanie, obiad, przekąska, kolacja',
+  '3_main': 'Śniadanie, obiad, kolacja',
+  '2_main': 'Obiad i kolacja (bez śniadania)',
 }

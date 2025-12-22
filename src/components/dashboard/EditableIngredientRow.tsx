@@ -3,12 +3,16 @@
  *
  * Displays ingredient with editable quantity (numeric input + +/- buttons)
  * Only allows editing for ingredients with is_scalable: true
+ *
+ * Features:
+ * - Checkbox: visual toggle only (no effect on amount)
+ * - Trash icon: excludes ingredient (sets amount to 0, strikes through name)
  */
 
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Minus, Plus, Check } from 'lucide-react'
+import { Minus, Plus, Check, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { IngredientDTO } from '@/types/dto.types'
@@ -31,8 +35,12 @@ interface EditableIngredientRowProps {
     error?: string
     warning?: string
   }
+  /** Visual checkbox state (no effect on amount) */
   isChecked?: boolean
+  /** Toggle visual checkbox (no effect on amount) */
   onToggleChecked?: (ingredientId: number) => void
+  /** Exclude ingredient callback - sets amount to 0 */
+  onExclude?: (ingredientId: number) => void
   /** Compact mode for mobile view */
   compact?: boolean
 }
@@ -46,10 +54,14 @@ export function EditableIngredientRow({
   onDecrement,
   isChecked = false,
   onToggleChecked,
+  onExclude,
   compact = false,
 }: EditableIngredientRowProps) {
   const [localValue, setLocalValue] = useState(currentAmount.toString())
   const [error, setError] = useState<string | null>(null)
+
+  // Check if ingredient is excluded (amount = 0)
+  const isExcluded = currentAmount === 0
 
   // Sync local value when currentAmount changes externally
   useEffect(() => {
@@ -93,6 +105,8 @@ export function EditableIngredientRow({
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    // Cannot toggle checkbox when ingredient is excluded
+    if (isExcluded) return
     onToggleChecked?.(ingredient.id)
   }
 
@@ -100,7 +114,22 @@ export function EditableIngredientRow({
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       e.stopPropagation()
+      // Cannot toggle checkbox when ingredient is excluded
+      if (isExcluded) return
       onToggleChecked?.(ingredient.id)
+    }
+  }
+
+  const handleExcludeClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // Cannot exclude when checkbox is checked (unless restoring from excluded state)
+    if (isChecked && !isExcluded) return
+    if (isExcluded) {
+      // Restore to original amount
+      onAmountChange(ingredient.id, ingredient.amount)
+    } else {
+      // Exclude - set to 0
+      onExclude?.(ingredient.id)
     }
   }
 
@@ -110,24 +139,27 @@ export function EditableIngredientRow({
       className={cn(
         'space-y-1 rounded-lg',
         compact ? 'px-1 py-2' : 'px-3 py-3',
-        isChecked && 'bg-primary/5'
+        isExcluded && 'bg-gray-100/50'
       )}
     >
       <div className={cn('flex items-center', compact ? 'gap-2' : 'gap-3')}>
-        {/* Checkbox */}
+        {/* Checkbox - visual only, no effect on amount. Disabled when excluded */}
         <div
           className={cn(
-            'flex flex-shrink-0 cursor-pointer items-center justify-center rounded-md border-2 transition-all duration-200',
+            'flex flex-shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200',
             compact ? 'h-4 w-4 rounded' : 'h-6 w-6',
-            isChecked
-              ? 'border-primary bg-primary'
-              : 'border-border hover:border-primary bg-white'
+            isExcluded
+              ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-50'
+              : isChecked
+                ? 'border-primary bg-primary cursor-pointer'
+                : 'border-border hover:border-primary cursor-pointer bg-white'
           )}
           onClick={handleCheckboxClick}
           onKeyDown={handleCheckboxKeyDown}
           role='checkbox'
           aria-checked={isChecked}
-          tabIndex={0}
+          aria-disabled={isExcluded}
+          tabIndex={isExcluded ? -1 : 0}
         >
           {isChecked && (
             <Check
@@ -137,66 +169,153 @@ export function EditableIngredientRow({
           )}
         </div>
 
-        {/* Ingredient name */}
+        {/* Ingredient name - strike through when excluded (amount = 0) */}
         <div className='min-w-0 flex-1'>
           <p
             className={cn(
               'font-medium break-words transition-all duration-200',
               compact ? 'text-[13px] leading-tight' : 'text-sm',
-              isChecked ? 'text-gray-400 line-through' : 'text-gray-800'
+              isExcluded ? 'text-gray-400 line-through' : 'text-gray-800'
             )}
           >
             {ingredient.name}
-            {isChanged && !isAutoAdjusted && !compact && (
+            {isChanged && !isAutoAdjusted && !compact && !isExcluded && (
               <span className='text-primary ml-2 text-xs'>(zmieniono)</span>
+            )}
+            {isExcluded && !compact && (
+              <span className='ml-2 text-xs text-gray-400'>(wykluczone)</span>
             )}
           </p>
         </div>
 
         {/* Amount display + controls */}
         {ingredient.is_scalable ? (
-          <div
-            className={cn(
-              'flex items-center gap-1 transition-all duration-200',
-              isChecked ? 'pointer-events-none opacity-50' : ''
-            )}
-          >
-            {/* Minus button */}
-            <button
-              type='button'
-              onClick={handleDecrement}
-              disabled={currentAmount <= 0 || isChecked}
+          <div className='flex items-center gap-1'>
+            {/* Controls wrapper - disabled when excluded */}
+            <div
               className={cn(
-                'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                compact ? 'h-5 w-5' : 'h-6 w-6'
+                'flex items-center gap-1 transition-all duration-200',
+                isExcluded ? 'pointer-events-none opacity-50' : ''
               )}
             >
-              <Minus
+              {/* Minus button */}
+              <button
+                type='button'
+                onClick={handleDecrement}
+                disabled={currentAmount <= 0 || isExcluded}
                 className={cn(
-                  compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                  'text-gray-600'
+                  'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                  compact ? 'h-5 w-5' : 'h-6 w-6'
                 )}
-              />
-            </button>
+              >
+                <Minus
+                  className={cn(
+                    compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                    'text-gray-600'
+                  )}
+                />
+              </button>
 
-            {/* Amount display */}
-            <div className='flex items-baseline whitespace-nowrap'>
-              <Input
-                type='number'
-                value={localValue}
-                onChange={handleInputChange}
-                disabled={isChecked}
+              {/* Amount display */}
+              <div className='flex items-baseline whitespace-nowrap'>
+                <Input
+                  type='number'
+                  value={localValue}
+                  onChange={handleInputChange}
+                  disabled={isExcluded}
+                  className={cn(
+                    'h-auto [appearance:textfield] border-0 bg-transparent p-0 text-center font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                    compact ? 'w-10 text-sm' : 'w-14 text-lg',
+                    error && 'text-error'
+                  )}
+                  step='1'
+                  min='0'
+                />
+                <span
+                  className={cn(
+                    '-ml-1 text-gray-500',
+                    compact ? 'text-[10px]' : 'text-sm'
+                  )}
+                >
+                  {ingredient.unit}
+                </span>
+              </div>
+
+              {/* Plus button */}
+              <button
+                type='button'
+                onClick={handleIncrement}
+                disabled={isExcluded}
                 className={cn(
-                  'h-auto [appearance:textfield] border-0 bg-transparent p-0 text-center font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
-                  compact ? 'w-10 text-sm' : 'w-14 text-lg',
-                  error && 'text-error'
+                  'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                  compact ? 'h-5 w-5' : 'h-6 w-6'
                 )}
-                step='1'
-                min='0'
-              />
+              >
+                <Plus
+                  className={cn(
+                    compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                    'text-gray-600'
+                  )}
+                />
+              </button>
+            </div>
+
+            {/* Trash button - OUTSIDE the disabled wrapper. Disabled when checkbox is checked */}
+            {onExclude && (
+              <button
+                type='button'
+                onClick={handleExcludeClick}
+                disabled={isChecked && !isExcluded}
+                className={cn(
+                  'ml-1 flex items-center justify-center rounded-md border-2 transition-all duration-200',
+                  compact ? 'h-5 w-5' : 'h-6 w-6',
+                  isChecked && !isExcluded
+                    ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-50'
+                    : isExcluded
+                      ? 'border-primary bg-primary/10 hover:bg-primary/20'
+                      : 'border-border bg-white hover:border-red-400 hover:bg-red-50'
+                )}
+                title={
+                  isChecked && !isExcluded
+                    ? 'Odznacz checkbox aby wykluczyć'
+                    : isExcluded
+                      ? 'Przywróć składnik'
+                      : 'Wyklucz składnik'
+                }
+              >
+                <Trash2
+                  className={cn(
+                    compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                    isChecked && !isExcluded
+                      ? 'text-gray-300'
+                      : isExcluded
+                        ? 'text-primary'
+                        : 'text-gray-400'
+                  )}
+                />
+              </button>
+            )}
+          </div>
+        ) : (
+          // Non-scalable ingredients - display only with trash button
+          <div className='flex items-center gap-1'>
+            <div
+              className={cn(
+                'flex items-baseline gap-1 whitespace-nowrap transition-all duration-200',
+                isExcluded ? 'opacity-50' : ''
+              )}
+            >
               <span
                 className={cn(
-                  '-ml-1 text-gray-500',
+                  'font-bold text-gray-800',
+                  compact ? 'text-sm' : 'text-lg'
+                )}
+              >
+                {currentAmount}
+              </span>
+              <span
+                className={cn(
+                  'text-gray-500',
                   compact ? 'text-[10px]' : 'text-sm'
                 )}
               >
@@ -204,48 +323,41 @@ export function EditableIngredientRow({
               </span>
             </div>
 
-            {/* Plus button */}
-            <button
-              type='button'
-              onClick={handleIncrement}
-              disabled={isChecked}
-              className={cn(
-                'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                compact ? 'h-5 w-5' : 'h-6 w-6'
-              )}
-            >
-              <Plus
+            {/* Trash button for non-scalable ingredients. Disabled when checkbox is checked */}
+            {onExclude && (
+              <button
+                type='button'
+                onClick={handleExcludeClick}
+                disabled={isChecked && !isExcluded}
                 className={cn(
-                  compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                  'text-gray-600'
+                  'ml-1 flex items-center justify-center rounded-md border-2 transition-all duration-200',
+                  compact ? 'h-5 w-5' : 'h-6 w-6',
+                  isChecked && !isExcluded
+                    ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-50'
+                    : isExcluded
+                      ? 'border-primary bg-primary/10 hover:bg-primary/20'
+                      : 'border-border bg-white hover:border-red-400 hover:bg-red-50'
                 )}
-              />
-            </button>
-          </div>
-        ) : (
-          // Non-scalable ingredients - display only (shopping list style)
-          <div
-            className={cn(
-              'flex items-baseline gap-1 whitespace-nowrap transition-all duration-200',
-              isChecked ? 'opacity-50' : ''
+                title={
+                  isChecked && !isExcluded
+                    ? 'Odznacz checkbox aby wykluczyć'
+                    : isExcluded
+                      ? 'Przywróć składnik'
+                      : 'Wyklucz składnik'
+                }
+              >
+                <Trash2
+                  className={cn(
+                    compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                    isChecked && !isExcluded
+                      ? 'text-gray-300'
+                      : isExcluded
+                        ? 'text-primary'
+                        : 'text-gray-400'
+                  )}
+                />
+              </button>
             )}
-          >
-            <span
-              className={cn(
-                'font-bold text-gray-800',
-                compact ? 'text-sm' : 'text-lg'
-              )}
-            >
-              {currentAmount}
-            </span>
-            <span
-              className={cn(
-                'text-gray-500',
-                compact ? 'text-[10px]' : 'text-sm'
-              )}
-            >
-              {ingredient.unit}
-            </span>
           </div>
         )}
       </div>

@@ -52,6 +52,12 @@ export const createProfileSchema = z
       .min(0.25, 'Tempo utraty wagi musi wynosić co najmniej 0.25 kg/tydzień')
       .max(1.0, 'Tempo utraty wagi nie może przekraczać 1.0 kg/tydzień')
       .optional(),
+    meal_plan_type: z.enum([
+      '3_main_2_snacks',
+      '3_main_1_snack',
+      '3_main',
+      '2_main',
+    ] as const),
     disclaimer_accepted_at: z
       .string()
       .datetime('Nieprawidłowy format daty (wymagany ISO 8601)'),

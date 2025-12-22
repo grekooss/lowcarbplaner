@@ -120,7 +120,11 @@ export const updatePlannedMealBodySchema = z.discriminatedUnion('action', [
     ingredient_overrides: z.array(
       z.object({
         ingredient_id: integerIdSchema,
-        new_amount: z.number().positive('new_amount musi być liczbą dodatnią'),
+        new_amount: z
+          .number()
+          .nonnegative(
+            'new_amount nie może być ujemny (0 = wykluczenie składnika)'
+          ),
       })
     ),
   }),

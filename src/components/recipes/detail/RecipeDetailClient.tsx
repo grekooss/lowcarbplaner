@@ -26,6 +26,7 @@ import {
   Check,
   Save,
   Loader2,
+  ChevronRight,
 } from 'lucide-react'
 import { InstructionsList } from './InstructionsList'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
@@ -73,6 +74,12 @@ interface RecipeDetailClientProps {
   totalSteps?: number
   // Hide steps button (when parent handles it in fixed footer)
   hideStepsButton?: boolean
+  // Excluded ingredients management (for checkbox exclusion feature)
+  excludedIngredients?: Map<number, number>
+  onToggleIngredientExcluded?: (ingredientId: number) => void
+  // External checkbox state (visual only, managed by parent)
+  checkedIngredients?: Set<number>
+  onToggleChecked?: (ingredientId: number) => void
 }
 
 /**
@@ -98,20 +105,47 @@ export function RecipeDetailClient({
   onOpenStepMode,
   totalSteps: totalStepsProp,
   hideStepsButton = false,
+  excludedIngredients,
+  onToggleIngredientExcluded,
+  checkedIngredients,
+  onToggleChecked,
 }: RecipeDetailClientProps) {
   const router = useRouter()
 
-  // Track checked ingredients (local state, resets on modal close)
-  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(
-    new Set()
-  )
+  // Track checked ingredients (local state for visual-only mode without exclusion)
+  const [localCheckedIngredients, setLocalCheckedIngredients] = useState<
+    Set<number>
+  >(new Set())
 
   const handleBack = () => {
     router.back()
   }
 
+  // Use external checkbox state if provided, otherwise use local state
+  const isIngredientChecked = (ingredientId: number) => {
+    // Priority: external checkedIngredients > excludedIngredients > local state
+    if (checkedIngredients) {
+      return checkedIngredients.has(ingredientId)
+    }
+    if (excludedIngredients) {
+      return excludedIngredients.has(ingredientId)
+    }
+    return localCheckedIngredients.has(ingredientId)
+  }
+
   const toggleIngredient = (ingredientId: number) => {
-    setCheckedIngredients((prev) => {
+    // Priority: external onToggleChecked > onToggleIngredientExcluded > local state
+    if (onToggleChecked) {
+      onToggleChecked(ingredientId)
+      return
+    }
+    if (onToggleIngredientExcluded) {
+      onToggleIngredientExcluded(ingredientId)
+      return
+    }
+
+    // Otherwise use local state (visual only, no macro update)
+    setLocalCheckedIngredients((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(ingredientId)) {
         newSet.delete(ingredientId)
@@ -628,8 +662,9 @@ export function RecipeDetailClient({
                           onAmountChange={updateIngredientAmount}
                           onIncrement={incrementAmount}
                           onDecrement={decrementAmount}
-                          isChecked={checkedIngredients.has(ingredient.id)}
+                          isChecked={isIngredientChecked(ingredient.id)}
                           onToggleChecked={toggleIngredient}
+                          onExclude={(id) => updateIngredientAmount(id, 0)}
                           compact
                         />
                       ))}
@@ -653,7 +688,7 @@ export function RecipeDetailClient({
                           : rounded.toFixed(2)
                       }
 
-                      const isChecked = checkedIngredients.has(ingredient.id)
+                      const isChecked = isIngredientChecked(ingredient.id)
 
                       return (
                         <li
@@ -788,8 +823,9 @@ export function RecipeDetailClient({
                       onAmountChange={updateIngredientAmount}
                       onIncrement={incrementAmount}
                       onDecrement={decrementAmount}
-                      isChecked={checkedIngredients.has(ingredient.id)}
+                      isChecked={isIngredientChecked(ingredient.id)}
                       onToggleChecked={toggleIngredient}
+                      onExclude={(id) => updateIngredientAmount(id, 0)}
                     />
                   ))}
                 </ul>
@@ -810,7 +846,7 @@ export function RecipeDetailClient({
                         : rounded.toFixed(2)
                     }
 
-                    const isChecked = checkedIngredients.has(ingredient.id)
+                    const isChecked = isIngredientChecked(ingredient.id)
 
                     return (
                       <li
@@ -883,14 +919,15 @@ export function RecipeDetailClient({
         </div>
       </div>
 
-      {/* Mobile: Przycisk KROKI - sticky na dole (tylko gdy nie w step mode i nie ukryty) */}
+      {/* Mobile: Arrow to enter step mode - sticky na dole (tylko gdy nie w step mode i nie ukryty) */}
       {!isStepMode && totalSteps > 0 && !hideStepsButton && (
-        <div className='sticky right-0 bottom-0 left-0 z-50 flex justify-center pb-4 lg:hidden'>
+        <div className='sticky right-0 bottom-0 left-0 z-50 flex justify-end pr-4 pb-4 lg:hidden'>
           <Button
+            variant='outline'
             onClick={onOpenStepMode}
-            className='h-10 rounded-lg bg-red-600 px-8 text-sm font-bold tracking-wide text-white shadow-lg shadow-red-500/30 transition-transform hover:bg-red-700 active:scale-95'
+            className='flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-white/60 p-0 shadow-md backdrop-blur-sm'
           >
-            KROKI
+            <ChevronRight className='h-5 w-5' />
           </Button>
         </div>
       )}

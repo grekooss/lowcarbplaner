@@ -23,6 +23,7 @@ export interface RawRecipeIngredient {
   protein_g: number | null
   carbs_g: number | null
   fats_g: number | null
+  step_number: number | null
   ingredient: {
     id: number
     name: string
@@ -200,6 +201,7 @@ export function transformRecipeToDTO(
       fats_g: ri.fats_g || 0,
       category: ri.ingredient.category as IngredientDTO['category'],
       is_scalable: ri.is_scalable,
+      step_number: ri.step_number ?? null,
     })
   )
 
@@ -254,6 +256,7 @@ export const RECIPE_SELECT_FULL = `
     protein_g,
     carbs_g,
     fats_g,
+    step_number,
     ingredient:ingredients (
       id,
       name,

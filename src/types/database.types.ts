@@ -193,6 +193,7 @@ export type Database = {
           goal: Database['public']['Enums']['goal_enum']
           height_cm: number
           id: string
+          meal_plan_type: Database['public']['Enums']['meal_plan_type_enum']
           target_calories: number
           target_carbs_g: number
           target_fats_g: number
@@ -211,6 +212,7 @@ export type Database = {
           goal: Database['public']['Enums']['goal_enum']
           height_cm: number
           id: string
+          meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
           target_calories: number
           target_carbs_g: number
           target_fats_g: number
@@ -229,6 +231,7 @@ export type Database = {
           goal?: Database['public']['Enums']['goal_enum']
           height_cm?: number
           id?: string
+          meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
           target_calories?: number
           target_carbs_g?: number
           target_fats_g?: number
@@ -353,6 +356,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_history: {
+        Row: {
+          id: number
+          user_id: string
+          event_type: Database['public']['Enums']['history_event_type_enum']
+          event_date: string
+          created_at: string
+          profile_snapshot: Json | null
+          meal_data: Json | null
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          event_type: Database['public']['Enums']['history_event_type_enum']
+          event_date?: string
+          created_at?: string
+          profile_snapshot?: Json | null
+          meal_data?: Json | null
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          event_type?: Database['public']['Enums']['history_event_type_enum']
+          event_date?: string
+          created_at?: string
+          profile_snapshot?: Json | null
+          meal_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_history_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -370,6 +411,10 @@ export type Database = {
       difficulty_level_enum: 'easy' | 'medium' | 'hard'
       gender_enum: 'male' | 'female'
       goal_enum: 'weight_loss' | 'weight_maintenance'
+      history_event_type_enum:
+        | 'profile_created'
+        | 'profile_updated'
+        | 'meal_eaten'
       ingredient_category_enum:
         | 'vegetables'
         | 'fruits'
@@ -385,7 +430,12 @@ export type Database = {
         | 'sweeteners'
         | 'condiments'
         | 'other'
-      meal_type_enum: 'breakfast' | 'lunch' | 'dinner'
+      meal_plan_type_enum:
+        | '3_main_2_snacks'
+        | '3_main_1_snack'
+        | '3_main'
+        | '2_main'
+      meal_type_enum: 'breakfast' | 'lunch' | 'dinner' | 'snack'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -520,6 +570,11 @@ export const Constants = {
       difficulty_level_enum: ['easy', 'medium', 'hard'],
       gender_enum: ['male', 'female'],
       goal_enum: ['weight_loss', 'weight_maintenance'],
+      history_event_type_enum: [
+        'profile_created',
+        'profile_updated',
+        'meal_eaten',
+      ],
       ingredient_category_enum: [
         'vegetables',
         'fruits',
@@ -536,7 +591,13 @@ export const Constants = {
         'condiments',
         'other',
       ],
-      meal_type_enum: ['breakfast', 'lunch', 'dinner'],
+      meal_plan_type_enum: [
+        '3_main_2_snacks',
+        '3_main_1_snack',
+        '3_main',
+        '2_main',
+      ],
+      meal_type_enum: ['breakfast', 'lunch', 'dinner', 'snack'],
     },
   },
 } as const

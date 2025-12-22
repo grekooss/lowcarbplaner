@@ -5,7 +5,7 @@
  * Allows flexible ingredient quantity adjustments with warning at >±15% change.
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { IngredientOverrides, RecipeDTO } from '@/types/dto.types'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
@@ -14,6 +14,8 @@ interface UseIngredientEditorParams {
   mealId: number
   recipe: RecipeDTO
   initialOverrides: IngredientOverrides | null
+  /** Optional key to force re-sync when data changes from server */
+  _overridesKey?: string
 }
 
 /**
@@ -23,38 +25,41 @@ export function useIngredientEditor({
   mealId,
   recipe,
   initialOverrides,
+  _overridesKey,
 }: UseIngredientEditorParams) {
   const ingredients = recipe.ingredients
   const queryClient = useQueryClient()
   const [overrides, setOverrides] = useState<IngredientOverrides>(
     initialOverrides || []
   )
+  // Track if we're waiting for data sync after save (prevents flash of "Zapisz" button)
+  const [isWaitingForSync, setIsWaitingForSync] = useState(false)
 
   // Sync overrides when initialOverrides changes (e.g., after save or navigation)
+  // Using _overridesKey to detect actual data changes from server
+  const prevOverridesKeyRef = useRef(_overridesKey)
   useEffect(() => {
+    prevOverridesKeyRef.current = _overridesKey
     setOverrides(initialOverrides || [])
-  }, [initialOverrides])
+    // Data synced from server - clear waiting state
+    setIsWaitingForSync(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_overridesKey])
 
   // Check if there are any changes from initial state
   const hasChanges = useMemo(() => {
-    // Normalize to arrays for comparison
-    const initial = initialOverrides || []
-    const current = overrides || []
-
-    // Normalize objects to have consistent key order and sort by id
-    const normalize = (arr: IngredientOverrides) =>
-      [...arr]
+    // Normalize both arrays for consistent comparison
+    const normalize = (arr: IngredientOverrides | null) =>
+      [...(arr || [])]
         .map((item) => ({
           ingredient_id: item.ingredient_id,
           new_amount: item.new_amount,
         }))
         .sort((a, b) => a.ingredient_id - b.ingredient_id)
 
-    const initialStr = JSON.stringify(normalize(initial))
-    const currentStr = JSON.stringify(normalize(current))
-    const result = initialStr !== currentStr
-
-    return result
+    const initialStr = JSON.stringify(normalize(initialOverrides))
+    const currentStr = JSON.stringify(normalize(overrides))
+    return initialStr !== currentStr
   }, [overrides, initialOverrides])
 
   // Calculate adjusted nutrition based on current overrides
@@ -89,6 +94,7 @@ export function useIngredientEditor({
 
   /**
    * Validate ingredient amount and return warning if change > ±15%
+   * Note: amount = 0 is allowed for excluding ingredients from the recipe
    */
   const validateAmount = useCallback(
     (
@@ -100,12 +106,21 @@ export function useIngredientEditor({
         return { valid: false, error: 'Składnik nie znaleziony' }
       }
 
-      if (!ingredient.is_scalable) {
-        return { valid: false, error: 'Ten składnik nie może być skalowany' }
+      // Non-scalable ingredients: allow only 0 (excluded) or original amount (restored)
+      if (!ingredient.is_scalable && newAmount !== 0) {
+        // Allow restoring to original amount
+        if (Math.abs(newAmount - ingredient.amount) > 0.01) {
+          return { valid: false, error: 'Ten składnik nie może być skalowany' }
+        }
       }
 
-      if (newAmount <= 0) {
-        return { valid: false, error: 'Ilość musi być większa od 0' }
+      if (newAmount < 0) {
+        return { valid: false, error: 'Ilość nie może być ujemna' }
+      }
+
+      // Amount = 0 means excluded ingredient - no warning needed
+      if (newAmount === 0) {
+        return { valid: true }
       }
 
       const originalAmount = ingredient.amount
@@ -127,6 +142,7 @@ export function useIngredientEditor({
 
   /**
    * Update ingredient amount
+   * Note: amount = 0 is allowed for excluding ingredients from the recipe
    */
   const updateIngredientAmount = useCallback(
     (
@@ -149,7 +165,7 @@ export function useIngredientEditor({
           prev.filter((o) => o.ingredient_id !== ingredientId)
         )
       } else {
-        // Add or update override
+        // Add or update override (including 0 for excluded ingredients)
         setOverrides((prev) => {
           const filtered = prev.filter((o) => o.ingredient_id !== ingredientId)
           return [
@@ -209,15 +225,21 @@ export function useIngredientEditor({
       return response.json()
     },
     onSuccess: () => {
-      // Invalidate queries to refresh data
+      // Mark that we're waiting for data sync (prevents flash of "Zapisz" button)
+      setIsWaitingForSync(true)
+      // Invalidate queries to refresh data - this will sync local state with server
       queryClient.invalidateQueries({ queryKey: ['planned-meals'] })
       queryClient.invalidateQueries({ queryKey: ['daily-macros'] })
     },
   })
 
+  // hasChanges should be hidden while waiting for sync after successful save
+  // This prevents the flash of "Zapisz" button between save completion and data sync
+  const effectiveHasChanges = hasChanges && !isWaitingForSync
+
   return {
     overrides,
-    hasChanges,
+    hasChanges: effectiveHasChanges,
     adjustedNutrition,
     getIngredientAmount,
     isAutoAdjusted,
@@ -227,5 +249,6 @@ export function useIngredientEditor({
     validateAmount,
     saveChanges,
     isSaving,
+    isSaveSuccess: false, // Never show "Zapisano" - just hide button after save
   }
 }

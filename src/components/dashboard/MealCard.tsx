@@ -77,12 +77,16 @@ export const MealCard = memo(function MealCard({
   const { mutate: toggleMeal, isPending } = useMealToggle()
 
   const handleCardClick = () => {
+    // Blokuj kliknięcie dla zjedzonych posiłków
+    if (meal.is_eaten) return
     onRecipePreview(meal)
   }
 
   const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
+      // Blokuj klawiaturę dla zjedzonych posiłków
+      if (meal.is_eaten) return
       onRecipePreview(meal)
     }
   }
@@ -157,9 +161,14 @@ export const MealCard = memo(function MealCard({
             <div
               data-testid='meal-card'
               data-meal-type={meal.meal_type}
-              className='group mt-3 flex cursor-pointer flex-col gap-6 rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] sm:rounded-2xl md:flex-row'
+              className={cn(
+                'group mt-3 flex flex-col gap-6 rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all duration-300 sm:rounded-2xl md:flex-row',
+                meal.is_eaten
+                  ? 'pointer-events-none opacity-60 grayscale-[40%]'
+                  : 'cursor-pointer hover:scale-[1.01]'
+              )}
               role='button'
-              tabIndex={0}
+              tabIndex={meal.is_eaten ? -1 : 0}
               onClick={handleCardClick}
               onKeyDown={handleCardKeyDown}
             >
@@ -178,7 +187,8 @@ export const MealCard = memo(function MealCard({
                   </div>
                 )}
                 {/* Swap button on image - top-right on mobile, center on desktop */}
-                {showSwapButton && (
+                {/* Ukryj przycisk swap dla zjedzonych posiłków */}
+                {showSwapButton && !meal.is_eaten && (
                   <Button
                     variant='ghost'
                     size='icon'

@@ -108,6 +108,7 @@ export async function getRecipes(
           protein_g,
           carbs_g,
           fats_g,
+          step_number,
           ingredient:ingredients (
             id,
             name,

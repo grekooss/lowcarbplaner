@@ -28,8 +28,10 @@ export function IngredientEditor({
   initialOverrides,
   onSaveSuccess,
 }: IngredientEditorProps) {
-  const [isSaveSuccessful, setIsSaveSuccessful] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Create a stable key for ingredient_overrides to detect real changes
+  const overridesKey = JSON.stringify(initialOverrides)
 
   const {
     hasChanges,
@@ -40,17 +42,18 @@ export function IngredientEditor({
     decrementAmount,
     saveChanges,
     isSaving,
+    isSaveSuccess,
   } = useIngredientEditor({
     mealId,
     recipe,
     initialOverrides,
+    _overridesKey: overridesKey,
   })
 
   const handleSave = () => {
     setError(null)
     saveChanges(undefined, {
       onSuccess: () => {
-        setIsSaveSuccessful(true)
         onSaveSuccess?.()
       },
       onError: (err) => {
@@ -80,7 +83,7 @@ export function IngredientEditor({
         </div>
 
         {/* Save button */}
-        {hasChanges && !isSaveSuccessful && (
+        {hasChanges && !isSaveSuccess && (
           <Button
             onClick={handleSave}
             disabled={isSaving}
@@ -101,7 +104,7 @@ export function IngredientEditor({
           </Button>
         )}
 
-        {isSaveSuccessful && (
+        {isSaveSuccess && (
           <div className='text-success text-sm font-medium'>✓ Zapisano</div>
         )}
       </div>
@@ -135,7 +138,7 @@ export function IngredientEditor({
       )}
 
       {/* Info message */}
-      {hasChanges && !isSaveSuccessful && !error && (
+      {hasChanges && !isSaveSuccess && !error && (
         <p className='text-xs text-amber-600'>
           * Masz niezapisane zmiany. Kliknij &quot;Zapisz zmiany&quot; aby je
           zachować.

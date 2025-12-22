@@ -24,6 +24,8 @@ export function useProfileForm(initialProfile: ProfileDTO) {
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       weight_kg: initialProfile.weight_kg,
+      height_cm: initialProfile.height_cm,
+      age: initialProfile.age,
       activity_level: initialProfile.activity_level,
       goal: initialProfile.goal,
       weight_loss_rate_kg_week:
