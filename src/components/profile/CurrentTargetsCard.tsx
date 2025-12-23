@@ -6,6 +6,8 @@
  */
 
 import { MacroCard } from './MacroCard'
+import { MACRO_RATIO_LABELS } from '@/types/onboarding-view.types'
+import type { Enums } from '@/types/database.types'
 
 interface CurrentTargetsCardProps {
   targets: {
@@ -13,6 +15,7 @@ interface CurrentTargetsCardProps {
     target_protein_g: number
     target_carbs_g: number
     target_fats_g: number
+    macro_ratio: Enums<'macro_ratio_enum'>
   }
 }
 
@@ -52,6 +55,12 @@ export const CurrentTargetsCard = ({ targets }: CurrentTargetsCardProps) => {
           unit='g'
           variant='fat'
         />
+      </div>
+      <div className='mt-4 rounded-lg bg-white/30 p-3'>
+        <p className='text-muted-foreground text-xs'>Proporcje makro</p>
+        <p className='text-foreground text-sm font-medium'>
+          {MACRO_RATIO_LABELS[targets.macro_ratio]}
+        </p>
       </div>
     </div>
   )

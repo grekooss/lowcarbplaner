@@ -55,6 +55,7 @@ export type OnboardingCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
+  | 'macro_ratio'
 >
 
 /**
@@ -93,6 +94,7 @@ export type CreateProfileResponseDTO = {
   goal: Enums<'goal_enum'>
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'>
+  macro_ratio: Enums<'macro_ratio_enum'>
   disclaimer_accepted_at: string
   target_calories: number
   target_carbs_g: number
@@ -125,6 +127,7 @@ export type UpdateProfileCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
+  | 'macro_ratio'
 >
 
 /**

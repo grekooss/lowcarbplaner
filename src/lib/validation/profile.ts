@@ -58,6 +58,13 @@ export const createProfileSchema = z
       '3_main',
       '2_main',
     ] as const),
+    macro_ratio: z.enum([
+      '70_25_5',
+      '60_35_5',
+      '60_25_15',
+      '50_30_20',
+      '40_40_20',
+    ] as const),
     disclaimer_accepted_at: z
       .string()
       .datetime('Nieprawidłowy format daty (wymagany ISO 8601)'),

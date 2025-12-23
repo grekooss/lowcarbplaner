@@ -25,6 +25,23 @@ const PAL_MULTIPLIERS = {
 } as const
 
 /**
+ * Mapowanie proporcji makroskładników z enum na wartości procentowe
+ * Format: fats_protein_carbs
+ */
+const MACRO_RATIO_VALUES = {
+  '70_25_5': { fats: 0.7, protein: 0.25, carbs: 0.05 },
+  '60_35_5': { fats: 0.6, protein: 0.35, carbs: 0.05 },
+  '60_25_15': { fats: 0.6, protein: 0.25, carbs: 0.15 },
+  '50_30_20': { fats: 0.5, protein: 0.3, carbs: 0.2 },
+  '40_40_20': { fats: 0.4, protein: 0.4, carbs: 0.2 },
+} as const
+
+/**
+ * Domyślne proporcje makroskładników (standardowe keto)
+ */
+const DEFAULT_MACRO_RATIO = '60_25_15' as const
+
+/**
  * Oblicza cele żywieniowe (client-side preview)
  * Wykorzystuje wzór Mifflin-St Jeor dla BMR i współczynniki PAL dla TDEE
  *
@@ -42,6 +59,7 @@ export function calculateNutritionTargetsClient(
     activity_level,
     goal,
     weight_loss_rate_kg_week,
+    macro_ratio,
   } = data
 
   // Sprawdź czy wszystkie wymagane dane są dostępne
@@ -70,13 +88,16 @@ export function calculateNutritionTargetsClient(
     targetCalories = tdee - deficitPerDay
   }
 
-  // Rozkład makroskładników (15% W, 35% B, 50% T)
+  // Pobierz proporcje makroskładników (domyślnie 60_25_15)
+  const ratios = MACRO_RATIO_VALUES[macro_ratio ?? DEFAULT_MACRO_RATIO]
+
+  // Rozkład makroskładników według wybranego ratio
   // 1g węglowodanów = 4 kcal
   // 1g białka = 4 kcal
   // 1g tłuszczu = 9 kcal
-  const target_carbs_g = Math.round((targetCalories * 0.15) / 4)
-  const target_protein_g = Math.round((targetCalories * 0.35) / 4)
-  const target_fats_g = Math.round((targetCalories * 0.5) / 9)
+  const target_carbs_g = Math.round((targetCalories * ratios.carbs) / 4)
+  const target_protein_g = Math.round((targetCalories * ratios.protein) / 4)
+  const target_fats_g = Math.round((targetCalories * ratios.fats) / 9)
 
   return {
     target_calories: Math.round(targetCalories),

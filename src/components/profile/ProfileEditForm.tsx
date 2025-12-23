@@ -33,6 +33,7 @@ import {
   GOAL_LABELS,
   WEIGHT_LOSS_RATE_OPTIONS,
 } from '@/types/profile-view.types'
+import { MACRO_RATIO_LABELS } from '@/types/onboarding-view.types'
 
 interface ProfileEditFormProps {
   initialData: ProfileDTO
@@ -507,6 +508,37 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
               )}
             />
           )}
+
+          {/* Proporcje makroskładników */}
+          <FormField
+            control={form.control}
+            name='macro_ratio'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Proporcje makroskładników</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className='rounded-sm border-0 bg-white shadow-sm'>
+                      <SelectValue placeholder='Wybierz proporcje makro' />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(MACRO_RATIO_LABELS).map(
+                      ([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <Button type='submit' className='w-full' disabled={isSubmitting}>
             {isSubmitting ? 'Zapisywanie...' : 'Zapisz zmiany'}

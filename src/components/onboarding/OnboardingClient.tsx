@@ -26,6 +26,7 @@ import { HeightStep } from './HeightStep'
 import { ActivityLevelStep } from './ActivityLevelStep'
 import { GoalStep } from './GoalStep'
 import { MealPlanTypeStep } from './MealPlanTypeStep'
+import { MacroRatioStep } from './MacroRatioStep'
 import { SummaryStep } from './SummaryStep'
 import { DisclaimerStep } from './DisclaimerStep'
 import { StepperIndicator } from './StepperIndicator'
@@ -41,10 +42,11 @@ const INITIAL_FORM_DATA: OnboardingFormData = {
   goal: null,
   weight_loss_rate_kg_week: null,
   meal_plan_type: null,
+  macro_ratio: null,
   disclaimer_accepted: false,
 }
 
-const TOTAL_STEPS = 9
+const TOTAL_STEPS = 10
 
 export function OnboardingClient() {
   const router = useRouter()
@@ -113,8 +115,9 @@ export function OnboardingClient() {
           (opt) => opt.value === formData.weight_loss_rate_kg_week
         )?.isDisabled === false))
   const isStep7Valid = formData.meal_plan_type !== null
-  const isStep8Valid = true // Summary step is always valid
-  const isStep9Valid = formData.disclaimer_accepted === true
+  const isStep8Valid = formData.macro_ratio !== null
+  const isStep9Valid = true // Summary step is always valid
+  const isStep10Valid = formData.disclaimer_accepted === true
 
   // Check if current step is valid
   const isCurrentStepValid = useCallback(() => {
@@ -137,6 +140,8 @@ export function OnboardingClient() {
         return isStep8Valid
       case 9:
         return isStep9Valid
+      case 10:
+        return isStep10Valid
       default:
         return false
     }
@@ -151,6 +156,7 @@ export function OnboardingClient() {
     isStep7Valid,
     isStep8Valid,
     isStep9Valid,
+    isStep10Valid,
   ])
 
   // Navigation handlers
@@ -165,7 +171,7 @@ export function OnboardingClient() {
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    if (!isStep9Valid || !calculatedTargets) {
+    if (!isStep10Valid || !calculatedTargets) {
       toast.error('Musisz zaakceptować oświadczenie przed kontynuowaniem.')
       return
     }
@@ -185,6 +191,7 @@ export function OnboardingClient() {
         weight_loss_rate_kg_week:
           formData.weight_loss_rate_kg_week ?? undefined,
         meal_plan_type: formData.meal_plan_type!,
+        macro_ratio: formData.macro_ratio!,
         disclaimer_accepted_at: new Date().toISOString(),
       })
 
@@ -203,7 +210,7 @@ export function OnboardingClient() {
       )
       setIsSubmitting(false)
     }
-  }, [formData, calculatedTargets, isStep9Valid, router])
+  }, [formData, calculatedTargets, isStep10Valid, router])
 
   // Keyboard navigation
   useEffect(() => {
@@ -325,12 +332,19 @@ export function OnboardingClient() {
         )
       case 8:
         return (
+          <MacroRatioStep
+            value={formData.macro_ratio}
+            onChange={(value) => updateField('macro_ratio', value)}
+          />
+        )
+      case 9:
+        return (
           <SummaryStep
             formData={formData}
             calculatedTargets={calculatedTargets}
           />
         )
-      case 9:
+      case 10:
         return (
           <DisclaimerStep
             value={formData.disclaimer_accepted}
@@ -389,15 +403,21 @@ export function OnboardingClient() {
       },
       {
         number: 8,
-        title: 'Przegląd',
+        title: 'Makro',
         isCompleted: currentStep > 8,
         isCurrent: currentStep === 8,
       },
       {
         number: 9,
-        title: 'Zgoda',
+        title: 'Przegląd',
         isCompleted: currentStep > 9,
         isCurrent: currentStep === 9,
+      },
+      {
+        number: 10,
+        title: 'Zgoda',
+        isCompleted: currentStep > 10,
+        isCurrent: currentStep === 10,
       },
     ]
   }, [currentStep])

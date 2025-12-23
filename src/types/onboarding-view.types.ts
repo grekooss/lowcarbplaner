@@ -22,6 +22,7 @@ export interface OnboardingFormData {
   goal: Enums<'goal_enum'> | null
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'> | null
+  macro_ratio: Enums<'macro_ratio_enum'> | null
   disclaimer_accepted: boolean
 }
 
@@ -126,4 +127,48 @@ export const MEAL_PLAN_TYPE_DESCRIPTIONS: Record<
   '3_main_1_snack': 'Śniadanie, obiad, przekąska, kolacja',
   '3_main': 'Śniadanie, obiad, kolacja',
   '2_main': 'Obiad i kolacja (bez śniadania)',
+}
+
+/**
+ * Mapowanie macro_ratio na polskie nazwy
+ */
+export const MACRO_RATIO_LABELS: Record<Enums<'macro_ratio_enum'>, string> = {
+  '70_25_5': '70% tłuszcz / 25% białko / 5% węglowodany',
+  '60_35_5': '60% tłuszcz / 35% białko / 5% węglowodany',
+  '60_25_15': '60% tłuszcz / 25% białko / 15% węglowodany',
+  '50_30_20': '50% tłuszcz / 30% białko / 20% węglowodany',
+  '40_40_20': '40% tłuszcz / 40% białko / 20% węglowodany',
+}
+
+/**
+ * Opisy proporcji makroskładników
+ */
+export const MACRO_RATIO_DESCRIPTIONS: Record<
+  Enums<'macro_ratio_enum'>,
+  string
+> = {
+  '70_25_5': 'Bardzo restrykcyjne keto - maksymalna ketoza',
+  '60_35_5': 'Keto wysokobiałkowe - ketoza + budowa mięśni',
+  '60_25_15': 'Standardowe keto - zalecane dla początkujących',
+  '50_30_20': 'Umiarkowane low-carb - elastyczne podejście',
+  '40_40_20': 'Wysokobiałkowe low-carb - dla aktywnych sportowo',
+}
+
+/**
+ * Parsuje wartość enum macro_ratio na wartości procentowe
+ */
+export function parseMacroRatio(ratio: Enums<'macro_ratio_enum'>): {
+  fats: number
+  protein: number
+  carbs: number
+} {
+  const parts = ratio.split('_').map(Number)
+  const fats = parts[0] ?? 60
+  const protein = parts[1] ?? 25
+  const carbs = parts[2] ?? 15
+  return {
+    fats: fats / 100,
+    protein: protein / 100,
+    carbs: carbs / 100,
+  }
 }

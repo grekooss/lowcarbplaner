@@ -11,6 +11,8 @@ import {
   ACTIVITY_LEVEL_LABELS,
   GOAL_LABELS,
   MEAL_PLAN_TYPE_LABELS,
+  MACRO_RATIO_LABELS,
+  parseMacroRatio,
   type OnboardingFormData,
   type CalculatedTargets,
 } from '@/types/onboarding-view.types'
@@ -100,6 +102,15 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                   : '-'}
               </span>
             </div>
+            <Separator />
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Proporcje makro:</span>
+              <span className='font-medium'>
+                {formData.macro_ratio
+                  ? MACRO_RATIO_LABELS[formData.macro_ratio]
+                  : '-'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -117,30 +128,39 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
               <Separator />
               <div className='space-y-1'>
                 <div className='text-sm font-medium'>Makroskładniki:</div>
-                <div className='space-y-0.5 text-sm'>
-                  <div className='flex justify-between'>
-                    <span className='text-muted-foreground'>
-                      Węglowodany (15%):
-                    </span>
-                    <span className='font-medium'>
-                      {calculatedTargets.target_carbs_g}g
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-muted-foreground'>Białko (35%):</span>
-                    <span className='font-medium'>
-                      {calculatedTargets.target_protein_g}g
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-muted-foreground'>
-                      Tłuszcze (50%):
-                    </span>
-                    <span className='font-medium'>
-                      {calculatedTargets.target_fats_g}g
-                    </span>
-                  </div>
-                </div>
+                {(() => {
+                  const ratio = formData.macro_ratio
+                    ? parseMacroRatio(formData.macro_ratio)
+                    : { fats: 0.6, protein: 0.25, carbs: 0.15 }
+                  return (
+                    <div className='space-y-0.5 text-sm'>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>
+                          Węglowodany ({Math.round(ratio.carbs * 100)}%):
+                        </span>
+                        <span className='font-medium'>
+                          {calculatedTargets.target_carbs_g}g
+                        </span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>
+                          Białko ({Math.round(ratio.protein * 100)}%):
+                        </span>
+                        <span className='font-medium'>
+                          {calculatedTargets.target_protein_g}g
+                        </span>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>
+                          Tłuszcze ({Math.round(ratio.fats * 100)}%):
+                        </span>
+                        <span className='font-medium'>
+                          {calculatedTargets.target_fats_g}g
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           </div>

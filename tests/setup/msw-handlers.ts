@@ -43,6 +43,7 @@ export const handlers = [
         target_protein_g: 158,
         target_carbs_g: 68,
         target_fats_g: 100,
+        macro_ratio: '60_25_15',
       },
     ])
   }),

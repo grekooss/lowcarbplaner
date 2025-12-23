@@ -193,6 +193,7 @@ export type Database = {
           goal: Database['public']['Enums']['goal_enum']
           height_cm: number
           id: string
+          macro_ratio: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type: Database['public']['Enums']['meal_plan_type_enum']
           target_calories: number
           target_carbs_g: number
@@ -212,6 +213,7 @@ export type Database = {
           goal: Database['public']['Enums']['goal_enum']
           height_cm: number
           id: string
+          macro_ratio?: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
           target_calories: number
           target_carbs_g: number
@@ -231,6 +233,7 @@ export type Database = {
           goal?: Database['public']['Enums']['goal_enum']
           height_cm?: number
           id?: string
+          macro_ratio?: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
           target_calories?: number
           target_carbs_g?: number
@@ -430,6 +433,12 @@ export type Database = {
         | 'sweeteners'
         | 'condiments'
         | 'other'
+      macro_ratio_enum:
+        | '70_25_5'
+        | '60_35_5'
+        | '60_25_15'
+        | '50_30_20'
+        | '40_40_20'
       meal_plan_type_enum:
         | '3_main_2_snacks'
         | '3_main_1_snack'

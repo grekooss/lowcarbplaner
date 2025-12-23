@@ -59,3 +59,6 @@ next-env.d.ts
 /playwright/.cache/
 
 /.gemini-design
+
+# Supabase CLI temp files
+supabase/.temp/

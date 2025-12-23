@@ -32,6 +32,7 @@ export function ProfileClient({ initialProfile }: ProfileClientProps) {
                 target_protein_g: initialProfile.target_protein_g,
                 target_carbs_g: initialProfile.target_carbs_g,
                 target_fats_g: initialProfile.target_fats_g,
+                macro_ratio: initialProfile.macro_ratio,
               }}
             />
           </div>

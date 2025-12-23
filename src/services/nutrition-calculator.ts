@@ -5,7 +5,7 @@
  * - BMR (Basal Metabolic Rate) - wzór Mifflin-St Jeor
  * - TDEE (Total Daily Energy Expenditure) - BMR × współczynnik aktywności
  * - Deficyt kaloryczny dla utraty wagi
- * - Rozkład makroskładników: 15% węgle, 35% białko, 50% tłuszcze
+ * - Rozkład makroskładników: konfigurowalny przez użytkownika (6 opcji)
  * - Walidacja minimum kalorycznego: 1400 kcal (K) / 1600 kcal (M)
  *
  * @see .ai/10d01 api-profile-implementation-plan.md
@@ -44,18 +44,24 @@ const MIN_CALORIES = {
 } as const
 
 /**
- * Rozkład makroskładników (% całkowitych kalorii)
- *
- * Zgodnie z założeniami low-carb:
- * - Węglowodany: 15%
- * - Białko: 35%
- * - Tłuszcze: 50%
+ * Mapowanie proporcji makroskładników z enum na wartości procentowe
+ * Format: fats_protein_carbs
  */
-const MACRO_RATIOS = {
-  carbs: 0.15,
-  protein: 0.35,
-  fats: 0.5,
-} as const
+const MACRO_RATIO_VALUES: Record<
+  Enums<'macro_ratio_enum'>,
+  { fats: number; protein: number; carbs: number }
+> = {
+  '70_25_5': { fats: 0.7, protein: 0.25, carbs: 0.05 },
+  '60_35_5': { fats: 0.6, protein: 0.35, carbs: 0.05 },
+  '60_25_15': { fats: 0.6, protein: 0.25, carbs: 0.15 },
+  '50_30_20': { fats: 0.5, protein: 0.3, carbs: 0.2 },
+  '40_40_20': { fats: 0.4, protein: 0.4, carbs: 0.2 },
+}
+
+/**
+ * Domyślne proporcje makroskładników (standardowe keto)
+ */
+const DEFAULT_MACRO_RATIO: Enums<'macro_ratio_enum'> = '60_25_15'
 
 /**
  * Wartości energetyczne makroskładników (kcal/gram)
@@ -207,30 +213,39 @@ export function validateMinimumCalories(
 }
 
 /**
- * Oblicza rozkład makroskładników na podstawie docelowych kalorii
+ * Oblicza rozkład makroskładników na podstawie docelowych kalorii i wybranego ratio
  *
- * Rozkład low-carb:
- * - Węglowodany: 15% (4 kcal/g)
- * - Białko: 35% (4 kcal/g)
- * - Tłuszcze: 50% (9 kcal/g)
+ * Dostępne proporcje (tłuszcz-białko-węglowodany):
+ * - 70_25_5: 70% tłuszcz, 25% białko, 5% węglowodany
+ * - 60_35_5: 60% tłuszcz, 35% białko, 5% węglowodany
+ * - 60_25_15: 60% tłuszcz, 25% białko, 15% węglowodany (domyślne)
+ * - 50_30_20: 50% tłuszcz, 30% białko, 20% węglowodany
+ * - 40_40_20: 40% tłuszcz, 40% białko, 20% węglowodany
+ * - 40_30_30: 40% tłuszcz, 30% białko, 30% węglowodany
  *
  * @param targetCalories - Docelowe kalorie dzienne
+ * @param macroRatio - Wybrana proporcja makroskładników
  * @returns Rozkład makroskładników w gramach
  *
  * @example
  * ```typescript
- * const macros = calculateMacros(1800)
- * // { carbs_g: 68, protein_g: 158, fats_g: 100 }
+ * const macros = calculateMacros(1800, '60_25_15')
+ * // { carbs_g: 68, protein_g: 113, fats_g: 120 }
  * ```
  */
-export function calculateMacros(targetCalories: number): {
+export function calculateMacros(
+  targetCalories: number,
+  macroRatio: Enums<'macro_ratio_enum'> = DEFAULT_MACRO_RATIO
+): {
   carbs_g: number
   protein_g: number
   fats_g: number
 } {
-  const carbsCalories = targetCalories * MACRO_RATIOS.carbs
-  const proteinCalories = targetCalories * MACRO_RATIOS.protein
-  const fatsCalories = targetCalories * MACRO_RATIOS.fats
+  const ratios = MACRO_RATIO_VALUES[macroRatio]
+
+  const carbsCalories = targetCalories * ratios.carbs
+  const proteinCalories = targetCalories * ratios.protein
+  const fatsCalories = targetCalories * ratios.fats
 
   return {
     carbs_g: Math.round(carbsCalories / CALORIES_PER_GRAM.carbs),
@@ -247,7 +262,7 @@ export function calculateMacros(targetCalories: number): {
  * 2. Obliczenie TDEE (BMR × aktywność)
  * 3. Zastosowanie dostosowania kalorycznego (deficyt dla utraty wagi)
  * 4. Walidacja minimum kalorycznego
- * 5. Obliczenie rozkładu makroskładników
+ * 5. Obliczenie rozkładu makroskładników według wybranego ratio
  *
  * @param params - Parametry użytkownika z formularza onboardingu
  * @returns Cele żywieniowe lub błąd walidacji
@@ -262,13 +277,14 @@ export function calculateMacros(targetCalories: number): {
  *   height_cm: 165,
  *   activity_level: 'moderate',
  *   goal: 'weight_loss',
- *   weight_loss_rate_kg_week: 0.5
+ *   weight_loss_rate_kg_week: 0.5,
+ *   macro_ratio: '60_25_15'
  * })
  * // {
  * //   target_calories: 1800,
  * //   target_carbs_g: 68,
- * //   target_protein_g: 158,
- * //   target_fats_g: 100
+ * //   target_protein_g: 113,
+ * //   target_fats_g: 120
  * // }
  * ```
  */
@@ -280,6 +296,7 @@ export function calculateNutritionTargets(params: {
   activity_level: Enums<'activity_level_enum'>
   goal: Enums<'goal_enum'>
   weight_loss_rate_kg_week?: number | null
+  macro_ratio?: Enums<'macro_ratio_enum'> | null
 }): {
   target_calories: number
   target_carbs_g: number
@@ -310,8 +327,11 @@ export function calculateNutritionTargets(params: {
     throw new Error(validation.message)
   }
 
-  // 5. Oblicz rozkład makroskładników
-  const macros = calculateMacros(targetCalories)
+  // 5. Oblicz rozkład makroskładników według wybranego ratio
+  const macros = calculateMacros(
+    targetCalories,
+    params.macro_ratio ?? DEFAULT_MACRO_RATIO
+  )
 
   return {
     target_calories: Math.round(targetCalories),
