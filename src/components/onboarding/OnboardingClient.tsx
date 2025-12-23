@@ -202,7 +202,9 @@ export function OnboardingClient() {
       // Success - redirect to dashboard (plan will be generated there automatically)
       toast.success('Twój profil został utworzony.')
 
-      router.push('/dashboard')
+      // Force refresh to update server-side auth state, then redirect
+      // Using window.location for reliable redirect on Vercel (avoids SSR prefetch issues)
+      window.location.href = '/dashboard'
     } catch (error) {
       console.error('Onboarding submission error:', error)
       setSubmitError(
