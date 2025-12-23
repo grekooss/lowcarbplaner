@@ -114,6 +114,17 @@ export async function getRecipes(
             name,
             category
           )
+        ),
+        recipe_equipment (
+          quantity,
+          notes,
+          equipment (
+            id,
+            name,
+            name_plural,
+            category,
+            icon_name
+          )
         )
       `,
         { count: 'exact' }
@@ -240,6 +251,17 @@ export async function getRecipeById(
             id,
             name,
             category
+          )
+        ),
+        recipe_equipment (
+          quantity,
+          notes,
+          equipment (
+            id,
+            name,
+            name_plural,
+            category,
+            icon_name
           )
         )
       `

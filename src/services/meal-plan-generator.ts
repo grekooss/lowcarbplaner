@@ -24,6 +24,8 @@ type UserProfile = {
   target_carbs_g: number
   target_protein_g: number
   target_fats_g: number
+  meal_plan_type: Enums<'meal_plan_type_enum'>
+  selected_meals: Enums<'meal_type_enum'>[] | null
 }
 
 /**
@@ -79,9 +81,109 @@ const CALORIE_TOLERANCE = 0.15
 const DAYS_TO_GENERATE = 7
 
 /**
- * Typy posiłków w kolejności (3 posiłki dziennie)
+ * Konfiguracja posiłków dla każdego typu planu
+ * Zawiera typy posiłków i ich procentowy udział w dziennych kaloriach
  */
-const MEAL_TYPES: Enums<'meal_type_enum'>[] = ['breakfast', 'lunch', 'dinner']
+type MealPlanConfig = {
+  mealTypes: Enums<'meal_type_enum'>[]
+  calorieDistribution: Partial<Record<Enums<'meal_type_enum'>, number>>
+}
+
+/**
+ * Konfiguracje dla standardowych typów planów posiłków
+ */
+const MEAL_PLAN_CONFIGS: Record<
+  Enums<'meal_plan_type_enum'>,
+  MealPlanConfig
+> = {
+  '3_main_2_snacks': {
+    mealTypes: [
+      'breakfast',
+      'snack_morning',
+      'lunch',
+      'snack_afternoon',
+      'dinner',
+    ],
+    calorieDistribution: {
+      breakfast: 0.25,
+      snack_morning: 0.1,
+      lunch: 0.3,
+      snack_afternoon: 0.1,
+      dinner: 0.25,
+    },
+  },
+  '3_main_1_snack': {
+    mealTypes: ['breakfast', 'lunch', 'snack_afternoon', 'dinner'],
+    calorieDistribution: {
+      breakfast: 0.25,
+      lunch: 0.3,
+      snack_afternoon: 0.15,
+      dinner: 0.3,
+    },
+  },
+  '3_main': {
+    mealTypes: ['breakfast', 'lunch', 'dinner'],
+    calorieDistribution: {
+      breakfast: 0.3,
+      lunch: 0.35,
+      dinner: 0.35,
+    },
+  },
+  '2_main': {
+    // Domyślna konfiguracja - zostanie nadpisana przez selected_meals
+    mealTypes: ['lunch', 'dinner'],
+    calorieDistribution: {
+      lunch: 0.45,
+      dinner: 0.55,
+    },
+  },
+}
+
+/**
+ * Pobiera konfigurację posiłków dla użytkownika
+ * Uwzględnia meal_plan_type oraz selected_meals dla konfiguracji '2_main'
+ *
+ * @param mealPlanType - Typ planu posiłków
+ * @param selectedMeals - Wybrane posiłki (dla '2_main')
+ * @returns Konfiguracja posiłków z typami i podziałem kalorii
+ */
+function getMealPlanConfig(
+  mealPlanType: Enums<'meal_plan_type_enum'>,
+  selectedMeals: Enums<'meal_type_enum'>[] | null
+): MealPlanConfig {
+  // Dla '2_main' używamy selected_meals
+  if (
+    mealPlanType === '2_main' &&
+    selectedMeals &&
+    selectedMeals.length === 2
+  ) {
+    // Sortuj posiłki według kolejności w ciągu dnia
+    const mealOrder: Enums<'meal_type_enum'>[] = [
+      'breakfast',
+      'lunch',
+      'dinner',
+    ]
+    const sortedMeals = [...selectedMeals].sort(
+      (a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b)
+    ) as Enums<'meal_type_enum'>[]
+
+    const firstMeal = sortedMeals[0]!
+    const secondMeal = sortedMeals[1]!
+
+    // Wcześniejszy posiłek dostaje 45%, późniejszy 55%
+    const distribution: Partial<Record<Enums<'meal_type_enum'>, number>> = {}
+    distribution[firstMeal] = 0.45
+    distribution[secondMeal] = 0.55
+
+    return {
+      mealTypes: sortedMeals,
+      calorieDistribution: distribution,
+    }
+  }
+
+  // Dla pozostałych konfiguracji używamy predefiniowanych wartości
+  return MEAL_PLAN_CONFIGS[mealPlanType]
+}
 
 /**
  * Maksymalna procentowa zmiana ilości składnika podczas optymalizacji (20%)
@@ -123,21 +225,30 @@ function roundIngredientAmount(amount: number): number {
 /**
  * Oblicza docelowe kalorie dla pojedynczego posiłku
  *
- * Zakładamy równy podział kalorii na 3 posiłki dziennie:
- * - Śniadanie: ~33% dziennych kalorii
- * - Obiad: ~33% dziennych kalorii
- * - Kolacja: ~33% dziennych kalorii
+ * Podział kalorii zależy od konfiguracji planu posiłków:
+ * - 3+2: śniadanie 25%, przekąska 10%, obiad 30%, przekąska 10%, kolacja 25%
+ * - 3+1: śniadanie 25%, obiad 30%, przekąska 15%, kolacja 30%
+ * - 3: śniadanie 30%, obiad 35%, kolacja 35%
+ * - 2: według selected_meals (45%/55%)
  *
  * @param dailyCalories - Dzienne zapotrzebowanie kaloryczne użytkownika
+ * @param mealType - Typ posiłku
+ * @param config - Konfiguracja planu posiłków
  * @returns Przedział kaloryczny dla posiłku { min, max, target }
  */
-function calculateMealCalorieRange(dailyCalories: number): {
+function calculateMealCalorieRange(
+  dailyCalories: number,
+  mealType: Enums<'meal_type_enum'>,
+  config: MealPlanConfig
+): {
   min: number
   max: number
   target: number
 } {
-  // Równy podział na 3 posiłki
-  const target = dailyCalories / 3
+  // Pobierz procentowy udział posiłku w dziennych kaloriach
+  const percentage =
+    config.calorieDistribution[mealType] || 1 / config.mealTypes.length
+  const target = dailyCalories * percentage
 
   // Tolerancja ±15% dla każdego posiłku
   const min = target * (1 - CALORIE_TOLERANCE)
@@ -786,8 +897,8 @@ function optimizeDayPlan(
  *
  * @param userId - ID użytkownika
  * @param date - Data w formacie YYYY-MM-DD
- * @param userProfile - Profil użytkownika z celami makroskładników
- * @returns Lista 3 zaplanowanych posiłków (breakfast, lunch, dinner) z ingredient_overrides
+ * @param userProfile - Profil użytkownika z celami makroskładników i konfiguracją posiłków
+ * @returns Lista zaplanowanych posiłków według konfiguracji użytkownika z ingredient_overrides
  * @throws Error jeśli nie udało się znaleźć przepisów
  */
 export async function generateDayPlan(
@@ -798,27 +909,41 @@ export async function generateDayPlan(
     target_protein_g: number
     target_carbs_g: number
     target_fats_g: number
+    meal_plan_type: Enums<'meal_plan_type_enum'>
+    selected_meals: Enums<'meal_type_enum'>[] | null
   }
 ): Promise<PlannedMealInsert[]> {
   const dayPlan: PlannedMealInsert[] = []
   const selectedRecipes: RecipeWithIngredients[] = []
   const usedRecipeIds = new Set<number>()
 
-  // 1. Wybierz przepisy dla każdego typu posiłku
-  for (const mealType of MEAL_TYPES) {
-    // Oblicz przedział kaloryczny dla posiłku
-    const calorieRange = calculateMealCalorieRange(userProfile.target_calories)
+  // Pobierz konfigurację posiłków dla użytkownika
+  const mealConfig = getMealPlanConfig(
+    userProfile.meal_plan_type,
+    userProfile.selected_meals
+  )
 
-    // Wybierz przepis
-    const recipe = await selectRecipeForMeal(
+  // 1. Wybierz przepisy dla każdego typu posiłku według konfiguracji
+  for (const mealType of mealConfig.mealTypes) {
+    // Oblicz przedział kaloryczny dla posiłku (z uwzględnieniem konfiguracji)
+    const calorieRange = calculateMealCalorieRange(
+      userProfile.target_calories,
       mealType,
+      mealConfig
+    )
+
+    // Wybierz przepis - dla przekąsek mapuj na 'snack' jeśli nie ma dedykowanych przepisów
+    const searchMealType = getMealTypeForSearch(mealType)
+
+    const recipe = await selectRecipeForMeal(
+      searchMealType,
       calorieRange,
       usedRecipeIds
     )
 
     if (!recipe) {
       throw new Error(
-        `Nie znaleziono przepisu dla ${mealType} w przedziale ${calorieRange.min}-${calorieRange.max} kcal`
+        `Nie znaleziono przepisu dla ${mealType} w przedziale ${Math.round(calorieRange.min)}-${Math.round(calorieRange.max)} kcal`
       )
     }
 
@@ -829,7 +954,7 @@ export async function generateDayPlan(
       user_id: userId,
       recipe_id: recipe.id,
       meal_date: date,
-      meal_type: mealType,
+      meal_type: mealType, // Zachowaj oryginalny typ (snack_morning/snack_afternoon)
       is_eaten: false,
       ingredient_overrides: null,
     })
@@ -844,6 +969,22 @@ export async function generateDayPlan(
   })
 
   return optimizedPlan
+}
+
+/**
+ * Mapuje typ posiłku na typ używany podczas wyszukiwania przepisów
+ * Dla przekąsek porannych i popołudniowych szuka przepisów oznaczonych jako 'snack'
+ *
+ * @param mealType - Typ posiłku
+ * @returns Typ posiłku do wyszukiwania w bazie przepisów
+ */
+function getMealTypeForSearch(
+  mealType: Enums<'meal_type_enum'>
+): Enums<'meal_type_enum'> {
+  if (mealType === 'snack_morning' || mealType === 'snack_afternoon') {
+    return 'snack'
+  }
+  return mealType
 }
 
 /**
@@ -873,14 +1014,17 @@ function generateDates(
  *
  * Proces:
  * 1. Generuje daty dla kolejnych 7 dni (od dzisiaj)
- * 2. Dla każdego dnia generuje 3 posiłki (śniadanie, obiad, kolacja)
+ * 2. Dla każdego dnia generuje posiłki według konfiguracji użytkownika:
+ *    - 3+2: 5 posiłków (śniadanie, przekąska poranna, obiad, przekąska popołudniowa, kolacja)
+ *    - 3+1: 4 posiłki (śniadanie, obiad, przekąska popołudniowa, kolacja)
+ *    - 3: 3 posiłki (śniadanie, obiad, kolacja)
+ *    - 2: 2 posiłki (wybrane przez użytkownika)
  * 3. Dobiera przepisy zgodne z przedziałem kalorycznym (target ± 15%)
  * 4. Zapewnia różnorodność (brak powtórzeń w tym samym dniu)
- * 5. Zwraca listę 21 zaplanowanych posiłków (7 dni × 3 posiłki)
  *
- * @param userProfile - Profil użytkownika z celami żywieniowymi
+ * @param userProfile - Profil użytkownika z celami żywieniowymi i konfiguracją posiłków
  * @param startDate - Data początkowa (domyślnie dzisiaj)
- * @returns Lista 21 zaplanowanych posiłków gotowych do wstawienia do bazy
+ * @returns Lista zaplanowanych posiłków gotowych do wstawienia do bazy
  * @throws Error jeśli nie udało się wygenerować planu
  *
  * @example
@@ -890,11 +1034,13 @@ function generateDates(
  *   target_calories: 1800,
  *   target_carbs_g: 68,
  *   target_protein_g: 158,
- *   target_fats_g: 100
+ *   target_fats_g: 100,
+ *   meal_plan_type: '3_main_2_snacks',
+ *   selected_meals: null
  * }
  *
  * const plan = await generateWeeklyPlan(profile)
- * // plan.length === 21 (7 dni × 3 posiłki)
+ * // plan.length === 35 (7 dni × 5 posiłków dla '3_main_2_snacks')
  * ```
  */
 export async function generateWeeklyPlan(
@@ -904,25 +1050,35 @@ export async function generateWeeklyPlan(
   try {
     const weeklyPlan: PlannedMealInsert[] = []
 
+    // Pobierz konfigurację posiłków dla użytkownika
+    const mealConfig = getMealPlanConfig(
+      userProfile.meal_plan_type,
+      userProfile.selected_meals
+    )
+    const expectedMealsPerDay = mealConfig.mealTypes.length
+
     // 1. Generuj daty dla 7 dni
     const dates = generateDates(startDate, DAYS_TO_GENERATE)
 
-    // 2. Dla każdego dnia wygeneruj plan 3 posiłków z optymalizacją
+    // 2. Dla każdego dnia wygeneruj plan posiłków z optymalizacją
     for (const date of dates) {
       const dayPlan = await generateDayPlan(userProfile.id, date, {
         target_calories: userProfile.target_calories,
         target_protein_g: userProfile.target_protein_g,
         target_carbs_g: userProfile.target_carbs_g,
         target_fats_g: userProfile.target_fats_g,
+        meal_plan_type: userProfile.meal_plan_type,
+        selected_meals: userProfile.selected_meals,
       })
 
       weeklyPlan.push(...dayPlan)
     }
 
-    // 3. Walidacja - upewnij się, że wygenerowano 21 posiłków
-    if (weeklyPlan.length !== DAYS_TO_GENERATE * MEAL_TYPES.length) {
+    // 3. Walidacja - upewnij się, że wygenerowano poprawną liczbę posiłków
+    const expectedTotalMeals = DAYS_TO_GENERATE * expectedMealsPerDay
+    if (weeklyPlan.length !== expectedTotalMeals) {
       throw new Error(
-        `Nieprawidłowa liczba posiłków w planie: ${weeklyPlan.length}, oczekiwano ${DAYS_TO_GENERATE * MEAL_TYPES.length}`
+        `Nieprawidłowa liczba posiłków w planie: ${weeklyPlan.length}, oczekiwano ${expectedTotalMeals}`
       )
     }
 
@@ -964,17 +1120,25 @@ export async function checkExistingPlan(
 }
 
 /**
- * Znajduje dni, które nie mają jeszcze kompletnego planu (3 posiłków)
+ * Znajduje dni, które nie mają jeszcze kompletnego planu posiłków
  *
  * @param userId - ID użytkownika
  * @param dates - Lista dat do sprawdzenia (YYYY-MM-DD)
+ * @param mealPlanType - Typ planu posiłków użytkownika
+ * @param selectedMeals - Wybrane posiłki (dla '2_main')
  * @returns Lista dat bez kompletnego planu
  */
 export async function findMissingDays(
   userId: string,
-  dates: string[]
+  dates: string[],
+  mealPlanType: Enums<'meal_plan_type_enum'> = '3_main',
+  selectedMeals: Enums<'meal_type_enum'>[] | null = null
 ): Promise<string[]> {
   const supabase = createAdminClient()
+
+  // Pobierz konfigurację posiłków
+  const mealConfig = getMealPlanConfig(mealPlanType, selectedMeals)
+  const expectedMealsCount = mealConfig.mealTypes.length
 
   // Pobierz wszystkie posiłki dla tych dat
   const { data: existingMeals, error } = await supabase
@@ -999,11 +1163,11 @@ export async function findMissingDays(
     mealsByDate.get(meal.meal_date)!.add(meal.meal_type)
   }
 
-  // Znajdź dni, które nie mają wszystkich 3 posiłków
+  // Znajdź dni, które nie mają wszystkich wymaganych posiłków
   const missingDays: string[] = []
   for (const date of dates) {
     const mealsForDay = mealsByDate.get(date)
-    const hasAllMeals = mealsForDay?.size === 3
+    const hasAllMeals = mealsForDay?.size === expectedMealsCount
     if (!hasAllMeals) {
       missingDays.push(date)
     }

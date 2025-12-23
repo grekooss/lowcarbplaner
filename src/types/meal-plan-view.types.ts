@@ -23,7 +23,9 @@ export interface DayPlanViewModel {
   monthName: string // 'Sty', 'Lut', 'Mar', etc.
   isToday: boolean
   breakfast: PlannedMealDTO | null
+  snack_morning: PlannedMealDTO | null
   lunch: PlannedMealDTO | null
+  snack_afternoon: PlannedMealDTO | null
   dinner: PlannedMealDTO | null
 }
 
@@ -36,16 +38,36 @@ export interface RecipeModalState {
 }
 
 /**
+ * Typ posiłku (wszystkie możliwe wartości)
+ */
+export type MealType =
+  | 'breakfast'
+  | 'snack_morning'
+  | 'lunch'
+  | 'snack_afternoon'
+  | 'dinner'
+
+/**
  * Mapowanie typu posiłku na polską nazwę
  */
-export const MEAL_TYPE_LABELS: Record<
-  'breakfast' | 'lunch' | 'dinner',
-  string
-> = {
+export const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Śniadanie',
+  snack_morning: 'Przekąska poranna',
   lunch: 'Obiad',
+  snack_afternoon: 'Przekąska popołudniowa',
   dinner: 'Kolacja',
 }
+
+/**
+ * Kolejność posiłków w ciągu dnia
+ */
+export const MEAL_ORDER: MealType[] = [
+  'breakfast',
+  'snack_morning',
+  'lunch',
+  'snack_afternoon',
+  'dinner',
+]
 
 /**
  * Mapowanie dni tygodnia na polskie nazwy

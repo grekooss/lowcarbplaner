@@ -11,6 +11,11 @@
 import type { Enums } from './database.types'
 
 /**
+ * Główne typy posiłków do wyboru (dla konfiguracji 2_main)
+ */
+export type MainMealType = 'breakfast' | 'lunch' | 'dinner'
+
+/**
  * Stan formularza onboardingu (client-side)
  */
 export interface OnboardingFormData {
@@ -22,6 +27,7 @@ export interface OnboardingFormData {
   goal: Enums<'goal_enum'> | null
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'> | null
+  selected_meals: MainMealType[] | null // Dla konfiguracji 2_main - wybrane 2 posiłki
   macro_ratio: Enums<'macro_ratio_enum'> | null
   disclaimer_accepted: boolean
 }
@@ -123,10 +129,79 @@ export const MEAL_PLAN_TYPE_DESCRIPTIONS: Record<
   Enums<'meal_plan_type_enum'>,
   string
 > = {
-  '3_main_2_snacks': 'Śniadanie, przekąska, obiad, przekąska, kolacja',
-  '3_main_1_snack': 'Śniadanie, obiad, przekąska, kolacja',
+  '3_main_2_snacks':
+    'Śniadanie, przekąska poranna, obiad, przekąska popołudniowa, kolacja',
+  '3_main_1_snack': 'Śniadanie, obiad, przekąska popołudniowa, kolacja',
   '3_main': 'Śniadanie, obiad, kolacja',
-  '2_main': 'Obiad i kolacja (bez śniadania)',
+  '2_main': 'Wybierz 2 posiłki (np. obiad i kolacja)',
+}
+
+/**
+ * Etykiety głównych posiłków do wyboru (dla konfiguracji 2_main)
+ */
+export const MAIN_MEAL_LABELS: Record<MainMealType, string> = {
+  breakfast: 'Śniadanie',
+  lunch: 'Obiad',
+  dinner: 'Kolacja',
+}
+
+/**
+ * Podział kalorii dla każdej konfiguracji posiłków
+ * Wartości procentowe sumują się do 1.0 (100%)
+ */
+export const MEAL_CALORIE_DISTRIBUTION: Record<
+  Enums<'meal_plan_type_enum'>,
+  Partial<Record<Enums<'meal_type_enum'>, number>>
+> = {
+  '3_main_2_snacks': {
+    breakfast: 0.25,
+    snack_morning: 0.1,
+    lunch: 0.3,
+    snack_afternoon: 0.1,
+    dinner: 0.25,
+  },
+  '3_main_1_snack': {
+    breakfast: 0.25,
+    lunch: 0.3,
+    snack_afternoon: 0.15,
+    dinner: 0.3,
+  },
+  '3_main': {
+    breakfast: 0.3,
+    lunch: 0.35,
+    dinner: 0.35,
+  },
+  '2_main': {
+    // Dynamiczne - zależy od selected_meals
+    // Domyślnie równy podział 50%/50%
+  },
+}
+
+/**
+ * Oblicza podział kalorii dla konfiguracji 2_main na podstawie wybranych posiłków
+ */
+export function getCalorieDistributionFor2Main(
+  selectedMeals: MainMealType[]
+): Record<MainMealType, number> {
+  if (selectedMeals.length !== 2) {
+    return { breakfast: 0, lunch: 0, dinner: 0 }
+  }
+
+  // Podział 45%/55% - później posiłek dostaje więcej kalorii
+  const mealOrder: MainMealType[] = ['breakfast', 'lunch', 'dinner']
+  const sortedMeals = [...selectedMeals].sort(
+    (a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b)
+  )
+
+  return {
+    breakfast: sortedMeals[0] === 'breakfast' ? 0.45 : 0,
+    lunch: sortedMeals.includes('lunch')
+      ? sortedMeals[0] === 'lunch'
+        ? 0.45
+        : 0.55
+      : 0,
+    dinner: sortedMeals.includes('dinner') ? 0.55 : 0,
+  }
 }
 
 /**

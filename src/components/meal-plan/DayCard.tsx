@@ -1,12 +1,13 @@
 'use client'
 
 /**
- * DayCard - Karta pojedynczego dnia zawierająca 3 posiłki (widok mobile)
+ * DayCard - Karta pojedynczego dnia zawierająca posiłki (widok mobile)
+ * Obsługuje wszystkie typy posiłków: breakfast, snack_morning, lunch, snack_afternoon, dinner
  */
 
 import { memo } from 'react'
 import { MealCard } from './MealCard'
-import type { DayPlanViewModel } from '@/types/meal-plan-view.types'
+import type { DayPlanViewModel, MealType } from '@/types/meal-plan-view.types'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
 interface DayCardProps {
@@ -30,6 +31,15 @@ export const DayCard = memo(function DayCard({
   dayDate.setHours(0, 0, 0, 0)
   const isTodayOrFuture = dayDate >= today
 
+  // Lista posiłków w kolejności
+  const meals: { meal: PlannedMealDTO | null; type: MealType }[] = [
+    { meal: day.breakfast, type: 'breakfast' },
+    { meal: day.snack_morning, type: 'snack_morning' },
+    { meal: day.lunch, type: 'lunch' },
+    { meal: day.snack_afternoon, type: 'snack_afternoon' },
+    { meal: day.dinner, type: 'dinner' },
+  ]
+
   return (
     <div className='space-y-3'>
       {/* Nagłówek dnia */}
@@ -46,34 +56,16 @@ export const DayCard = memo(function DayCard({
 
       {/* Posiłki */}
       <div className='space-y-3'>
-        {/* Śniadanie */}
-        {day.breakfast && (
-          <MealCard
-            meal={day.breakfast}
-            mealType='breakfast'
-            onMealClick={onMealClick}
-            showSwapButton={isTodayOrFuture}
-          />
-        )}
-
-        {/* Obiad */}
-        {day.lunch && (
-          <MealCard
-            meal={day.lunch}
-            mealType='lunch'
-            onMealClick={onMealClick}
-            showSwapButton={isTodayOrFuture}
-          />
-        )}
-
-        {/* Kolacja */}
-        {day.dinner && (
-          <MealCard
-            meal={day.dinner}
-            mealType='dinner'
-            onMealClick={onMealClick}
-            showSwapButton={isTodayOrFuture}
-          />
+        {meals.map(({ meal, type }) =>
+          meal ? (
+            <MealCard
+              key={meal.id}
+              meal={meal}
+              mealType={type}
+              onMealClick={onMealClick}
+              showSwapButton={isTodayOrFuture}
+            />
+          ) : null
         )}
       </div>
     </div>

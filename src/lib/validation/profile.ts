@@ -58,6 +58,10 @@ export const createProfileSchema = z
       '3_main',
       '2_main',
     ] as const),
+    selected_meals: z
+      .array(z.enum(['breakfast', 'lunch', 'dinner'] as const))
+      .length(2, 'Musisz wybrać dokładnie 2 posiłki dla konfiguracji 2_main')
+      .optional(),
     macro_ratio: z.enum([
       '70_25_5',
       '60_35_5',
@@ -81,6 +85,20 @@ export const createProfileSchema = z
       message:
         'Tempo utraty wagi jest wymagane, gdy cel to utrata wagi (weight_loss)',
       path: ['weight_loss_rate_kg_week'],
+    }
+  )
+  .refine(
+    (data) => {
+      // selected_meals jest wymagane i musi mieć 2 elementy gdy meal_plan_type='2_main'
+      if (data.meal_plan_type === '2_main') {
+        return data.selected_meals && data.selected_meals.length === 2
+      }
+      return true
+    },
+    {
+      message:
+        'Musisz wybrać dokładnie 2 posiłki dla konfiguracji 2 posiłków dziennie',
+      path: ['selected_meals'],
     }
   )
 

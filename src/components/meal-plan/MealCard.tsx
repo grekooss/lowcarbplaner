@@ -8,19 +8,14 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { SwapRecipeDialog } from '@/components/shared/SwapRecipeDialog'
 import type { PlannedMealDTO } from '@/types/dto.types'
+import type { MealType } from '@/types/meal-plan-view.types'
+import { MEAL_TYPE_LABELS } from '@/types/meal-plan-view.types'
 
 interface MealCardProps {
   meal: PlannedMealDTO | null
-  mealType: 'breakfast' | 'lunch' | 'snack' | 'dinner'
+  mealType: MealType
   onMealClick: (meal: PlannedMealDTO) => void
   showSwapButton?: boolean
-}
-
-const mealTypeLabels: Record<string, string> = {
-  breakfast: 'Śniadanie',
-  lunch: 'Obiad',
-  snack: 'Przekąska',
-  dinner: 'Kolacja',
 }
 
 export const MealCard = memo(function MealCard({
@@ -104,7 +99,7 @@ export const MealCard = memo(function MealCard({
         <div className='min-w-0 flex-1'>
           {/* Mobile meal type label */}
           <span className='text-text-muted mb-0.5 block text-[9px] font-bold tracking-wider uppercase xl:hidden'>
-            {mealTypeLabels[mealType]}
+            {MEAL_TYPE_LABELS[mealType]}
           </span>
           <p className='text-text-main line-clamp-3 text-sm leading-snug font-semibold'>
             {meal.recipe.name}

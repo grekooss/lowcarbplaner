@@ -2,6 +2,7 @@
  * MealsList component
  *
  * Renders the meals for a selected day with stepper timeline design.
+ * Supports all meal types: breakfast, snack_morning, lunch, snack_afternoon, dinner
  */
 
 'use client'
@@ -26,17 +27,29 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
   const isCurrentDate = selectedDate.getTime() === today.getTime()
   const isTodayOrFuture = selectedDate >= today
 
+  // Pobierz posiłki według typu
   const breakfast = mealsForDate.find((meal) => meal.meal_type === 'breakfast')
+  const snackMorning = mealsForDate.find(
+    (meal) => meal.meal_type === 'snack_morning'
+  )
   const lunch = mealsForDate.find((meal) => meal.meal_type === 'lunch')
+  const snackAfternoon = mealsForDate.find(
+    (meal) => meal.meal_type === 'snack_afternoon'
+  )
   const dinner = mealsForDate.find((meal) => meal.meal_type === 'dinner')
 
   if (mealsForDate.length === 0) {
     return null
   }
 
-  const orderedMeals = [breakfast, lunch, dinner].filter(
-    (meal): meal is PlannedMealDTO => Boolean(meal)
-  )
+  // Uporządkuj posiłki według kolejności w ciągu dnia
+  const orderedMeals = [
+    breakfast,
+    snackMorning,
+    lunch,
+    snackAfternoon,
+    dinner,
+  ].filter((meal): meal is PlannedMealDTO => Boolean(meal))
 
   return (
     <section className='relative'>
@@ -56,12 +69,6 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
           />
         ))}
       </div>
-
-      {mealsForDate.length > 0 && mealsForDate.length < 3 && (
-        <div className='text-text-muted mt-6 ml-16 text-sm'>
-          Nie wszystkie posiłki zostały jeszcze zaplanowane na ten dzień.
-        </div>
-      )}
     </section>
   )
 }

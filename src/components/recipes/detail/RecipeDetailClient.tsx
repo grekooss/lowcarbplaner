@@ -29,6 +29,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { InstructionsList } from './InstructionsList'
+import { EquipmentList } from './EquipmentList'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
@@ -754,6 +755,20 @@ export function RecipeDetailClient({
             </div>
           </div>
 
+          {/* Mobile: Equipment - kompaktowa wersja */}
+          {recipe.equipment && recipe.equipment.length > 0 && !isStepMode && (
+            <div className='lg:hidden'>
+              <div className='mb-2 pl-1'>
+                <h3 className='text-sm font-bold text-gray-800'>
+                  Potrzebny sprzęt
+                </h3>
+              </div>
+              <div className='rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-2 shadow-[var(--shadow-card)]'>
+                <EquipmentList equipment={recipe.equipment} compact />
+              </div>
+            </div>
+          )}
+
           {/* Directions - ukryte na mobile (używamy step mode), widoczne na desktop */}
           <div className='hidden space-y-3 lg:block'>
             <h3 className='text-base font-bold text-gray-800 lg:text-lg'>
@@ -916,6 +931,16 @@ export function RecipeDetailClient({
               )}
             </div>
           </div>
+
+          {/* Equipment - Panel for kitchen equipment (only if recipe has equipment) */}
+          {recipe.equipment && recipe.equipment.length > 0 && (
+            <div className='rounded-[20px] border-2 border-white bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]'>
+              <h3 className='mb-3 text-lg font-bold text-gray-800'>
+                Potrzebny sprzęt
+              </h3>
+              <EquipmentList equipment={recipe.equipment} />
+            </div>
+          )}
         </div>
       </div>
 

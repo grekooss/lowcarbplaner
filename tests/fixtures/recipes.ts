@@ -78,6 +78,7 @@ export const testRecipeBreakfast: RecipeDTO = {
   total_carbs_g: 10,
   total_fats_g: 35,
   ingredients: testIngredients.slice(0, 3),
+  equipment: [],
 }
 
 export const testRecipeLunch: RecipeDTO = {
@@ -102,6 +103,7 @@ export const testRecipeLunch: RecipeDTO = {
   total_carbs_g: 10,
   total_fats_g: 22,
   ingredients: testIngredients,
+  equipment: [],
 }
 
 export const testRecipeDinner: RecipeDTO = {
@@ -126,6 +128,7 @@ export const testRecipeDinner: RecipeDTO = {
   total_carbs_g: 8,
   total_fats_g: 40,
   ingredients: [],
+  equipment: [],
 }
 
 export const testRecipes: RecipeDTO[] = [
@@ -178,6 +181,7 @@ export const createRecipeWithCalories = (
     total_carbs_g: carbs_g,
     total_fats_g: fats_g,
     ingredients: testIngredients.slice(0, 2),
+    equipment: [],
   }
 }
 

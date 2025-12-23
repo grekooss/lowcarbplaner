@@ -55,6 +55,7 @@ export type OnboardingCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
+  | 'selected_meals'
   | 'macro_ratio'
 >
 
@@ -94,6 +95,7 @@ export type CreateProfileResponseDTO = {
   goal: Enums<'goal_enum'>
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'>
+  selected_meals: Enums<'meal_type_enum'>[] | null
   macro_ratio: Enums<'macro_ratio_enum'>
   disclaimer_accepted_at: string
   target_calories: number
@@ -127,6 +129,7 @@ export type UpdateProfileCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
+  | 'selected_meals'
   | 'macro_ratio'
 >
 
@@ -142,6 +145,20 @@ export type GeneratePlanResponseDTO = {
 // ============================================================================
 // 3. MEAL PLAN API
 // ============================================================================
+
+/**
+ * DTO: Pojedyncze naczynie/sprzęt kuchenny
+ * Bazuje na Tables<'equipment'> + Tables<'recipe_equipment'>
+ */
+export type EquipmentDTO = {
+  id: number
+  name: string
+  name_plural: string | null
+  category: Enums<'equipment_category_enum'>
+  icon_name: string | null
+  quantity: number
+  notes: string | null
+}
 
 /**
  * DTO: Pojedynczy składnik z ilością w przepisie
@@ -182,6 +199,7 @@ export type RecipeDTO = {
   total_carbs_g: number | null
   total_fats_g: number | null
   ingredients: IngredientDTO[]
+  equipment: EquipmentDTO[]
 }
 
 /**

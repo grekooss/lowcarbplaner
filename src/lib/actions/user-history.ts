@@ -38,7 +38,13 @@ export interface MealEatenData {
   planned_meal_id: number
   recipe_id: number
   recipe_name: string
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+  meal_type:
+    | 'breakfast'
+    | 'lunch'
+    | 'dinner'
+    | 'snack'
+    | 'snack_morning'
+    | 'snack_afternoon'
   meal_date: string
   calories: number
   protein_g: number

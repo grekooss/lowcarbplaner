@@ -30,6 +30,7 @@ const emptyRecipe: RecipeDTO = {
   total_carbs_g: null,
   total_fats_g: null,
   ingredients: [],
+  equipment: [],
 }
 
 /**

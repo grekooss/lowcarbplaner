@@ -145,6 +145,7 @@ export async function createProfile(
       goal: command.goal,
       weight_loss_rate_kg_week: command.weight_loss_rate_kg_week ?? null,
       meal_plan_type: command.meal_plan_type,
+      selected_meals: command.selected_meals ?? null,
       macro_ratio: command.macro_ratio,
       disclaimer_accepted_at: command.disclaimer_accepted_at,
       target_calories: nutritionTargets.target_calories,
@@ -203,6 +204,7 @@ export async function createProfile(
       goal: createdProfile.goal,
       weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
       meal_plan_type: createdProfile.meal_plan_type,
+      selected_meals: createdProfile.selected_meals,
       macro_ratio: createdProfile.macro_ratio,
       disclaimer_accepted_at:
         createdProfile.disclaimer_accepted_at || new Date().toISOString(),
@@ -293,6 +295,7 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       goal: profile.goal,
       weight_loss_rate_kg_week: profile.weight_loss_rate_kg_week,
       meal_plan_type: profile.meal_plan_type,
+      selected_meals: profile.selected_meals,
       macro_ratio: profile.macro_ratio,
       disclaimer_accepted_at:
         profile.disclaimer_accepted_at || new Date().toISOString(),
@@ -406,6 +409,7 @@ export async function updateMyProfile(
         command.weight_loss_rate_kg_week ??
         currentProfile.weight_loss_rate_kg_week,
       meal_plan_type: command.meal_plan_type ?? currentProfile.meal_plan_type,
+      selected_meals: command.selected_meals ?? currentProfile.selected_meals,
       macro_ratio: command.macro_ratio ?? currentProfile.macro_ratio,
     }
 
@@ -496,6 +500,7 @@ export async function updateMyProfile(
       goal: updatedProfile.goal,
       weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
       meal_plan_type: updatedProfile.meal_plan_type,
+      selected_meals: updatedProfile.selected_meals,
       macro_ratio: updatedProfile.macro_ratio,
       disclaimer_accepted_at:
         updatedProfile.disclaimer_accepted_at || new Date().toISOString(),
@@ -563,7 +568,7 @@ export async function generateMealPlan(): Promise<
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'id, target_calories, target_carbs_g, target_protein_g, target_fats_g'
+        'id, target_calories, target_carbs_g, target_protein_g, target_fats_g, meal_plan_type, selected_meals'
       )
       .eq('id', userId)
       .single()
@@ -634,6 +639,8 @@ export async function generateMealPlan(): Promise<
           target_protein_g: profile.target_protein_g,
           target_carbs_g: profile.target_carbs_g,
           target_fats_g: profile.target_fats_g,
+          meal_plan_type: profile.meal_plan_type,
+          selected_meals: profile.selected_meals,
         })
         plannedMeals.push(...dayPlan)
       }

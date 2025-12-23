@@ -8,6 +8,7 @@
 import type {
   RecipeDTO,
   IngredientDTO,
+  EquipmentDTO,
   RecipeInstructions,
 } from '@/types/dto.types'
 import { getRecipeImageUrl } from './supabase-storage'
@@ -32,6 +33,21 @@ export interface RawRecipeIngredient {
 }
 
 /**
+ * Raw recipe equipment type from Supabase join
+ */
+export interface RawRecipeEquipment {
+  quantity: number
+  notes: string | null
+  equipment: {
+    id: number
+    name: string
+    name_plural: string | null
+    category: unknown
+    icon_name: string | null
+  }
+}
+
+/**
  * Raw recipe type from Supabase query
  */
 export interface RawRecipe {
@@ -51,6 +67,7 @@ export interface RawRecipe {
   total_carbs_g: number | null
   total_fats_g: number | null
   recipe_ingredients?: RawRecipeIngredient[]
+  recipe_equipment?: RawRecipeEquipment[]
 }
 
 /**
@@ -205,6 +222,19 @@ export function transformRecipeToDTO(
     })
   )
 
+  // Aggregate equipment from recipe_equipment + equipment
+  const equipment: EquipmentDTO[] = (recipe.recipe_equipment || []).map(
+    (re) => ({
+      id: re.equipment.id,
+      name: re.equipment.name,
+      name_plural: re.equipment.name_plural,
+      category: re.equipment.category as EquipmentDTO['category'],
+      icon_name: re.equipment.icon_name,
+      quantity: re.quantity,
+      notes: re.notes,
+    })
+  )
+
   // Process image URL if requested (for recipes.ts)
   const imageUrl = processImageUrl
     ? getRecipeImageUrl(recipe.image_url)
@@ -227,6 +257,7 @@ export function transformRecipeToDTO(
     total_carbs_g: recipe.total_carbs_g,
     total_fats_g: recipe.total_fats_g,
     ingredients,
+    equipment,
   }
 }
 
@@ -261,6 +292,17 @@ export const RECIPE_SELECT_FULL = `
       id,
       name,
       category
+    )
+  ),
+  recipe_equipment (
+    quantity,
+    notes,
+    equipment (
+      id,
+      name,
+      name_plural,
+      category,
+      icon_name
     )
   )
 `

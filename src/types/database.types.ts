@@ -31,6 +31,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      equipment: {
+        Row: {
+          id: number
+          name: string
+          name_plural: string | null
+          category: Database['public']['Enums']['equipment_category_enum']
+          icon_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          name_plural?: string | null
+          category?: Database['public']['Enums']['equipment_category_enum']
+          icon_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          name_plural?: string | null
+          category?: Database['public']['Enums']['equipment_category_enum']
+          icon_name?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           content: string
@@ -195,6 +222,7 @@ export type Database = {
           id: string
           macro_ratio: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type: Database['public']['Enums']['meal_plan_type_enum']
+          selected_meals: Database['public']['Enums']['meal_type_enum'][] | null
           target_calories: number
           target_carbs_g: number
           target_fats_g: number
@@ -215,6 +243,9 @@ export type Database = {
           id: string
           macro_ratio?: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
+          selected_meals?:
+            | Database['public']['Enums']['meal_type_enum'][]
+            | null
           target_calories: number
           target_carbs_g: number
           target_fats_g: number
@@ -235,6 +266,9 @@ export type Database = {
           id?: string
           macro_ratio?: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
+          selected_meals?:
+            | Database['public']['Enums']['meal_type_enum'][]
+            | null
           target_calories?: number
           target_carbs_g?: number
           target_fats_g?: number
@@ -244,6 +278,42 @@ export type Database = {
           weight_loss_rate_kg_week?: number | null
         }
         Relationships: []
+      }
+      recipe_equipment: {
+        Row: {
+          recipe_id: number
+          equipment_id: number
+          quantity: number
+          notes: string | null
+        }
+        Insert: {
+          recipe_id: number
+          equipment_id: number
+          quantity?: number
+          notes?: string | null
+        }
+        Update: {
+          recipe_id?: number
+          equipment_id?: number
+          quantity?: number
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'recipe_equipment_recipe_id_fkey'
+            columns: ['recipe_id']
+            isOneToOne: false
+            referencedRelation: 'recipes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'recipe_equipment_equipment_id_fkey'
+            columns: ['equipment_id']
+            isOneToOne: false
+            referencedRelation: 'equipment'
+            referencedColumns: ['id']
+          },
+        ]
       }
       recipe_ingredients: {
         Row: {
@@ -412,6 +482,14 @@ export type Database = {
         | 'high'
         | 'very_high'
       difficulty_level_enum: 'easy' | 'medium' | 'hard'
+      equipment_category_enum:
+        | 'heating'
+        | 'mixing'
+        | 'cookware'
+        | 'bakeware'
+        | 'cutting'
+        | 'measuring'
+        | 'other'
       gender_enum: 'male' | 'female'
       goal_enum: 'weight_loss' | 'weight_maintenance'
       history_event_type_enum:
@@ -444,7 +522,13 @@ export type Database = {
         | '3_main_1_snack'
         | '3_main'
         | '2_main'
-      meal_type_enum: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+      meal_type_enum:
+        | 'breakfast'
+        | 'lunch'
+        | 'dinner'
+        | 'snack'
+        | 'snack_morning'
+        | 'snack_afternoon'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -577,6 +661,15 @@ export const Constants = {
     Enums: {
       activity_level_enum: ['very_low', 'low', 'moderate', 'high', 'very_high'],
       difficulty_level_enum: ['easy', 'medium', 'hard'],
+      equipment_category_enum: [
+        'heating',
+        'mixing',
+        'cookware',
+        'bakeware',
+        'cutting',
+        'measuring',
+        'other',
+      ],
       gender_enum: ['male', 'female'],
       goal_enum: ['weight_loss', 'weight_maintenance'],
       history_event_type_enum: [
@@ -606,7 +699,14 @@ export const Constants = {
         '3_main',
         '2_main',
       ],
-      meal_type_enum: ['breakfast', 'lunch', 'dinner', 'snack'],
+      meal_type_enum: [
+        'breakfast',
+        'lunch',
+        'dinner',
+        'snack',
+        'snack_morning',
+        'snack_afternoon',
+      ],
     },
   },
 } as const
