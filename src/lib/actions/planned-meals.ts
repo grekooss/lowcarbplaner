@@ -91,6 +91,11 @@ function transformPlannedMealToDTO(meal: {
         id: number
         name: string
         category: unknown
+        unit: string
+        ingredient_unit_conversions?: {
+          unit_name: string
+          grams_equivalent: number
+        }[]
       }
     }[]
   }

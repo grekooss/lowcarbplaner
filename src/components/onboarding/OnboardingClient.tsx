@@ -42,7 +42,8 @@ const INITIAL_FORM_DATA: OnboardingFormData = {
   goal: null,
   weight_loss_rate_kg_week: null,
   meal_plan_type: null,
-  selected_meals: null,
+  eating_start_time: '07:00',
+  eating_end_time: '19:00',
   macro_ratio: null,
   disclaimer_accepted: false,
 }
@@ -117,9 +118,8 @@ export function OnboardingClient() {
         )?.isDisabled === false))
   const isStep7Valid =
     formData.meal_plan_type !== null &&
-    (formData.meal_plan_type !== '2_main' ||
-      (formData.selected_meals !== null &&
-        formData.selected_meals.length === 2))
+    formData.eating_start_time !== null &&
+    formData.eating_end_time !== null
   const isStep8Valid = formData.macro_ratio !== null
   const isStep9Valid = true // Summary step is always valid
   const isStep10Valid = formData.disclaimer_accepted === true
@@ -196,7 +196,8 @@ export function OnboardingClient() {
         weight_loss_rate_kg_week:
           formData.weight_loss_rate_kg_week ?? undefined,
         meal_plan_type: formData.meal_plan_type!,
-        selected_meals: formData.selected_meals ?? undefined,
+        eating_start_time: formData.eating_start_time!,
+        eating_end_time: formData.eating_end_time!,
         macro_ratio: formData.macro_ratio!,
         disclaimer_accepted_at: new Date().toISOString(),
       })
@@ -335,16 +336,14 @@ export function OnboardingClient() {
         return (
           <MealPlanTypeStep
             value={formData.meal_plan_type}
-            onChange={(value) => {
-              updateField('meal_plan_type', value)
-              // Reset selected_meals when changing from 2_main to another type
-              if (value !== '2_main') {
-                updateField('selected_meals', null)
-              }
-            }}
-            selectedMeals={formData.selected_meals}
-            onSelectedMealsChange={(meals) =>
-              updateField('selected_meals', meals)
+            onChange={(value) => updateField('meal_plan_type', value)}
+            eatingStartTime={formData.eating_start_time}
+            eatingEndTime={formData.eating_end_time}
+            onEatingStartTimeChange={(time) =>
+              updateField('eating_start_time', time)
+            }
+            onEatingEndTimeChange={(time) =>
+              updateField('eating_end_time', time)
             }
           />
         )

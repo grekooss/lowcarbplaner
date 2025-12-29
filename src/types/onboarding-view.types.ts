@@ -27,7 +27,8 @@ export interface OnboardingFormData {
   goal: Enums<'goal_enum'> | null
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'> | null
-  selected_meals: MainMealType[] | null // Dla konfiguracji 2_main - wybrane 2 posiłki
+  eating_start_time: string | null // Format HH:MM, np. "07:00"
+  eating_end_time: string | null // Format HH:MM, np. "19:00"
   macro_ratio: Enums<'macro_ratio_enum'> | null
   disclaimer_accepted: boolean
 }
@@ -133,7 +134,7 @@ export const MEAL_PLAN_TYPE_DESCRIPTIONS: Record<
     'Śniadanie, przekąska poranna, obiad, przekąska popołudniowa, kolacja',
   '3_main_1_snack': 'Śniadanie, obiad, przekąska popołudniowa, kolacja',
   '3_main': 'Śniadanie, obiad, kolacja',
-  '2_main': 'Wybierz 2 posiłki (np. obiad i kolacja)',
+  '2_main': 'System dobierze 2 posiłki na podstawie okna czasowego',
 }
 
 /**
@@ -246,4 +247,71 @@ export function parseMacroRatio(ratio: Enums<'macro_ratio_enum'>): {
     protein: protein / 100,
     carbs: carbs / 100,
   }
+}
+
+/**
+ * Przedziały godzinowe dla typów posiłków (w minutach od północy)
+ */
+export const MEAL_TIME_RANGES = {
+  breakfast: { start: 6 * 60, end: 10 * 60 }, // 6:00 - 10:00
+  lunch: { start: 11 * 60, end: 15 * 60 }, // 11:00 - 15:00
+  dinner: { start: 17 * 60, end: 21 * 60 }, // 17:00 - 21:00
+} as const
+
+/**
+ * Konwertuje czas w formacie HH:MM na minuty od północy
+ */
+export function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number)
+  return (hours ?? 0) * 60 + (minutes ?? 0)
+}
+
+/**
+ * Sprawdza czy podany czas mieści się w przedziale danego typu posiłku
+ */
+function isTimeInMealRange(
+  timeMinutes: number,
+  mealType: MainMealType
+): boolean {
+  const range = MEAL_TIME_RANGES[mealType]
+  return timeMinutes >= range.start && timeMinutes <= range.end
+}
+
+/**
+ * Oblicza typy posiłków dla konfiguracji 2_main na podstawie okna czasowego
+ *
+ * Algorytm:
+ * 1. Jeśli start w przedziale śniadania (6-10) i koniec w przedziale kolacji (17-21) → śniadanie + kolacja
+ * 2. Jeśli start w przedziale śniadania ale koniec przed kolacją → śniadanie + obiad
+ * 3. Jeśli start po śniadaniu → obiad + kolacja
+ */
+export function calculateSelectedMealsFromTimeWindow(
+  startTime: string,
+  endTime: string
+): MainMealType[] {
+  const startMinutes = timeToMinutes(startTime)
+  const endMinutes = timeToMinutes(endTime)
+
+  const startsInBreakfast = isTimeInMealRange(startMinutes, 'breakfast')
+  const endsInDinner = isTimeInMealRange(endMinutes, 'dinner')
+
+  // Jeśli okno obejmuje śniadanie i kolację → śniadanie + kolacja
+  if (startsInBreakfast && endsInDinner) {
+    return ['breakfast', 'dinner']
+  }
+
+  // Jeśli zaczyna w czasie śniadania ale kończy przed kolacją → śniadanie + obiad
+  if (startsInBreakfast) {
+    return ['breakfast', 'lunch']
+  }
+
+  // Domyślnie: obiad + kolacja
+  return ['lunch', 'dinner']
+}
+
+/**
+ * Zwraca czytelny opis wybranych posiłków
+ */
+export function getSelectedMealsDescription(meals: MainMealType[]): string {
+  return meals.map((meal) => MAIN_MEAL_LABELS[meal]).join(' + ')
 }

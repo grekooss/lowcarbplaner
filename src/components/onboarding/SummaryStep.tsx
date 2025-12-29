@@ -13,6 +13,8 @@ import {
   MEAL_PLAN_TYPE_LABELS,
   MACRO_RATIO_LABELS,
   parseMacroRatio,
+  calculateSelectedMealsFromTimeWindow,
+  getSelectedMealsDescription,
   type OnboardingFormData,
   type CalculatedTargets,
 } from '@/types/onboarding-view.types'
@@ -102,6 +104,35 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                   : '-'}
               </span>
             </div>
+            <Separator />
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Okno czasowe:</span>
+              <span className='font-medium'>
+                {formData.eating_start_time && formData.eating_end_time
+                  ? `${formData.eating_start_time} - ${formData.eating_end_time}`
+                  : '-'}
+              </span>
+            </div>
+            {formData.meal_plan_type === '2_main' &&
+              formData.eating_start_time &&
+              formData.eating_end_time && (
+                <>
+                  <Separator />
+                  <div className='flex justify-between'>
+                    <span className='text-muted-foreground'>
+                      Dobrane posiłki:
+                    </span>
+                    <span className='text-primary font-medium'>
+                      {getSelectedMealsDescription(
+                        calculateSelectedMealsFromTimeWindow(
+                          formData.eating_start_time,
+                          formData.eating_end_time
+                        )
+                      )}
+                    </span>
+                  </div>
+                </>
+              )}
             <Separator />
             <div className='flex justify-between'>
               <span className='text-muted-foreground'>Proporcje makro:</span>

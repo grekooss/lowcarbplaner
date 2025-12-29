@@ -30,6 +30,9 @@ export function useProfileForm(initialProfile: ProfileDTO) {
       goal: initialProfile.goal,
       weight_loss_rate_kg_week:
         initialProfile.weight_loss_rate_kg_week ?? undefined,
+      meal_plan_type: initialProfile.meal_plan_type,
+      eating_start_time: initialProfile.eating_start_time,
+      eating_end_time: initialProfile.eating_end_time,
       macro_ratio: initialProfile.macro_ratio,
     },
   })

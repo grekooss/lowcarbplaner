@@ -136,3 +136,47 @@ export function formatMacro(value: number | null, unit: string): string {
   if (value === null || value === undefined) return '—'
   return `${value.toFixed(1)}${unit}`
 }
+
+/**
+ * Formatuje ilość składnika do wyświetlenia
+ *
+ * Jeśli składnik ma konwersję jednostki, pokazuje przyjazny format:
+ * "1 sztuka (60g)" - przyjazna jednostka + oryginalna w nawiasie
+ *
+ * Jeśli nie ma konwersji, pokazuje tylko oryginalną wartość:
+ * "60g"
+ *
+ * @param ingredient - Składnik z danymi o jednostkach
+ * @param currentAmount - Opcjonalna aktualna ilość (np. po modyfikacji +/-)
+ * @returns Sformatowany string do wyświetlenia
+ *
+ * @example
+ * // Z konwersją: "1 sztuka (60g)"
+ * // Bez konwersji: "60g"
+ * // Z modyfikacją: "1 sztuka (72g)" - gdy currentAmount=72
+ */
+export function formatIngredientAmount(
+  ingredient: IngredientDTO,
+  currentAmount?: number
+): string {
+  const amount = currentAmount ?? ingredient.amount
+
+  // Format amount: remove unnecessary decimals (.00)
+  const formatNumber = (num: number): string => {
+    const rounded = Math.round(num * 100) / 100
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2)
+  }
+
+  if (ingredient.display_unit) {
+    // Oblicz display_amount proporcjonalnie jeśli currentAmount jest podane
+    let displayAmount = ingredient.display_amount
+    if (currentAmount !== undefined && ingredient.amount > 0) {
+      displayAmount =
+        (currentAmount / ingredient.amount) * ingredient.display_amount
+    }
+
+    return `${formatNumber(displayAmount)} ${ingredient.display_unit} (${formatNumber(amount)}${ingredient.unit})`
+  }
+
+  return `${formatNumber(amount)} ${ingredient.unit}`
+}

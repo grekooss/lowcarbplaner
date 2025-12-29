@@ -32,7 +32,10 @@ import { InstructionsList } from './InstructionsList'
 import { EquipmentList } from './EquipmentList'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
-import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
+import {
+  MEAL_TYPE_LABELS,
+  formatIngredientAmount,
+} from '@/types/recipes-view.types'
 import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 import type { RecipeDTO } from '@/types/dto.types'
 
@@ -682,13 +685,6 @@ export function RecipeDetailClient({
                         ? getIngredientAmount(ingredient.id)
                         : ingredient.amount
 
-                      const formatAmount = (amount: number): string => {
-                        const rounded = Math.round(amount * 100) / 100
-                        return rounded % 1 === 0
-                          ? rounded.toFixed(0)
-                          : rounded.toFixed(2)
-                      }
-
                       const isChecked = isIngredientChecked(ingredient.id)
 
                       return (
@@ -739,7 +735,10 @@ export function RecipeDetailClient({
                               {ingredient.name}
                             </span>
                             <span className='ml-1 whitespace-nowrap text-gray-500'>
-                              {formatAmount(displayAmount)} {ingredient.unit}
+                              {formatIngredientAmount(
+                                ingredient,
+                                displayAmount
+                              )}
                             </span>
                           </span>
                         </li>
@@ -853,14 +852,6 @@ export function RecipeDetailClient({
                       ? getIngredientAmount(ingredient.id)
                       : ingredient.amount
 
-                    // Format amount: remove unnecessary decimals (.00)
-                    const formatAmount = (amount: number): string => {
-                      const rounded = Math.round(amount * 100) / 100
-                      return rounded % 1 === 0
-                        ? rounded.toFixed(0)
-                        : rounded.toFixed(2)
-                    }
-
                     const isChecked = isIngredientChecked(ingredient.id)
 
                     return (
@@ -910,20 +901,15 @@ export function RecipeDetailClient({
                           {ingredient.name}
                         </span>
 
-                        {/* Amount */}
-                        <div
+                        {/* Amount - pokazuje przyjazną jednostkę jeśli dostępna */}
+                        <span
                           className={cn(
-                            'flex items-baseline gap-1 whitespace-nowrap transition-all duration-200',
+                            'text-sm whitespace-nowrap text-gray-500 transition-all duration-200',
                             isChecked ? 'opacity-50' : ''
                           )}
                         >
-                          <span className='text-lg font-bold text-gray-800'>
-                            {formatAmount(displayAmount)}
-                          </span>
-                          <span className='text-sm text-gray-500'>
-                            {ingredient.unit}
-                          </span>
-                        </div>
+                          {formatIngredientAmount(ingredient, displayAmount)}
+                        </span>
                       </li>
                     )
                   })}

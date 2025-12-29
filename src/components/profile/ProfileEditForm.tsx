@@ -33,7 +33,15 @@ import {
   GOAL_LABELS,
   WEIGHT_LOSS_RATE_OPTIONS,
 } from '@/types/profile-view.types'
-import { MACRO_RATIO_LABELS } from '@/types/onboarding-view.types'
+import {
+  MACRO_RATIO_LABELS,
+  MEAL_PLAN_TYPE_LABELS,
+  calculateSelectedMealsFromTimeWindow,
+  getSelectedMealsDescription,
+} from '@/types/onboarding-view.types'
+import { generateTimeOptions } from '@/lib/utils'
+
+const TIME_OPTIONS = generateTimeOptions()
 
 interface ProfileEditFormProps {
   initialData: ProfileDTO
@@ -508,6 +516,124 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
               )}
             />
           )}
+
+          {/* Plan posiłków */}
+          <FormField
+            control={form.control}
+            name='meal_plan_type'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Plan posiłków</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className='rounded-sm border-0 bg-white shadow-sm'>
+                      <SelectValue placeholder='Wybierz plan posiłków' />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(MEAL_PLAN_TYPE_LABELS).map(
+                      ([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Okno czasowe posiłków */}
+          <div className='space-y-4 rounded-lg border border-gray-200 bg-white/60 p-4'>
+            <div className='space-y-1'>
+              <h3 className='text-sm font-medium'>Okno czasowe posiłków</h3>
+              <p className='text-muted-foreground text-xs'>
+                O której godzinie zazwyczaj jesz pierwszy i ostatni posiłek?
+              </p>
+            </div>
+
+            <div className='flex flex-col gap-4 sm:flex-row'>
+              <FormField
+                control={form.control}
+                name='eating_start_time'
+                render={({ field }) => (
+                  <FormItem className='flex-1'>
+                    <FormLabel className='text-xs'>Rozpoczynam o:</FormLabel>
+                    <Select
+                      value={field.value ?? '07:00'}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger className='bg-white'>
+                          <SelectValue placeholder='Wybierz' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className='max-h-60'>
+                        {TIME_OPTIONS.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='eating_end_time'
+                render={({ field }) => (
+                  <FormItem className='flex-1'>
+                    <FormLabel className='text-xs'>Kończę o:</FormLabel>
+                    <Select
+                      value={field.value ?? '19:00'}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger className='bg-white'>
+                          <SelectValue placeholder='Wybierz' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className='max-h-60'>
+                        {TIME_OPTIONS.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Podgląd automatycznie dobranych posiłków dla 2_main */}
+            {form.watch('meal_plan_type') === '2_main' &&
+              form.watch('eating_start_time') &&
+              form.watch('eating_end_time') && (
+                <div className='bg-primary/10 border-primary/20 rounded-md border p-3'>
+                  <p className='text-muted-foreground text-xs'>
+                    Na podstawie okna czasowego system dobierze:
+                  </p>
+                  <p className='text-primary text-sm font-medium'>
+                    {getSelectedMealsDescription(
+                      calculateSelectedMealsFromTimeWindow(
+                        form.watch('eating_start_time')!,
+                        form.watch('eating_end_time')!
+                      )
+                    )}
+                  </p>
+                </div>
+              )}
+          </div>
 
           {/* Proporcje makroskładników */}
           <FormField

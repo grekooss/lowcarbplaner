@@ -3,9 +3,13 @@
  *
  * Wyświetla nazwę składnika, ilość z jednostką oraz makroskładniki.
  * Zgodnie z US-013: przy każdym składniku pokazuje jego wkład w makro.
+ *
+ * Format wyświetlania:
+ * - Jeśli jest konwersja: "1 sztuka (60g)"
+ * - Jeśli brak konwersji: "60g"
  */
 
-import { formatMacro } from '@/types/recipes-view.types'
+import { formatMacro, formatIngredientAmount } from '@/types/recipes-view.types'
 import type { IngredientDTO } from '@/types/dto.types'
 
 interface IngredientItemProps {
@@ -21,8 +25,10 @@ interface IngredientItemProps {
  *   ingredient={{
  *     id: 5,
  *     name: 'Jajko',
- *     amount: 3,
- *     unit: 'sztuka',
+ *     amount: 60,
+ *     unit: 'g',
+ *     display_amount: 1,
+ *     display_unit: 'sztuka',
  *     calories: 234,
  *     protein_g: 21.0,
  *     carbs_g: 1.5,
@@ -31,6 +37,7 @@ interface IngredientItemProps {
  *     is_scalable: false
  *   }}
  * />
+ * // Renders: "1 sztuka (60g)"
  * ```
  */
 export function IngredientItem({ ingredient }: IngredientItemProps) {
@@ -40,7 +47,7 @@ export function IngredientItem({ ingredient }: IngredientItemProps) {
       <div className='flex-1'>
         <p className='font-medium'>{ingredient.name}</p>
         <p className='text-muted-foreground text-sm'>
-          {ingredient.amount} {ingredient.unit}
+          {formatIngredientAmount(ingredient)}
         </p>
       </div>
 

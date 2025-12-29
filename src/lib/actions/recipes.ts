@@ -112,7 +112,12 @@ export async function getRecipes(
           ingredient:ingredients (
             id,
             name,
-            category
+            category,
+            unit,
+            ingredient_unit_conversions (
+              unit_name,
+              grams_equivalent
+            )
           )
         ),
         recipe_equipment (
@@ -250,7 +255,12 @@ export async function getRecipeById(
           ingredient:ingredients (
             id,
             name,
-            category
+            category,
+            unit,
+            ingredient_unit_conversions (
+              unit_name,
+              grams_equivalent
+            )
           )
         ),
         recipe_equipment (

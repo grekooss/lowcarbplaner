@@ -58,10 +58,18 @@ export const createProfileSchema = z
       '3_main',
       '2_main',
     ] as const),
-    selected_meals: z
-      .array(z.enum(['breakfast', 'lunch', 'dinner'] as const))
-      .length(2, 'Musisz wybrać dokładnie 2 posiłki dla konfiguracji 2_main')
-      .optional(),
+    eating_start_time: z
+      .string()
+      .regex(
+        /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+        'Nieprawidłowy format czasu (wymagany HH:MM)'
+      ),
+    eating_end_time: z
+      .string()
+      .regex(
+        /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+        'Nieprawidłowy format czasu (wymagany HH:MM)'
+      ),
     macro_ratio: z.enum([
       '70_25_5',
       '60_35_5',
@@ -89,16 +97,19 @@ export const createProfileSchema = z
   )
   .refine(
     (data) => {
-      // selected_meals jest wymagane i musi mieć 2 elementy gdy meal_plan_type='2_main'
-      if (data.meal_plan_type === '2_main') {
-        return data.selected_meals && data.selected_meals.length === 2
-      }
-      return true
+      // eating_end_time musi być później niż eating_start_time
+      const [startHour, startMin] = data.eating_start_time
+        .split(':')
+        .map(Number)
+      const [endHour, endMin] = data.eating_end_time.split(':').map(Number)
+      const startMinutes = (startHour ?? 0) * 60 + (startMin ?? 0)
+      const endMinutes = (endHour ?? 0) * 60 + (endMin ?? 0)
+      return endMinutes > startMinutes
     },
     {
       message:
-        'Musisz wybrać dokładnie 2 posiłki dla konfiguracji 2 posiłków dziennie',
-      path: ['selected_meals'],
+        'Godzina zakończenia jedzenia musi być późniejsza niż godzina rozpoczęcia',
+      path: ['eating_end_time'],
     }
   )
 
@@ -138,6 +149,26 @@ export const updateProfileSchema = createProfileSchema
       message:
         'Tempo utraty wagi jest wymagane, gdy cel zostaje zmieniony na utratę wagi (weight_loss)',
       path: ['weight_loss_rate_kg_week'],
+    }
+  )
+  .refine(
+    (data) => {
+      // Waliduj czas tylko jeśli oba pola są podane
+      if (data.eating_start_time && data.eating_end_time) {
+        const [startHour, startMin] = data.eating_start_time
+          .split(':')
+          .map(Number)
+        const [endHour, endMin] = data.eating_end_time.split(':').map(Number)
+        const startMinutes = (startHour ?? 0) * 60 + (startMin ?? 0)
+        const endMinutes = (endHour ?? 0) * 60 + (endMin ?? 0)
+        return endMinutes > startMinutes
+      }
+      return true
+    },
+    {
+      message:
+        'Godzina zakończenia jedzenia musi być późniejsza niż godzina rozpoczęcia',
+      path: ['eating_end_time'],
     }
   )
 

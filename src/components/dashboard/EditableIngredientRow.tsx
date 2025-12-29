@@ -68,7 +68,69 @@ export function EditableIngredientRow({
     setLocalValue(currentAmount.toString())
   }, [currentAmount])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIncrement = () => {
+    const result = onIncrement(ingredient.id)
+    setError(null)
+    if (!result.success && result.error) {
+      setError(result.error)
+    }
+  }
+
+  // Increment/decrement by display unit (e.g., +1 sztuka = +60g)
+  const handleDisplayUnitIncrement = () => {
+    if (!ingredient.display_unit || ingredient.display_amount <= 0) return
+    // Oblicz ile gramów odpowiada 1 jednostce display
+    const gramsPerUnit = ingredient.amount / ingredient.display_amount
+    const newAmount = currentAmount + gramsPerUnit
+    const result = onAmountChange(ingredient.id, Math.round(newAmount))
+    setError(null)
+    if (!result.success && result.error) {
+      setError(result.error)
+    }
+  }
+
+  const handleDisplayUnitDecrement = () => {
+    if (!ingredient.display_unit || ingredient.display_amount <= 0) return
+    // Oblicz ile gramów odpowiada 1 jednostce display
+    const gramsPerUnit = ingredient.amount / ingredient.display_amount
+    const newAmount = currentAmount - gramsPerUnit
+
+    // Jeśli wynik <= 0, wyklucz składnik (ustaw na 0)
+    if (newAmount <= 0) {
+      onExclude?.(ingredient.id)
+      return
+    }
+
+    const result = onAmountChange(ingredient.id, Math.round(newAmount))
+    setError(null)
+    if (!result.success && result.error) {
+      setError(result.error)
+    }
+  }
+
+  // Decrement gramów z możliwością wyzerowania (wykluczenia)
+  const handleGramDecrement = () => {
+    // Jeśli już jest 0 lub wyzerowany - nic nie rób
+    if (currentAmount <= 0) return
+
+    // Jeśli wartość jest bardzo mała (<=1g), od razu wyklucz
+    if (currentAmount <= 1) {
+      onExclude?.(ingredient.id)
+      return
+    }
+
+    // Standardowy decrement
+    const result = onDecrement(ingredient.id)
+    setError(null)
+    if (!result.success && result.error) {
+      setError(result.error)
+    }
+  }
+
+  // Pozwala na ustawienie 0 w input - wtedy wykluczy składnik
+  const handleInputChangeWithExclude = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = e.target.value
     setLocalValue(value)
     setError(null)
@@ -79,23 +141,13 @@ export function EditableIngredientRow({
       return
     }
 
+    // Jeśli wartość = 0, wyklucz składnik
+    if (numValue <= 0) {
+      onExclude?.(ingredient.id)
+      return
+    }
+
     const result = onAmountChange(ingredient.id, numValue)
-    if (!result.success && result.error) {
-      setError(result.error)
-    }
-  }
-
-  const handleIncrement = () => {
-    const result = onIncrement(ingredient.id)
-    setError(null)
-    if (!result.success && result.error) {
-      setError(result.error)
-    }
-  }
-
-  const handleDecrement = () => {
-    const result = onDecrement(ingredient.id)
-    setError(null)
     if (!result.success && result.error) {
       setError(result.error)
     }
@@ -175,16 +227,14 @@ export function EditableIngredientRow({
             className={cn(
               'font-medium break-words transition-all duration-200',
               compact ? 'text-[13px] leading-tight' : 'text-sm',
-              isExcluded ? 'text-gray-400 line-through' : 'text-gray-800'
+              isExcluded
+                ? 'text-gray-400 line-through'
+                : isChanged && !isAutoAdjusted
+                  ? 'text-primary'
+                  : 'text-gray-800'
             )}
           >
             {ingredient.name}
-            {isChanged && !isAutoAdjusted && !compact && !isExcluded && (
-              <span className='text-primary ml-2 text-xs'>(zmieniono)</span>
-            )}
-            {isExcluded && !compact && (
-              <span className='ml-2 text-xs text-gray-400'>(wykluczone)</span>
-            )}
           </p>
         </div>
 
@@ -198,66 +248,129 @@ export function EditableIngredientRow({
                 isExcluded ? 'pointer-events-none opacity-50' : ''
               )}
             >
-              {/* Minus button */}
-              <button
-                type='button'
-                onClick={handleDecrement}
-                disabled={currentAmount <= 0 || isExcluded}
-                className={cn(
-                  'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                  compact ? 'h-5 w-5' : 'h-6 w-6'
+              {/* Amount display - pokazuje przyjazną jednostkę z +/- nad gramami z +/- */}
+              <div className='flex flex-col items-center gap-1 whitespace-nowrap'>
+                {/* Przyjazna jednostka (np. 1 szt) z przyciskami +/- - jeśli dostępna */}
+                {ingredient.display_unit && (
+                  <div className='flex items-center gap-1'>
+                    <button
+                      type='button'
+                      onClick={handleDisplayUnitDecrement}
+                      disabled={currentAmount <= 0 || isExcluded}
+                      className={cn(
+                        'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                        compact ? 'h-5 w-5' : 'h-6 w-6'
+                      )}
+                    >
+                      <Minus
+                        className={cn(
+                          compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                          'text-gray-600'
+                        )}
+                      />
+                    </button>
+                    <div className='flex items-baseline'>
+                      <span
+                        className={cn(
+                          'text-center font-bold text-gray-800',
+                          compact ? 'text-sm' : 'text-lg'
+                        )}
+                      >
+                        {ingredient.amount > 0
+                          ? Math.round(
+                              (currentAmount / ingredient.amount) *
+                                ingredient.display_amount *
+                                10
+                            ) / 10
+                          : ingredient.display_amount}
+                        x
+                      </span>
+                      <span
+                        className={cn(
+                          'ml-1 text-gray-500',
+                          compact ? 'text-[10px]' : 'text-sm'
+                        )}
+                      >
+                        {ingredient.display_unit}
+                      </span>
+                    </div>
+                    <button
+                      type='button'
+                      onClick={handleDisplayUnitIncrement}
+                      disabled={isExcluded}
+                      className={cn(
+                        'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                        compact ? 'h-5 w-5' : 'h-6 w-6'
+                      )}
+                    >
+                      <Plus
+                        className={cn(
+                          compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                          'text-gray-600'
+                        )}
+                      />
+                    </button>
+                  </div>
                 )}
-              >
-                <Minus
-                  className={cn(
-                    compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                    'text-gray-600'
-                  )}
-                />
-              </button>
-
-              {/* Amount display */}
-              <div className='flex items-baseline whitespace-nowrap'>
-                <Input
-                  type='number'
-                  value={localValue}
-                  onChange={handleInputChange}
-                  disabled={isExcluded}
-                  className={cn(
-                    'h-auto [appearance:textfield] border-0 bg-transparent p-0 text-center font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
-                    compact ? 'w-10 text-sm' : 'w-14 text-lg',
-                    error && 'text-error'
-                  )}
-                  step='1'
-                  min='0'
-                />
-                <span
-                  className={cn(
-                    '-ml-1 text-gray-500',
-                    compact ? 'text-[10px]' : 'text-sm'
-                  )}
-                >
-                  {ingredient.unit}
-                </span>
+                {/* Oryginalna jednostka (g/ml) - edytowalna z przyciskami +/- */}
+                <div className='flex items-center gap-1'>
+                  <button
+                    type='button'
+                    onClick={handleGramDecrement}
+                    disabled={isExcluded}
+                    className={cn(
+                      'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                      compact ? 'h-5 w-5' : 'h-6 w-6'
+                    )}
+                  >
+                    <Minus
+                      className={cn(
+                        compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                        'text-gray-600'
+                      )}
+                    />
+                  </button>
+                  <div className='flex items-baseline'>
+                    <Input
+                      type='number'
+                      value={localValue}
+                      onChange={handleInputChangeWithExclude}
+                      disabled={isExcluded}
+                      className={cn(
+                        'h-auto [appearance:textfield] border-0 bg-transparent p-0 text-center font-bold text-gray-800 shadow-none focus-visible:ring-0 disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                        compact ? 'w-10 text-sm' : 'w-14 text-lg',
+                        error && 'text-error'
+                      )}
+                      step='1'
+                      min='0'
+                    />
+                    <span
+                      className={cn(
+                        '-ml-1 text-gray-500',
+                        compact ? 'text-[10px]' : 'text-sm'
+                      )}
+                    >
+                      {ingredient.unit}
+                    </span>
+                  </div>
+                  <button
+                    type='button'
+                    onClick={handleIncrement}
+                    disabled={isExcluded}
+                    className={cn(
+                      'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                      compact ? 'h-5 w-5' : 'h-6 w-6'
+                    )}
+                  >
+                    <Plus
+                      className={cn(
+                        compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                        'text-gray-600'
+                      )}
+                    />
+                  </button>
+                </div>
               </div>
-
-              {/* Plus button */}
-              <button
-                type='button'
-                onClick={handleIncrement}
-                disabled={isExcluded}
-                className={cn(
-                  'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                  compact ? 'h-5 w-5' : 'h-6 w-6'
-                )}
-              >
-                <Plus
-                  className={cn(
-                    compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                    'text-gray-600'
-                  )}
-                />
-              </button>
             </div>
 
             {/* Trash button - OUTSIDE the disabled wrapper. Disabled when checkbox is checked */}
@@ -297,30 +410,62 @@ export function EditableIngredientRow({
             )}
           </div>
         ) : (
-          // Non-scalable ingredients - display only with trash button
+          // Non-scalable ingredients - display only friendly unit (no grams) with trash button
           <div className='flex items-center gap-1'>
             <div
               className={cn(
-                'flex items-baseline gap-1 whitespace-nowrap transition-all duration-200',
+                'flex items-baseline whitespace-nowrap transition-all duration-200',
                 isExcluded ? 'opacity-50' : ''
               )}
             >
-              <span
-                className={cn(
-                  'font-bold text-gray-800',
-                  compact ? 'text-sm' : 'text-lg'
-                )}
-              >
-                {currentAmount}
-              </span>
-              <span
-                className={cn(
-                  'text-gray-500',
-                  compact ? 'text-[10px]' : 'text-sm'
-                )}
-              >
-                {ingredient.unit}
-              </span>
+              {/* Tylko przyjazna jednostka (np. 2x szczypta) - bez gramów */}
+              {ingredient.display_unit ? (
+                <>
+                  <span
+                    className={cn(
+                      'font-bold text-gray-800',
+                      compact ? 'text-sm' : 'text-lg'
+                    )}
+                  >
+                    {ingredient.amount > 0
+                      ? Math.round(
+                          (currentAmount / ingredient.amount) *
+                            ingredient.display_amount *
+                            10
+                        ) / 10
+                      : ingredient.display_amount}
+                    x
+                  </span>
+                  <span
+                    className={cn(
+                      'ml-1 text-gray-500',
+                      compact ? 'text-[10px]' : 'text-sm'
+                    )}
+                  >
+                    {ingredient.display_unit}
+                  </span>
+                </>
+              ) : (
+                // Fallback jeśli brak display_unit - pokaż gramy
+                <>
+                  <span
+                    className={cn(
+                      'font-bold text-gray-800',
+                      compact ? 'text-sm' : 'text-lg'
+                    )}
+                  >
+                    {currentAmount}
+                  </span>
+                  <span
+                    className={cn(
+                      'ml-1 text-gray-500',
+                      compact ? 'text-[10px]' : 'text-sm'
+                    )}
+                  >
+                    {ingredient.unit}
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Trash button for non-scalable ingredients. Disabled when checkbox is checked */}

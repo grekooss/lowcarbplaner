@@ -32,6 +32,7 @@ import {
   recordProfileUpdated,
   type ProfileSnapshot,
 } from '@/lib/actions/user-history'
+import { calculateSelectedMealsFromTimeWindow } from '@/types/onboarding-view.types'
 
 /**
  * Standardowy typ wyniku Server Action (Discriminated Union)
@@ -133,7 +134,16 @@ export async function createProfile(
       }
     }
 
-    // 5. Przygotowanie danych do zapisu (bez created_at - zachowaj oryginalny)
+    // 5. Oblicz selected_meals na podstawie okna czasowego (dla 2_main)
+    const selectedMeals =
+      command.meal_plan_type === '2_main'
+        ? calculateSelectedMealsFromTimeWindow(
+            command.eating_start_time,
+            command.eating_end_time
+          )
+        : null
+
+    // 6. Przygotowanie danych do zapisu (bez created_at - zachowaj oryginalny)
     const profileData = {
       id: user.id,
       email: user.email!,
@@ -145,7 +155,9 @@ export async function createProfile(
       goal: command.goal,
       weight_loss_rate_kg_week: command.weight_loss_rate_kg_week ?? null,
       meal_plan_type: command.meal_plan_type,
-      selected_meals: command.selected_meals ?? null,
+      eating_start_time: command.eating_start_time,
+      eating_end_time: command.eating_end_time,
+      selected_meals: selectedMeals,
       macro_ratio: command.macro_ratio,
       disclaimer_accepted_at: command.disclaimer_accepted_at,
       target_calories: nutritionTargets.target_calories,
@@ -192,7 +204,7 @@ export async function createProfile(
       console.warn('Błąd zapisu historii profile_created:', err)
     })
 
-    // 8. Transformacja do DTO
+    // 9. Transformacja do DTO
     const response: CreateProfileResponseDTO = {
       id: createdProfile.id,
       email: createdProfile.email,
@@ -204,6 +216,8 @@ export async function createProfile(
       goal: createdProfile.goal,
       weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
       meal_plan_type: createdProfile.meal_plan_type,
+      eating_start_time: createdProfile.eating_start_time,
+      eating_end_time: createdProfile.eating_end_time,
       selected_meals: createdProfile.selected_meals,
       macro_ratio: createdProfile.macro_ratio,
       disclaimer_accepted_at:
@@ -295,6 +309,8 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       goal: profile.goal,
       weight_loss_rate_kg_week: profile.weight_loss_rate_kg_week,
       meal_plan_type: profile.meal_plan_type,
+      eating_start_time: profile.eating_start_time,
+      eating_end_time: profile.eating_end_time,
       selected_meals: profile.selected_meals,
       macro_ratio: profile.macro_ratio,
       disclaimer_accepted_at:
@@ -398,6 +414,22 @@ export async function updateMyProfile(
     }
 
     // 4. Merge danych (aktualne + nowe)
+    const mergedMealPlanType =
+      command.meal_plan_type ?? currentProfile.meal_plan_type
+    const mergedEatingStartTime =
+      command.eating_start_time ?? currentProfile.eating_start_time
+    const mergedEatingEndTime =
+      command.eating_end_time ?? currentProfile.eating_end_time
+
+    // Oblicz selected_meals na podstawie okna czasowego (dla 2_main)
+    const selectedMeals =
+      mergedMealPlanType === '2_main'
+        ? calculateSelectedMealsFromTimeWindow(
+            mergedEatingStartTime,
+            mergedEatingEndTime
+          )
+        : null
+
     const mergedData = {
       gender: command.gender ?? currentProfile.gender,
       age: command.age ?? currentProfile.age,
@@ -408,8 +440,10 @@ export async function updateMyProfile(
       weight_loss_rate_kg_week:
         command.weight_loss_rate_kg_week ??
         currentProfile.weight_loss_rate_kg_week,
-      meal_plan_type: command.meal_plan_type ?? currentProfile.meal_plan_type,
-      selected_meals: command.selected_meals ?? currentProfile.selected_meals,
+      meal_plan_type: mergedMealPlanType,
+      eating_start_time: mergedEatingStartTime,
+      eating_end_time: mergedEatingEndTime,
+      selected_meals: selectedMeals,
       macro_ratio: command.macro_ratio ?? currentProfile.macro_ratio,
     }
 
@@ -476,17 +510,47 @@ export async function updateMyProfile(
       console.warn('Błąd zapisu historii profile_updated:', err)
     })
 
-    // 9. Usunięcie wszystkich zaplanowanych posiłków (regeneracja planu)
-    const { error: deleteMealsError } = await supabase
-      .from('planned_meals')
-      .delete()
-      .eq('user_id', user.id)
+    // 9. Usunięcie zaplanowanych posiłków (regeneracja planu)
+    // Sprawdź czy dzisiaj są posiłki oznaczone jako zjedzone - jeśli tak, zachowaj dzisiejszy dzień
+    const today = formatLocalDate(new Date())
 
-    if (deleteMealsError) {
-      console.warn(
-        'Błąd podczas usuwania starych posiłków (nie krytyczny):',
-        deleteMealsError
-      )
+    const { data: todayEatenMeals } = await supabase
+      .from('planned_meals')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('meal_date', today)
+      .eq('is_eaten', true)
+      .limit(1)
+
+    const hasTodayEatenMeals = todayEatenMeals && todayEatenMeals.length > 0
+
+    if (hasTodayEatenMeals) {
+      // Jeśli użytkownik zjadł jakiś posiłek dzisiaj, usuń tylko posiłki od jutra
+      const { error: deleteMealsError } = await supabase
+        .from('planned_meals')
+        .delete()
+        .eq('user_id', user.id)
+        .gt('meal_date', today)
+
+      if (deleteMealsError) {
+        console.warn(
+          'Błąd podczas usuwania przyszłych posiłków (nie krytyczny):',
+          deleteMealsError
+        )
+      }
+    } else {
+      // Jeśli żaden posiłek dzisiaj nie jest zjedzony, usuń wszystkie posiłki
+      const { error: deleteMealsError } = await supabase
+        .from('planned_meals')
+        .delete()
+        .eq('user_id', user.id)
+
+      if (deleteMealsError) {
+        console.warn(
+          'Błąd podczas usuwania starych posiłków (nie krytyczny):',
+          deleteMealsError
+        )
+      }
     }
 
     // 10. Transformacja do DTO
@@ -500,6 +564,8 @@ export async function updateMyProfile(
       goal: updatedProfile.goal,
       weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
       meal_plan_type: updatedProfile.meal_plan_type,
+      eating_start_time: updatedProfile.eating_start_time,
+      eating_end_time: updatedProfile.eating_end_time,
       selected_meals: updatedProfile.selected_meals,
       macro_ratio: updatedProfile.macro_ratio,
       disclaimer_accepted_at:
@@ -604,10 +670,25 @@ export async function generateMealPlan(): Promise<
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const todayString = formatLocalDate(today)
+
+    // Sprawdź czy dzisiaj są posiłki oznaczone jako zjedzone
+    // Jeśli tak, generujemy plan od jutra (zachowujemy dzisiejszy dzień)
+    const { data: todayEatenMeals } = await supabase
+      .from('planned_meals')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('meal_date', todayString)
+      .eq('is_eaten', true)
+      .limit(1)
+
+    const hasTodayEatenMeals = todayEatenMeals && todayEatenMeals.length > 0
 
     // Wygeneruj listę dat dla następnych 7 dni
+    // Jeśli dzisiaj są zjedzone posiłki, zaczynamy od jutra (i=1), w przeciwnym razie od dzisiaj (i=0)
+    const startOffset = hasTodayEatenMeals ? 1 : 0
     const dates: string[] = []
-    for (let i = 0; i < 7; i++) {
+    for (let i = startOffset; i < 7 + startOffset; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
       dates.push(formatLocalDate(date))

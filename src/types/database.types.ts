@@ -215,6 +215,8 @@ export type Database = {
           age: number
           created_at: string
           disclaimer_accepted_at: string | null
+          eating_end_time: string
+          eating_start_time: string
           email: string
           gender: Database['public']['Enums']['gender_enum']
           goal: Database['public']['Enums']['goal_enum']
@@ -236,6 +238,8 @@ export type Database = {
           age: number
           created_at?: string
           disclaimer_accepted_at?: string | null
+          eating_end_time?: string
+          eating_start_time?: string
           email: string
           gender: Database['public']['Enums']['gender_enum']
           goal: Database['public']['Enums']['goal_enum']
@@ -259,6 +263,8 @@ export type Database = {
           age?: number
           created_at?: string
           disclaimer_accepted_at?: string | null
+          eating_end_time?: string
+          eating_start_time?: string
           email?: string
           gender?: Database['public']['Enums']['gender_enum']
           goal?: Database['public']['Enums']['goal_enum']

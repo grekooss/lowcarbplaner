@@ -44,6 +44,7 @@ export type IngredientOverrides = {
 /**
  * Command Model: Dane wejściowe z formularza onboardingu
  * Bazuje na TablesInsert<"profiles"> z wybranymi polami
+ * eating_start_time i eating_end_time są wymagane (non-optional)
  */
 export type OnboardingCommand = Pick<
   TablesInsert<'profiles'>,
@@ -55,9 +56,11 @@ export type OnboardingCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
-  | 'selected_meals'
   | 'macro_ratio'
->
+> & {
+  eating_start_time: string
+  eating_end_time: string
+}
 
 /**
  * DTO: Obliczone cele kaloryczne i makroskładniki
@@ -95,6 +98,8 @@ export type CreateProfileResponseDTO = {
   goal: Enums<'goal_enum'>
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'>
+  eating_start_time: string
+  eating_end_time: string
   selected_meals: Enums<'meal_type_enum'>[] | null
   macro_ratio: Enums<'macro_ratio_enum'>
   disclaimer_accepted_at: string
@@ -129,7 +134,8 @@ export type UpdateProfileCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
-  | 'selected_meals'
+  | 'eating_start_time'
+  | 'eating_end_time'
   | 'macro_ratio'
 >
 
@@ -163,12 +169,22 @@ export type EquipmentDTO = {
 /**
  * DTO: Pojedynczy składnik z ilością w przepisie
  * Bazuje na Tables<'recipe_ingredients', { schema: 'public' }> + join z Tables<'ingredients', { schema: 'public' }>
+ *
+ * Jednostki:
+ * - amount/unit: oryginalna wartość w gramach/ml (używana do obliczeń i modyfikacji ±)
+ * - display_amount/display_unit: przyjazna jednostka np. "1 sztuka" (używana do wyświetlania)
  */
 export type IngredientDTO = {
   id: number
   name: string
+  /** Ilość w oryginalnej jednostce (g/ml) - używana do obliczeń */
   amount: number
+  /** Oryginalna jednostka (g/ml) - używana do obliczeń */
   unit: string
+  /** Ilość w przyjaznej jednostce (np. 1 sztuka) - do wyświetlania */
+  display_amount: number
+  /** Przyjazna jednostka (np. sztuka) - do wyświetlania, null jeśli brak konwersji */
+  display_unit: string | null
   calories: number
   protein_g: number
   carbs_g: number
