@@ -16,6 +16,7 @@ interface MealCardProps {
   mealType: MealType
   onMealClick: (meal: PlannedMealDTO) => void
   showSwapButton?: boolean
+  columnCount?: number
 }
 
 export const MealCard = memo(function MealCard({
@@ -23,6 +24,7 @@ export const MealCard = memo(function MealCard({
   mealType,
   onMealClick,
   showSwapButton = false,
+  columnCount = 3,
 }: MealCardProps) {
   const [swapDialogOpen, setSwapDialogOpen] = useState(false)
 
@@ -101,7 +103,12 @@ export const MealCard = memo(function MealCard({
           <span className='text-text-muted mb-0.5 block text-[9px] font-bold tracking-wider uppercase xl:hidden'>
             {MEAL_TYPE_LABELS[mealType]}
           </span>
-          <p className='text-text-main line-clamp-3 text-sm leading-snug font-semibold'>
+          <p
+            className={cn(
+              'text-text-main line-clamp-3 leading-snug font-semibold',
+              columnCount >= 5 ? 'text-xs' : 'text-sm'
+            )}
+          >
             {meal.recipe.name}
           </p>
         </div>

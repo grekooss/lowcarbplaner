@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -33,28 +33,28 @@ export type Database = {
     Tables: {
       equipment: {
         Row: {
+          category: Database['public']['Enums']['equipment_category_enum']
+          created_at: string
+          icon_name: string | null
           id: number
           name: string
           name_plural: string | null
-          category: Database['public']['Enums']['equipment_category_enum']
-          icon_name: string | null
-          created_at: string
         }
         Insert: {
+          category?: Database['public']['Enums']['equipment_category_enum']
+          created_at?: string
+          icon_name?: string | null
           id?: number
           name: string
           name_plural?: string | null
-          category?: Database['public']['Enums']['equipment_category_enum']
-          icon_name?: string | null
-          created_at?: string
         }
         Update: {
+          category?: Database['public']['Enums']['equipment_category_enum']
+          created_at?: string
+          icon_name?: string | null
           id?: number
           name?: string
           name_plural?: string | null
-          category?: Database['public']['Enums']['equipment_category_enum']
-          icon_name?: string | null
-          created_at?: string
         }
         Relationships: []
       }
@@ -211,112 +211,118 @@ export type Database = {
       }
       profiles: {
         Row: {
-          activity_level: Database['public']['Enums']['activity_level_enum']
-          age: number
+          activity_level:
+            | Database['public']['Enums']['activity_level_enum']
+            | null
+          age: number | null
           created_at: string
           disclaimer_accepted_at: string | null
           eating_end_time: string
           eating_start_time: string
           email: string
-          gender: Database['public']['Enums']['gender_enum']
-          goal: Database['public']['Enums']['goal_enum']
-          height_cm: number
+          gender: Database['public']['Enums']['gender_enum'] | null
+          goal: Database['public']['Enums']['goal_enum'] | null
+          height_cm: number | null
           id: string
           macro_ratio: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type: Database['public']['Enums']['meal_plan_type_enum']
           selected_meals: Database['public']['Enums']['meal_type_enum'][] | null
-          target_calories: number
-          target_carbs_g: number
-          target_fats_g: number
-          target_protein_g: number
+          target_calories: number | null
+          target_carbs_g: number | null
+          target_fats_g: number | null
+          target_protein_g: number | null
           updated_at: string
-          weight_kg: number
+          weight_kg: number | null
           weight_loss_rate_kg_week: number | null
         }
         Insert: {
-          activity_level: Database['public']['Enums']['activity_level_enum']
-          age: number
+          activity_level?:
+            | Database['public']['Enums']['activity_level_enum']
+            | null
+          age?: number | null
           created_at?: string
           disclaimer_accepted_at?: string | null
           eating_end_time?: string
           eating_start_time?: string
           email: string
-          gender: Database['public']['Enums']['gender_enum']
-          goal: Database['public']['Enums']['goal_enum']
-          height_cm: number
+          gender?: Database['public']['Enums']['gender_enum'] | null
+          goal?: Database['public']['Enums']['goal_enum'] | null
+          height_cm?: number | null
           id: string
           macro_ratio?: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
           selected_meals?:
             | Database['public']['Enums']['meal_type_enum'][]
             | null
-          target_calories: number
-          target_carbs_g: number
-          target_fats_g: number
-          target_protein_g: number
+          target_calories?: number | null
+          target_carbs_g?: number | null
+          target_fats_g?: number | null
+          target_protein_g?: number | null
           updated_at?: string
-          weight_kg: number
+          weight_kg?: number | null
           weight_loss_rate_kg_week?: number | null
         }
         Update: {
-          activity_level?: Database['public']['Enums']['activity_level_enum']
-          age?: number
+          activity_level?:
+            | Database['public']['Enums']['activity_level_enum']
+            | null
+          age?: number | null
           created_at?: string
           disclaimer_accepted_at?: string | null
           eating_end_time?: string
           eating_start_time?: string
           email?: string
-          gender?: Database['public']['Enums']['gender_enum']
-          goal?: Database['public']['Enums']['goal_enum']
-          height_cm?: number
+          gender?: Database['public']['Enums']['gender_enum'] | null
+          goal?: Database['public']['Enums']['goal_enum'] | null
+          height_cm?: number | null
           id?: string
           macro_ratio?: Database['public']['Enums']['macro_ratio_enum']
           meal_plan_type?: Database['public']['Enums']['meal_plan_type_enum']
           selected_meals?:
             | Database['public']['Enums']['meal_type_enum'][]
             | null
-          target_calories?: number
-          target_carbs_g?: number
-          target_fats_g?: number
-          target_protein_g?: number
+          target_calories?: number | null
+          target_carbs_g?: number | null
+          target_fats_g?: number | null
+          target_protein_g?: number | null
           updated_at?: string
-          weight_kg?: number
+          weight_kg?: number | null
           weight_loss_rate_kg_week?: number | null
         }
         Relationships: []
       }
       recipe_equipment: {
         Row: {
-          recipe_id: number
           equipment_id: number
-          quantity: number
           notes: string | null
+          quantity: number
+          recipe_id: number
         }
         Insert: {
-          recipe_id: number
           equipment_id: number
-          quantity?: number
           notes?: string | null
+          quantity?: number
+          recipe_id: number
         }
         Update: {
-          recipe_id?: number
           equipment_id?: number
-          quantity?: number
           notes?: string | null
+          quantity?: number
+          recipe_id?: number
         }
         Relationships: [
-          {
-            foreignKeyName: 'recipe_equipment_recipe_id_fkey'
-            columns: ['recipe_id']
-            isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
-          },
           {
             foreignKeyName: 'recipe_equipment_equipment_id_fkey'
             columns: ['equipment_id']
             isOneToOne: false
             referencedRelation: 'equipment'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'recipe_equipment_recipe_id_fkey'
+            columns: ['recipe_id']
+            isOneToOne: false
+            referencedRelation: 'recipes'
             referencedColumns: ['id']
           },
         ]
@@ -437,31 +443,31 @@ export type Database = {
       }
       user_history: {
         Row: {
-          id: number
-          user_id: string
-          event_type: Database['public']['Enums']['history_event_type_enum']
-          event_date: string
           created_at: string
-          profile_snapshot: Json | null
+          event_date: string
+          event_type: Database['public']['Enums']['history_event_type_enum']
+          id: number
           meal_data: Json | null
+          profile_snapshot: Json | null
+          user_id: string
         }
         Insert: {
-          id?: number
-          user_id: string
-          event_type: Database['public']['Enums']['history_event_type_enum']
-          event_date?: string
           created_at?: string
-          profile_snapshot?: Json | null
+          event_date?: string
+          event_type: Database['public']['Enums']['history_event_type_enum']
+          id?: number
           meal_data?: Json | null
+          profile_snapshot?: Json | null
+          user_id: string
         }
         Update: {
-          id?: number
-          user_id?: string
-          event_type?: Database['public']['Enums']['history_event_type_enum']
-          event_date?: string
           created_at?: string
-          profile_snapshot?: Json | null
+          event_date?: string
+          event_type?: Database['public']['Enums']['history_event_type_enum']
+          id?: number
           meal_data?: Json | null
+          profile_snapshot?: Json | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -478,7 +484,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_email_exists: { Args: { check_email: string }; Returns: boolean }
     }
     Enums: {
       activity_level_enum:
@@ -520,9 +526,11 @@ export type Database = {
       macro_ratio_enum:
         | '70_25_5'
         | '60_35_5'
+        | '60_30_10'
         | '60_25_15'
         | '50_30_20'
-        | '40_40_20'
+        | '45_30_25'
+        | '35_40_25'
       meal_plan_type_enum:
         | '3_main_2_snacks'
         | '3_main_1_snack'
@@ -698,6 +706,15 @@ export const Constants = {
         'sweeteners',
         'condiments',
         'other',
+      ],
+      macro_ratio_enum: [
+        '70_25_5',
+        '60_35_5',
+        '60_30_10',
+        '60_25_15',
+        '50_30_20',
+        '45_30_25',
+        '35_40_25',
       ],
       meal_plan_type_enum: [
         '3_main_2_snacks',

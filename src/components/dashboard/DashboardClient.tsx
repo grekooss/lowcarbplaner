@@ -18,10 +18,17 @@ import { useWeekMealsCheck } from '@/hooks/useWeekMealsCheck'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { formatLocalDate } from '@/lib/utils/date-formatting'
 import type { PlannedMealDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RecipeModal as RecipePreviewModal } from '@/components/meal-plan/RecipeModal'
+
+interface MealScheduleConfig {
+  eatingStartTime: string
+  eatingEndTime: string
+  mealPlanType: Enums<'meal_plan_type_enum'>
+}
 
 interface DashboardClientProps {
   initialMeals: PlannedMealDTO[]
@@ -32,12 +39,14 @@ interface DashboardClientProps {
     target_fats_g: number
   }
   initialDate: string // YYYY-MM-DD
+  mealScheduleConfig: MealScheduleConfig
 }
 
 export function DashboardClient({
   initialMeals,
   targetMacros,
   initialDate,
+  mealScheduleConfig,
 }: DashboardClientProps) {
   const { selectedDate, setSelectedDate } = useDashboardStore()
   const isMobile = useIsMobile()
@@ -310,6 +319,7 @@ export function DashboardClient({
               meals={displayMeals}
               date={selectedDateStr}
               onRecipePreview={handleRecipePreview}
+              mealScheduleConfig={mealScheduleConfig}
             />
           )}
         </div>

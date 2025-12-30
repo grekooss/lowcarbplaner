@@ -2,7 +2,7 @@
 
 /**
  * DayCard - Karta pojedynczego dnia zawierająca posiłki (widok mobile)
- * Obsługuje wszystkie typy posiłków: breakfast, snack_morning, lunch, snack_afternoon, dinner
+ * Dynamicznie renderuje posiłki na podstawie mealTypes z profilu użytkownika
  */
 
 import { memo } from 'react'
@@ -13,11 +13,13 @@ import type { PlannedMealDTO } from '@/types/dto.types'
 interface DayCardProps {
   day: DayPlanViewModel
   onMealClick: (meal: PlannedMealDTO) => void
+  mealTypes: MealType[]
 }
 
 export const DayCard = memo(function DayCard({
   day,
   onMealClick,
+  mealTypes,
 }: DayCardProps) {
   // Formatuj pełną datę: "Środa 10 grudzień 2025"
   const fullDate = new Date(day.date)
@@ -31,14 +33,11 @@ export const DayCard = memo(function DayCard({
   dayDate.setHours(0, 0, 0, 0)
   const isTodayOrFuture = dayDate >= today
 
-  // Lista posiłków w kolejności
-  const meals: { meal: PlannedMealDTO | null; type: MealType }[] = [
-    { meal: day.breakfast, type: 'breakfast' },
-    { meal: day.snack_morning, type: 'snack_morning' },
-    { meal: day.lunch, type: 'lunch' },
-    { meal: day.snack_afternoon, type: 'snack_afternoon' },
-    { meal: day.dinner, type: 'dinner' },
-  ]
+  // Dynamicznie buduj listę posiłków na podstawie mealTypes
+  const meals = mealTypes.map((mealType) => ({
+    meal: day[mealType],
+    type: mealType,
+  }))
 
   return (
     <div className='space-y-3'>

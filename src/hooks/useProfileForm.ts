@@ -23,11 +23,11 @@ export function useProfileForm(initialProfile: ProfileDTO) {
   const form = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      weight_kg: initialProfile.weight_kg,
-      height_cm: initialProfile.height_cm,
-      age: initialProfile.age,
-      activity_level: initialProfile.activity_level,
-      goal: initialProfile.goal,
+      weight_kg: initialProfile.weight_kg ?? undefined,
+      height_cm: initialProfile.height_cm ?? undefined,
+      age: initialProfile.age ?? undefined,
+      activity_level: initialProfile.activity_level ?? undefined,
+      goal: initialProfile.goal ?? undefined,
       weight_loss_rate_kg_week:
         initialProfile.weight_loss_rate_kg_week ?? undefined,
       meal_plan_type: initialProfile.meal_plan_type,
@@ -65,9 +65,19 @@ export function useProfileForm(initialProfile: ProfileDTO) {
     }
   }
 
+  const handleSubmit = form.handleSubmit(onSubmit, (errors) => {
+    console.error('Form validation errors:', errors)
+    const firstError = Object.values(errors)[0]
+    if (firstError?.message) {
+      toast.error('Błąd walidacji', {
+        description: firstError.message as string,
+      })
+    }
+  })
+
   return {
     form,
     isSubmitting,
-    onSubmit: form.handleSubmit(onSubmit),
+    onSubmit: handleSubmit,
   }
 }

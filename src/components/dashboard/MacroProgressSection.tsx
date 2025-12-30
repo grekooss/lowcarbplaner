@@ -164,6 +164,16 @@ export function MacroProgressSection({
 
   const macroRows = [
     {
+      key: 'fat' as const,
+      label: 'Tłuszcze',
+      consumed: macros.consumed.fats_g,
+      target: macros.target.fats_g,
+      unit: 'g',
+      bgColor: 'bg-success',
+      icon: Droplet,
+      iconColor: 'text-white',
+    },
+    {
       key: 'carbs' as const,
       label: 'Węglowodany',
       consumed: macros.consumed.carbs_g,
@@ -183,20 +193,20 @@ export function MacroProgressSection({
       icon: Beef,
       iconColor: 'text-white',
     },
+  ]
+
+  // Dane makroskładników dla wariantu non-today (z wszystkich posiłków)
+  const plannedMacroRows = [
     {
       key: 'fat' as const,
       label: 'Tłuszcze',
-      consumed: macros.consumed.fats_g,
+      value: plannedTotals.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
       bgColor: 'bg-success',
       icon: Droplet,
       iconColor: 'text-white',
     },
-  ]
-
-  // Dane makroskładników dla wariantu non-today (z wszystkich posiłków)
-  const plannedMacroRows = [
     {
       key: 'carbs' as const,
       label: 'Węglowodany',
@@ -215,16 +225,6 @@ export function MacroProgressSection({
       unit: 'g',
       bgColor: 'bg-info',
       icon: Beef,
-      iconColor: 'text-white',
-    },
-    {
-      key: 'fat' as const,
-      label: 'Tłuszcze',
-      value: plannedTotals.fats_g,
-      target: macros.target.fats_g,
-      unit: 'g',
-      bgColor: 'bg-success',
-      icon: Droplet,
       iconColor: 'text-white',
     },
   ]

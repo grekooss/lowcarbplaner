@@ -41,9 +41,9 @@ export function MacroSummary({
       color: 'text-orange-600',
     },
     {
-      label: 'Białko',
-      value: formatMacro(protein_g, 'g'),
-      color: 'text-blue-600',
+      label: 'Tłuszcze',
+      value: formatMacro(fats_g, 'g'),
+      color: 'text-purple-600',
     },
     {
       label: 'Węglowodany',
@@ -51,9 +51,9 @@ export function MacroSummary({
       color: 'text-green-600',
     },
     {
-      label: 'Tłuszcze',
-      value: formatMacro(fats_g, 'g'),
-      color: 'text-purple-600',
+      label: 'Białko',
+      value: formatMacro(protein_g, 'g'),
+      color: 'text-blue-600',
     },
   ]
 

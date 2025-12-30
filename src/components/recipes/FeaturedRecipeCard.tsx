@@ -95,6 +95,15 @@ export function FeaturedRecipeCard({
             <Flame className='h-3.5 w-3.5' />
             {calories ?? '—'} kcal
           </span>
+          <div className='flex items-center gap-2' title='Tłuszcze'>
+            <div className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
+              <Droplet className='h-4 w-4 text-white' />
+            </div>
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='text-sm font-bold'>{fats ?? '—'}</span>
+              <span className='text-xs'>g</span>
+            </span>
+          </div>
           <div className='flex items-center gap-2' title='Węglowodany'>
             <div className='bg-tertiary flex h-6 w-6 items-center justify-center rounded-sm'>
               <Wheat className='h-4 w-4 text-white' />
@@ -110,15 +119,6 @@ export function FeaturedRecipeCard({
             </div>
             <span className='flex items-baseline gap-0.5 text-gray-700'>
               <span className='text-sm font-bold'>{protein ?? '—'}</span>
-              <span className='text-xs'>g</span>
-            </span>
-          </div>
-          <div className='flex items-center gap-2' title='Tłuszcze'>
-            <div className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
-              <Droplet className='h-4 w-4 text-white' />
-            </div>
-            <span className='flex items-baseline gap-0.5 text-gray-700'>
-              <span className='text-sm font-bold'>{fats ?? '—'}</span>
               <span className='text-xs'>g</span>
             </span>
           </div>
@@ -209,6 +209,23 @@ export function FeaturedRecipeCard({
 
         <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
           <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
+            Tłuszcze
+          </p>
+          <p className='flex items-center justify-center gap-1.5'>
+            <span className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
+              <Droplet className='h-4 w-4 text-white' />
+            </span>
+            <span className='flex items-baseline gap-0.5'>
+              <span className='text-xl font-bold text-gray-800'>
+                {fats ?? '—'}
+              </span>
+              <span className='text-xs font-medium text-gray-500'>g</span>
+            </span>
+          </p>
+        </div>
+
+        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
+          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
             Węglowodany
           </p>
           <p className='flex items-center justify-center gap-1.5'>
@@ -235,23 +252,6 @@ export function FeaturedRecipeCard({
             <span className='flex items-baseline gap-0.5'>
               <span className='text-xl font-bold text-gray-800'>
                 {protein ?? '—'}
-              </span>
-              <span className='text-xs font-medium text-gray-500'>g</span>
-            </span>
-          </p>
-        </div>
-
-        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
-          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
-            Tłuszcze
-          </p>
-          <p className='flex items-center justify-center gap-1.5'>
-            <span className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
-              <Droplet className='h-4 w-4 text-white' />
-            </span>
-            <span className='flex items-baseline gap-0.5'>
-              <span className='text-xl font-bold text-gray-800'>
-                {fats ?? '—'}
               </span>
               <span className='text-xs font-medium text-gray-500'>g</span>
             </span>

@@ -183,6 +183,15 @@ export function SwapRecipeDialog({
                     </h3>
 
                     <div className='flex flex-wrap items-center gap-2.5 text-xs text-black sm:gap-4 sm:text-sm'>
+                      <div className='flex items-center gap-1' title='Tłuszcze'>
+                        <Droplet className='text-success h-4 w-4 sm:h-5 sm:w-5' />
+                        <span className='text-text-secondary flex items-baseline gap-0.5'>
+                          <span className='font-bold'>
+                            {Math.round(currentNutrition.fats_g)}
+                          </span>
+                          <span>g</span>
+                        </span>
+                      </div>
                       <div
                         className='flex items-center gap-1'
                         title='Węglowodany'
@@ -200,15 +209,6 @@ export function SwapRecipeDialog({
                         <span className='text-text-secondary flex items-baseline gap-0.5'>
                           <span className='font-bold'>
                             {Math.round(currentNutrition.protein_g)}
-                          </span>
-                          <span>g</span>
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-1' title='Tłuszcze'>
-                        <Droplet className='text-success h-4 w-4 sm:h-5 sm:w-5' />
-                        <span className='text-text-secondary flex items-baseline gap-0.5'>
-                          <span className='font-bold'>
-                            {Math.round(currentNutrition.fats_g)}
                           </span>
                           <span>g</span>
                         </span>
@@ -290,6 +290,18 @@ export function SwapRecipeDialog({
                         <div className='flex flex-wrap items-center gap-2.5 text-xs text-black sm:gap-4 sm:text-sm'>
                           <div
                             className='flex items-center gap-1'
+                            title='Tłuszcze'
+                          >
+                            <Droplet className='text-success h-4 w-4 sm:h-5 sm:w-5' />
+                            <span className='text-text-secondary flex items-baseline gap-0.5'>
+                              <span className='font-bold'>
+                                {Math.round(replacement.total_fats_g ?? 0)}
+                              </span>
+                              <span>g</span>
+                            </span>
+                          </div>
+                          <div
+                            className='flex items-center gap-1'
                             title='Węglowodany'
                           >
                             <Wheat className='text-tertiary h-4 w-4 sm:h-5 sm:w-5' />
@@ -308,18 +320,6 @@ export function SwapRecipeDialog({
                             <span className='text-text-secondary flex items-baseline gap-0.5'>
                               <span className='font-bold'>
                                 {Math.round(replacement.total_protein_g ?? 0)}
-                              </span>
-                              <span>g</span>
-                            </span>
-                          </div>
-                          <div
-                            className='flex items-center gap-1'
-                            title='Tłuszcze'
-                          >
-                            <Droplet className='text-success h-4 w-4 sm:h-5 sm:w-5' />
-                            <span className='text-text-secondary flex items-baseline gap-0.5'>
-                              <span className='font-bold'>
-                                {Math.round(replacement.total_fats_g ?? 0)}
                               </span>
                               <span>g</span>
                             </span>

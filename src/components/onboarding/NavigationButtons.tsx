@@ -36,15 +36,15 @@ export function NavigationButtons({
 }: NavigationButtonsProps) {
   const isFirstStep = currentStep === 1
 
-  // First step: single button full width
+  // First step: single button centered
   if (isFirstStep) {
     return (
-      <div className='flex justify-center'>
+      <div className='flex justify-end'>
         <Button
           type='button'
           onClick={onNext}
           disabled={!canGoNext || isLoading}
-          className='w-full gap-2'
+          className='gap-2'
           size='lg'
         >
           <span>{nextButtonText}</span>

@@ -64,12 +64,26 @@ export const CalendarStrip = memo(function CalendarStrip({
     }
   }
 
-  const monthLabelRaw = selectedDate.toLocaleDateString('pl-PL', {
-    month: 'long',
-  })
+  // Sprawdź czy tydzień obejmuje dwa miesiące/lata
+  const firstDay = days[0]?.date ?? today
+  const lastDay = days[days.length - 1]?.date ?? today
+
+  const firstMonth = firstDay.toLocaleDateString('pl-PL', { month: 'long' })
+  const lastMonth = lastDay.toLocaleDateString('pl-PL', { month: 'long' })
+  const firstYear = firstDay.getFullYear()
+  const lastYear = lastDay.getFullYear()
+
+  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+
+  // Jeśli miesiące są różne, pokaż oba
   const monthLabel =
-    monthLabelRaw.charAt(0).toUpperCase() + monthLabelRaw.slice(1)
-  const yearLabel = selectedDate.getFullYear()
+    firstMonth === lastMonth
+      ? capitalize(firstMonth)
+      : `${capitalize(firstMonth)}-${capitalize(lastMonth)}`
+
+  // Jeśli lata są różne, pokaż oba
+  const yearLabel =
+    firstYear === lastYear ? String(firstYear) : `${firstYear}-${lastYear}`
 
   return (
     <section className='flex flex-col gap-1 rounded-md border-2 border-white bg-white/40 px-3 py-2 shadow-sm backdrop-blur-xl sm:gap-2 sm:gap-3 sm:rounded-3xl sm:px-6 sm:py-3 sm:py-4'>

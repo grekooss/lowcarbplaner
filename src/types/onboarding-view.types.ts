@@ -209,11 +209,13 @@ export function getCalorieDistributionFor2Main(
  * Mapowanie macro_ratio na polskie nazwy
  */
 export const MACRO_RATIO_LABELS: Record<Enums<'macro_ratio_enum'>, string> = {
-  '70_25_5': '70% tłuszcz / 25% białko / 5% węglowodany',
-  '60_35_5': '60% tłuszcz / 35% białko / 5% węglowodany',
-  '60_25_15': '60% tłuszcz / 25% białko / 15% węglowodany',
-  '50_30_20': '50% tłuszcz / 30% białko / 20% węglowodany',
-  '40_40_20': '40% tłuszcz / 40% białko / 20% węglowodany',
+  '70_25_5': '70% tłuszcze / 5% węglowodany / 25% białko',
+  '60_35_5': '60% tłuszcze / 5% węglowodany / 35% białko',
+  '60_30_10': '60% tłuszcze / 10% węglowodany / 30% białko',
+  '60_25_15': '60% tłuszcze / 15% węglowodany / 25% białko',
+  '50_30_20': '50% tłuszcze / 20% węglowodany / 30% białko',
+  '45_30_25': '45% tłuszcze / 25% węglowodany / 30% białko',
+  '35_40_25': '35% tłuszcze / 25% węglowodany / 40% białko',
 }
 
 /**
@@ -225,9 +227,11 @@ export const MACRO_RATIO_DESCRIPTIONS: Record<
 > = {
   '70_25_5': 'Bardzo restrykcyjne keto - maksymalna ketoza',
   '60_35_5': 'Keto wysokobiałkowe - ketoza + budowa mięśni',
+  '60_30_10': 'Zbalansowane keto - ketoza z większą różnorodnością warzyw',
   '60_25_15': 'Standardowe keto - zalecane dla początkujących',
   '50_30_20': 'Umiarkowane low-carb - elastyczne podejście',
-  '40_40_20': 'Wysokobiałkowe low-carb - dla aktywnych sportowo',
+  '45_30_25': 'Liberalne low-carb - łatwe do utrzymania długoterminowo',
+  '35_40_25': 'Wysokobiałkowe low-carb - dla aktywnych sportowo',
 }
 
 /**
@@ -314,4 +318,131 @@ export function calculateSelectedMealsFromTimeWindow(
  */
 export function getSelectedMealsDescription(meals: MainMealType[]): string {
   return meals.map((meal) => MAIN_MEAL_LABELS[meal]).join(' + ')
+}
+
+/**
+ * Interfejs dla wyliczonych godzin posiłków
+ */
+export interface MealSchedule {
+  type: Enums<'meal_type_enum'>
+  label: string
+  time: string
+}
+
+/**
+ * Oblicza godziny posiłków na podstawie typu planu i okna czasowego
+ *
+ * @param planType - Typ planu posiłków
+ * @param startTime - Godzina rozpoczęcia jedzenia (format HH:MM)
+ * @param endTime - Godzina zakończenia jedzenia (format HH:MM)
+ * @returns Tablica z harmonogramem posiłków
+ */
+export function calculateMealSchedule(
+  planType: Enums<'meal_plan_type_enum'>,
+  startTime: string,
+  endTime: string
+): MealSchedule[] {
+  const startMinutes = timeToMinutes(startTime)
+  const endMinutes = timeToMinutes(endTime)
+  const windowDuration = endMinutes - startMinutes
+
+  // Zaokrąglenie do najbliższych 15 minut
+  const roundTo15 = (minutes: number): number => {
+    return Math.round(minutes / 15) * 15
+  }
+
+  // Pomocnicza funkcja do formatowania czasu
+  const minutesToTime = (minutes: number): string => {
+    const rounded = roundTo15(minutes)
+    const hours = Math.floor(rounded / 60)
+    const mins = rounded % 60
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
+  }
+
+  switch (planType) {
+    case '3_main_2_snacks': {
+      // 5 posiłków równomiernie rozłożonych
+      const interval = windowDuration / 4
+      return [
+        {
+          type: 'breakfast',
+          label: 'Śniadanie',
+          time: minutesToTime(startMinutes),
+        },
+        {
+          type: 'snack_morning',
+          label: 'Przekąska poranna',
+          time: minutesToTime(startMinutes + interval),
+        },
+        {
+          type: 'lunch',
+          label: 'Obiad',
+          time: minutesToTime(startMinutes + interval * 2),
+        },
+        {
+          type: 'snack_afternoon',
+          label: 'Przekąska popołudniowa',
+          time: minutesToTime(startMinutes + interval * 3),
+        },
+        { type: 'dinner', label: 'Kolacja', time: minutesToTime(endMinutes) },
+      ]
+    }
+
+    case '3_main_1_snack': {
+      // 4 posiłki: śniadanie (0), obiad (1/2), przekąska (3/4), kolacja (1)
+      // Podział: 1/2 przerwy do obiadu, potem 1/4 do przekąski, 1/4 do kolacji
+      return [
+        {
+          type: 'breakfast',
+          label: 'Śniadanie',
+          time: minutesToTime(startMinutes),
+        },
+        {
+          type: 'lunch',
+          label: 'Obiad',
+          time: minutesToTime(startMinutes + windowDuration * 0.5),
+        },
+        {
+          type: 'snack_afternoon',
+          label: 'Przekąska popołudniowa',
+          time: minutesToTime(startMinutes + windowDuration * 0.75),
+        },
+        { type: 'dinner', label: 'Kolacja', time: minutesToTime(endMinutes) },
+      ]
+    }
+
+    case '3_main': {
+      // 3 główne posiłki równomiernie
+      const interval = windowDuration / 2
+      return [
+        {
+          type: 'breakfast',
+          label: 'Śniadanie',
+          time: minutesToTime(startMinutes),
+        },
+        {
+          type: 'lunch',
+          label: 'Obiad',
+          time: minutesToTime(startMinutes + interval),
+        },
+        { type: 'dinner', label: 'Kolacja', time: minutesToTime(endMinutes) },
+      ]
+    }
+
+    case '2_main': {
+      // 2 posiłki - początek i koniec okna
+      const selectedMeals = calculateSelectedMealsFromTimeWindow(
+        startTime,
+        endTime
+      )
+      return selectedMeals.map((mealType, index) => ({
+        type: mealType as Enums<'meal_type_enum'>,
+        label: MAIN_MEAL_LABELS[mealType],
+        time: minutesToTime(index === 0 ? startMinutes : endMinutes),
+      }))
+    }
+
+    default:
+      return []
+  }
 }

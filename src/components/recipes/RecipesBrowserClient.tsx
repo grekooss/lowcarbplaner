@@ -57,7 +57,7 @@ export function RecipesBrowserClient({
   const router = useRouter()
 
   // Stan lokalny dla widoku i sortowania
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortBy, setSortBy] = useState<SortOption>('calories')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 

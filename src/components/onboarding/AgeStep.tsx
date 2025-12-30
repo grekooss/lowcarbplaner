@@ -4,7 +4,7 @@
  * AgeStep Component
  *
  * Step 2: Age input with slider and editable input
- * Collects user's age (18-100 years)
+ * Collects user's age (16-100 years)
  */
 
 import { useEffect, useState } from 'react'
@@ -18,7 +18,7 @@ interface AgeStepProps {
 }
 
 export function AgeStep({ value, onChange, error }: AgeStepProps) {
-  const MIN = 18
+  const MIN = 16
   const MAX = 100
   const DEFAULT = 30
 

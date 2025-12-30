@@ -31,6 +31,7 @@ interface MealCardProps {
   showSwapButton?: boolean
   enableEatenCheckbox?: boolean
   onRecipePreview: (meal: PlannedMealDTO) => void
+  mealTime?: string // Format HH:MM, np. "07:00"
 }
 
 const DIFFICULTY_LABEL: Record<'easy' | 'medium' | 'hard', string> = {
@@ -72,6 +73,7 @@ export const MealCard = memo(function MealCard({
   showSwapButton = false,
   enableEatenCheckbox = true,
   onRecipePreview,
+  mealTime,
 }: MealCardProps) {
   const [swapDialogOpen, setSwapDialogOpen] = useState(false)
   const { mutate: toggleMeal, isPending } = useMealToggle()
@@ -119,7 +121,16 @@ export const MealCard = memo(function MealCard({
   return (
     <>
       <div className='relative z-10'>
-        <div className='flex gap-3 sm:gap-6'>
+        <div className='flex gap-3 sm:gap-4'>
+          {/* Meal Time - left of checkbox */}
+          {mealTime && (
+            <div className='flex h-7 w-12 items-center justify-end sm:h-10 sm:w-14'>
+              <span className='text-sm font-bold text-gray-600 sm:text-base'>
+                {mealTime}
+              </span>
+            </div>
+          )}
+
           {/* Stepper Node */}
           {enableEatenCheckbox && (
             <div
@@ -162,7 +173,7 @@ export const MealCard = memo(function MealCard({
               data-testid='meal-card'
               data-meal-type={meal.meal_type}
               className={cn(
-                'group mt-3 flex flex-col gap-6 rounded-md border-2 border-white bg-white/40 p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all duration-300 sm:rounded-2xl md:flex-row',
+                'group mt-2 flex flex-col gap-4 rounded-md border-2 border-white bg-white/40 p-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-all duration-300 sm:rounded-xl md:flex-row',
                 meal.is_eaten
                   ? 'pointer-events-none opacity-60 grayscale-[40%]'
                   : 'cursor-pointer hover:scale-[1.01]'
@@ -172,18 +183,18 @@ export const MealCard = memo(function MealCard({
               onClick={handleCardClick}
               onKeyDown={handleCardKeyDown}
             >
-              <div className='relative h-32 w-full flex-shrink-0 overflow-hidden rounded-md bg-white/60 md:w-32'>
+              <div className='relative h-24 w-full flex-shrink-0 overflow-hidden rounded-md bg-white/60 md:h-24 md:w-24'>
                 {meal.recipe.image_url ? (
                   <Image
                     src={meal.recipe.image_url}
                     alt={meal.recipe.name}
                     fill
                     className='object-cover grayscale-[10%]'
-                    sizes='(max-width: 768px) 100vw, 128px'
+                    sizes='(max-width: 768px) 100vw, 96px'
                   />
                 ) : (
                   <div className='flex h-full w-full items-center justify-center text-gray-400'>
-                    <UtensilsCrossed className='h-10 w-10' />
+                    <UtensilsCrossed className='h-8 w-8' />
                   </div>
                 )}
                 {/* Swap button on image - top-right on mobile, center on desktop */}

@@ -8,6 +8,7 @@ import { getPlannedMeals } from '@/lib/actions/planned-meals'
 import { MealPlanClient } from '@/components/meal-plan/MealPlanClient'
 import { createServerClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
+import type { Enums } from '@/types/database.types'
 
 // Force dynamic rendering because of Supabase auth (cookies)
 export const dynamic = 'force-dynamic'
@@ -31,6 +32,18 @@ export default async function MealPlanPage() {
   if (!user) {
     redirect('/auth')
   }
+
+  // Pobierz profil użytkownika dla meal_plan_type
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('meal_plan_type, selected_meals')
+    .eq('id', user.id)
+    .single()
+
+  const mealPlanType: Enums<'meal_plan_type_enum'> =
+    profile?.meal_plan_type ?? '3_main'
+  const selectedMeals: Enums<'meal_type_enum'>[] | null =
+    profile?.selected_meals ?? null
 
   // Oblicz zakres dat (dziś + 6 dni = łącznie 7 dni)
   const today = new Date()
@@ -60,7 +73,12 @@ export default async function MealPlanPage() {
 
   return (
     <div className='pb-6'>
-      <MealPlanClient initialMeals={meals} startDate={startDateStr} />
+      <MealPlanClient
+        initialMeals={meals}
+        startDate={startDateStr}
+        mealPlanType={mealPlanType}
+        selectedMeals={selectedMeals}
+      />
     </div>
   )
 }

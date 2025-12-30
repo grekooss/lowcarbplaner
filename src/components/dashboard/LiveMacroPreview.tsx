@@ -44,6 +44,14 @@ export function LiveMacroPreview({
       color: 'text-[#f5ac4b]',
     },
     {
+      label: 'Tłuszcze',
+      icon: Droplet,
+      value: adjusted.fats_g,
+      original: original.fats_g,
+      unit: 'g',
+      color: 'text-[#81b29a]',
+    },
+    {
       label: 'Węglowodany',
       icon: Wheat,
       value: adjusted.carbs_g,
@@ -58,14 +66,6 @@ export function LiveMacroPreview({
       original: original.protein_g,
       unit: 'g',
       color: 'text-[#e07a5f]',
-    },
-    {
-      label: 'Tłuszcze',
-      icon: Droplet,
-      value: adjusted.fats_g,
-      original: original.fats_g,
-      unit: 'g',
-      color: 'text-[#81b29a]',
     },
   ]
 

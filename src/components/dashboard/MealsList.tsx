@@ -7,17 +7,42 @@
 
 'use client'
 
+import { useMemo } from 'react'
 import { MealCard } from './MealCard'
 import type { PlannedMealDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
+import { calculateMealSchedule } from '@/types/onboarding-view.types'
+
+interface MealScheduleConfig {
+  eatingStartTime: string
+  eatingEndTime: string
+  mealPlanType: Enums<'meal_plan_type_enum'>
+}
 
 interface MealsListProps {
   meals: PlannedMealDTO[]
   date: string // YYYY-MM-DD
   onRecipePreview: (meal: PlannedMealDTO) => void
+  mealScheduleConfig: MealScheduleConfig
 }
 
-export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
+export function MealsList({
+  meals,
+  date,
+  onRecipePreview,
+  mealScheduleConfig,
+}: MealsListProps) {
   const mealsForDate = meals.filter((meal) => meal.meal_date === date)
+
+  // Oblicz harmonogram godzin posiłków na podstawie konfiguracji profilu
+  const mealTimeMap = useMemo(() => {
+    const schedule = calculateMealSchedule(
+      mealScheduleConfig.mealPlanType,
+      mealScheduleConfig.eatingStartTime,
+      mealScheduleConfig.eatingEndTime
+    )
+    return new Map(schedule.map((s) => [s.type, s.time]))
+  }, [mealScheduleConfig])
 
   // Sprawdź czy wybrany dzień jest dzisiaj lub innym dniem
   const today = new Date()
@@ -55,10 +80,10 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
     <section className='relative'>
       {/* Vertical Line - only show when we have stepper checkboxes */}
       {isCurrentDate && orderedMeals.length > 1 && (
-        <div className='absolute top-4 -bottom-6 left-[13px] z-0 w-0.5 bg-white sm:top-6 sm:left-[19px]' />
+        <div className='absolute top-4 -bottom-6 left-[73px] z-0 w-0.5 bg-white sm:top-6 sm:left-[91px]' />
       )}
 
-      <div className='space-y-8'>
+      <div className='space-y-6'>
         {orderedMeals.map((meal) => (
           <MealCard
             key={meal.id}
@@ -66,6 +91,7 @@ export function MealsList({ meals, date, onRecipePreview }: MealsListProps) {
             showSwapButton={isTodayOrFuture}
             enableEatenCheckbox={isCurrentDate}
             onRecipePreview={onRecipePreview}
+            mealTime={mealTimeMap.get(meal.meal_type)}
           />
         ))}
       </div>

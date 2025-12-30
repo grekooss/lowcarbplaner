@@ -8,7 +8,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Save } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EditableIngredientRow } from './EditableIngredientRow'
 import { LiveMacroPreview } from './LiveMacroPreview'
@@ -96,10 +96,7 @@ export function IngredientEditor({
                 Zapisywanie...
               </>
             ) : (
-              <>
-                <Save className='h-4 w-4' />
-                Zapisz zmiany
-              </>
+              'Zapisz zmiany'
             )}
           </Button>
         )}

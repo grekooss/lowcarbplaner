@@ -29,9 +29,9 @@ interface SortSelectProps {
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'name', label: 'Nazwa' },
   { value: 'calories', label: 'Kalorie' },
+  { value: 'fats', label: 'Tłuszcze' },
   { value: 'carbs', label: 'Węglowodany' },
   { value: 'protein', label: 'Białko' },
-  { value: 'fats', label: 'Tłuszcze' },
 ]
 
 /**

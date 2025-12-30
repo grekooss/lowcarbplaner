@@ -20,7 +20,7 @@ export function validateStep(
       return (
         formData.age !== null &&
         formData.age !== undefined &&
-        formData.age >= 18 &&
+        formData.age >= 16 &&
         formData.age <= 100
       )
     case 3:
@@ -72,7 +72,7 @@ export function getStepError(
   switch (step) {
     case 2:
       if (!formData.age) return 'Podaj swój wiek'
-      if (formData.age < 18) return 'Musisz mieć co najmniej 18 lat'
+      if (formData.age < 16) return 'Musisz mieć co najmniej 16 lat'
       if (formData.age > 100) return 'Wiek nie może przekraczać 100 lat'
       return 'Nieprawidłowy wiek'
     case 3:

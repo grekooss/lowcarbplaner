@@ -14,11 +14,47 @@ import { WeekTable } from './WeekTable'
 import { DayList } from './DayList'
 import { RecipeModal } from './RecipeModal'
 import type { PlannedMealDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
+import type { MealType } from '@/types/meal-plan-view.types'
 import { Loader2 } from 'lucide-react'
+
+/**
+ * Mapowanie meal_plan_type na listę typów posiłków do wyświetlenia
+ */
+function getMealTypesForPlan(
+  mealPlanType: Enums<'meal_plan_type_enum'>,
+  selectedMeals: Enums<'meal_type_enum'>[] | null
+): MealType[] {
+  switch (mealPlanType) {
+    case '3_main_2_snacks':
+      return [
+        'breakfast',
+        'snack_morning',
+        'lunch',
+        'snack_afternoon',
+        'dinner',
+      ]
+    case '3_main_1_snack':
+      return ['breakfast', 'lunch', 'snack_afternoon', 'dinner']
+    case '3_main':
+      return ['breakfast', 'lunch', 'dinner']
+    case '2_main':
+      // Dla 2_main używamy selected_meals z profilu
+      if (selectedMeals && selectedMeals.length === 2) {
+        return selectedMeals as MealType[]
+      }
+      // Fallback: breakfast + dinner
+      return ['breakfast', 'dinner']
+    default:
+      return ['breakfast', 'lunch', 'dinner']
+  }
+}
 
 interface MealPlanClientProps {
   initialMeals: PlannedMealDTO[]
   startDate: string // YYYY-MM-DD
+  mealPlanType: Enums<'meal_plan_type_enum'>
+  selectedMeals: Enums<'meal_type_enum'>[] | null
 }
 
 /**
@@ -28,7 +64,14 @@ interface MealPlanClientProps {
 export const MealPlanClient = ({
   initialMeals,
   startDate,
+  mealPlanType,
+  selectedMeals,
 }: MealPlanClientProps) => {
+  // Oblicz typy posiłków dla tego planu
+  const mealTypes = useMemo(
+    () => getMealTypesForPlan(mealPlanType, selectedMeals),
+    [mealPlanType, selectedMeals]
+  )
   // Stan modali
   const [recipeModal, setRecipeModal] = useState<{
     isOpen: boolean
@@ -85,8 +128,8 @@ export const MealPlanClient = ({
   const hasAttemptedGeneration = React.useRef(false)
 
   useEffect(() => {
-    // 7 dni x 3 posilki = 21 posilkow oczekiwanych
-    const expectedMealsCount = 7 * 3
+    // 7 dni x liczba posiłków zależna od planu
+    const expectedMealsCount = 7 * mealTypes.length
     const hasIncompletePlan = meals.length < expectedMealsCount
     const shouldGenerate =
       !isLoading &&
@@ -98,7 +141,14 @@ export const MealPlanClient = ({
       hasAttemptedGeneration.current = true
       generatePlan()
     }
-  }, [isLoading, isGenerating, meals.length, startDate, generatePlan])
+  }, [
+    isLoading,
+    isGenerating,
+    meals.length,
+    startDate,
+    generatePlan,
+    mealTypes.length,
+  ])
 
   // Transformacja do ViewModel
   const weekPlan = useMemo(
@@ -141,8 +191,8 @@ export const MealPlanClient = ({
     }
 
     return {
-      primary: `${startMonth} ${startYear}`,
-      secondary: `${endMonth} ${endYear}`,
+      primary: `${startMonth}-${endMonth}`,
+      secondary: `${startYear}-${endYear}`,
     }
   }, [weekPlan.endDate, weekPlan.startDate])
 
@@ -178,10 +228,10 @@ export const MealPlanClient = ({
   }
 
   return (
-    <>
+    <div className='space-y-3 sm:space-y-8'>
       {/* Wskaźnik generowania planu */}
       {isGenerating && (
-        <div className='bg-info/10 mb-6 rounded-md border p-4 sm:rounded-2xl'>
+        <div className='bg-info/10 rounded-md border p-4 sm:rounded-2xl'>
           <div className='flex items-center gap-3'>
             <Loader2 className='text-info h-5 w-5 animate-spin' />
             <div>
@@ -197,19 +247,24 @@ export const MealPlanClient = ({
       )}
 
       {/* Desktop: WeekTable (widoczny >= md) */}
-      <div className='hidden md:block'>
-        <section className='rounded-md border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
+      <div className='hidden min-w-0 overflow-hidden md:block'>
+        <section className='min-w-0 overflow-hidden rounded-md border-2 border-white bg-white/40 p-6 shadow-sm backdrop-blur-xl sm:rounded-3xl'>
           <WeekTable
             weekPlan={weekPlan}
             monthHeader={monthHeader}
             onMealClick={handleMealClick}
+            mealTypes={mealTypes}
           />
         </section>
       </div>
 
       {/* Mobile: DayList (widoczny < md) */}
       <div className='block md:hidden'>
-        <DayList weekPlan={weekPlan} onMealClick={handleMealClick} />
+        <DayList
+          weekPlan={weekPlan}
+          onMealClick={handleMealClick}
+          mealTypes={mealTypes}
+        />
       </div>
 
       {/* Modal podglądu przepisu */}
@@ -223,6 +278,6 @@ export const MealPlanClient = ({
         checkedIngredients={currentMealCheckedIngredients}
         onToggleChecked={handleToggleChecked}
       />
-    </>
+    </div>
   )
 }

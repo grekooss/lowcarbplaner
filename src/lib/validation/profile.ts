@@ -15,12 +15,12 @@ import { z } from 'zod'
  *
  * Wymagania:
  * - gender: 'male' lub 'female'
- * - age: 18-100 lat
+ * - age: 16-100 lat
  * - weight_kg: 40-300 kg
  * - height_cm: 140-250 cm
  * - activity_level: enum z 5 poziomów aktywności
  * - goal: 'weight_loss' lub 'weight_maintenance'
- * - weight_loss_rate_kg_week: wymagane gdy goal='weight_loss' (0.25-1.0 kg/tydzień)
+ * - weight_loss_rate_kg_week: wymagane gdy goal='weight_loss' (0.05-1.0 kg/tydzień)
  * - disclaimer_accepted_at: ISO 8601 datetime
  */
 export const createProfileSchema = z
@@ -29,7 +29,7 @@ export const createProfileSchema = z
     age: z
       .number()
       .int('Wiek musi być liczbą całkowitą')
-      .min(18, 'Wiek musi wynosić co najmniej 18 lat')
+      .min(16, 'Wiek musi wynosić co najmniej 16 lat')
       .max(100, 'Wiek nie może przekraczać 100 lat'),
     weight_kg: z
       .number()
@@ -49,7 +49,7 @@ export const createProfileSchema = z
     goal: z.enum(['weight_loss', 'weight_maintenance'] as const),
     weight_loss_rate_kg_week: z
       .number()
-      .min(0.25, 'Tempo utraty wagi musi wynosić co najmniej 0.25 kg/tydzień')
+      .min(0.05, 'Tempo utraty wagi musi wynosić co najmniej 0.05 kg/tydzień')
       .max(1.0, 'Tempo utraty wagi nie może przekraczać 1.0 kg/tydzień')
       .optional(),
     meal_plan_type: z.enum([
@@ -61,21 +61,23 @@ export const createProfileSchema = z
     eating_start_time: z
       .string()
       .regex(
-        /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-        'Nieprawidłowy format czasu (wymagany HH:MM)'
+        /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/,
+        'Nieprawidłowy format czasu (wymagany HH:MM lub HH:MM:SS)'
       ),
     eating_end_time: z
       .string()
       .regex(
-        /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-        'Nieprawidłowy format czasu (wymagany HH:MM)'
+        /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/,
+        'Nieprawidłowy format czasu (wymagany HH:MM lub HH:MM:SS)'
       ),
     macro_ratio: z.enum([
       '70_25_5',
       '60_35_5',
+      '60_30_10',
       '60_25_15',
       '50_30_20',
-      '40_40_20',
+      '45_30_25',
+      '35_40_25',
     ] as const),
     disclaimer_accepted_at: z
       .string()
@@ -134,23 +136,6 @@ export const updateProfileSchema = createProfileSchema
   .omit({
     disclaimer_accepted_at: true,
   })
-  .refine(
-    (data) => {
-      // Jeśli goal zostało zmienione na 'weight_loss', weight_loss_rate_kg_week jest wymagane
-      if (
-        data.goal === 'weight_loss' &&
-        data.weight_loss_rate_kg_week === undefined
-      ) {
-        return false
-      }
-      return true
-    },
-    {
-      message:
-        'Tempo utraty wagi jest wymagane, gdy cel zostaje zmieniony na utratę wagi (weight_loss)',
-      path: ['weight_loss_rate_kg_week'],
-    }
-  )
   .refine(
     (data) => {
       // Waliduj czas tylko jeśli oba pola są podane

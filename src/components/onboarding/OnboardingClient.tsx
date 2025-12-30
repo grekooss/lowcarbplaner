@@ -99,7 +99,7 @@ export function OnboardingClient() {
   // Validation helpers
   const isStep1Valid = formData.gender !== null
   const isStep2Valid =
-    formData.age !== null && formData.age >= 18 && formData.age <= 100
+    formData.age !== null && formData.age >= 16 && formData.age <= 100
   const isStep3Valid =
     formData.weight_kg !== null &&
     formData.weight_kg >= 40 &&
@@ -278,7 +278,7 @@ export function OnboardingClient() {
             onChange={(value) => updateField('age', value)}
             error={
               formData.age !== null && !isStep2Valid
-                ? 'Wiek musi być między 18 a 100 lat'
+                ? 'Wiek musi być między 16 a 100 lat'
                 : undefined
             }
           />
@@ -352,6 +352,7 @@ export function OnboardingClient() {
           <MacroRatioStep
             value={formData.macro_ratio}
             onChange={(value) => updateField('macro_ratio', value)}
+            targetCalories={calculatedTargets?.target_calories ?? null}
           />
         )
       case 9:

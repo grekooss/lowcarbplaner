@@ -15,7 +15,6 @@ import { createServerClient } from '@/lib/supabase/server'
 import { calculateNutritionTargets } from '@/services/nutrition-calculator'
 import { formatLocalDate } from '@/lib/utils/date-formatting'
 import type {
-  CreateProfileCommand,
   CreateProfileResponseDTO,
   ProfileDTO,
   UpdateProfileCommand,
@@ -26,6 +25,7 @@ import {
   updateProfileSchema,
   type CreateProfileInput,
   type UpdateProfileInput,
+  type CreateProfileValidated,
 } from '@/lib/validation/profile'
 import {
   recordProfileCreated,
@@ -105,7 +105,7 @@ export async function createProfile(
       }
     }
 
-    const command: CreateProfileCommand = validated.data
+    const command: CreateProfileValidated = validated.data
 
     // 3. Obliczenie celów żywieniowych (BMR, TDEE, makro)
     let nutritionTargets
@@ -185,26 +185,64 @@ export async function createProfile(
     }
 
     // 7. Zapisz zdarzenie profile_created do historii
-    const profileSnapshot: ProfileSnapshot = {
-      weight_kg: createdProfile.weight_kg,
-      height_cm: createdProfile.height_cm,
-      age: createdProfile.age,
-      gender: createdProfile.gender,
-      activity_level: createdProfile.activity_level,
-      goal: createdProfile.goal,
-      weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
-      target_calories: createdProfile.target_calories,
-      target_protein_g: createdProfile.target_protein_g,
-      target_carbs_g: createdProfile.target_carbs_g,
-      target_fats_g: createdProfile.target_fats_g,
+    // Walidacja wymaganych pól przed zapisem do historii
+    if (
+      !createdProfile.gender ||
+      !createdProfile.age ||
+      !createdProfile.weight_kg ||
+      !createdProfile.height_cm ||
+      !createdProfile.activity_level ||
+      !createdProfile.goal ||
+      !createdProfile.target_calories ||
+      !createdProfile.target_protein_g ||
+      !createdProfile.target_carbs_g ||
+      !createdProfile.target_fats_g
+    ) {
+      console.warn('Brakujące dane profilu - pominięto zapis do historii')
+    } else {
+      const profileSnapshot: ProfileSnapshot = {
+        weight_kg: createdProfile.weight_kg,
+        height_cm: createdProfile.height_cm,
+        age: createdProfile.age,
+        gender: createdProfile.gender,
+        activity_level: createdProfile.activity_level,
+        goal: createdProfile.goal,
+        weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
+        target_calories: createdProfile.target_calories,
+        target_protein_g: createdProfile.target_protein_g,
+        target_carbs_g: createdProfile.target_carbs_g,
+        target_fats_g: createdProfile.target_fats_g,
+      }
+
+      // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+      recordProfileCreated(profileSnapshot).catch((err) => {
+        console.warn('Błąd zapisu historii profile_created:', err)
+      })
     }
 
-    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
-    recordProfileCreated(profileSnapshot).catch((err) => {
-      console.warn('Błąd zapisu historii profile_created:', err)
-    })
+    // 9. Transformacja do DTO - walidacja wymaganych pól
+    if (
+      !createdProfile.gender ||
+      createdProfile.age === null ||
+      createdProfile.weight_kg === null ||
+      createdProfile.height_cm === null ||
+      !createdProfile.activity_level ||
+      !createdProfile.goal ||
+      !createdProfile.meal_plan_type ||
+      !createdProfile.eating_start_time ||
+      !createdProfile.eating_end_time ||
+      !createdProfile.macro_ratio ||
+      createdProfile.target_calories === null ||
+      createdProfile.target_carbs_g === null ||
+      createdProfile.target_protein_g === null ||
+      createdProfile.target_fats_g === null
+    ) {
+      return {
+        error: 'Niekompletne dane profilu po zapisie',
+        code: 'DATA_INTEGRITY_ERROR',
+      }
+    }
 
-    // 9. Transformacja do DTO
     const response: CreateProfileResponseDTO = {
       id: createdProfile.id,
       email: createdProfile.email,
@@ -430,13 +468,38 @@ export async function updateMyProfile(
           )
         : null
 
+    // Walidacja wymaganych pól przed merge
+    const mergedGender = command.gender ?? currentProfile.gender
+    const mergedAge = command.age ?? currentProfile.age
+    const mergedWeightKg = command.weight_kg ?? currentProfile.weight_kg
+    const mergedHeightCm = command.height_cm ?? currentProfile.height_cm
+    const mergedActivityLevel =
+      command.activity_level ?? currentProfile.activity_level
+    const mergedGoal = command.goal ?? currentProfile.goal
+    const mergedMacroRatio = command.macro_ratio ?? currentProfile.macro_ratio
+
+    if (
+      !mergedGender ||
+      mergedAge === null ||
+      mergedWeightKg === null ||
+      mergedHeightCm === null ||
+      !mergedActivityLevel ||
+      !mergedGoal ||
+      !mergedMacroRatio
+    ) {
+      return {
+        error: 'Niekompletne dane profilu - brakujące wymagane pola',
+        code: 'DATA_INTEGRITY_ERROR',
+      }
+    }
+
     const mergedData = {
-      gender: command.gender ?? currentProfile.gender,
-      age: command.age ?? currentProfile.age,
-      weight_kg: command.weight_kg ?? currentProfile.weight_kg,
-      height_cm: command.height_cm ?? currentProfile.height_cm,
-      activity_level: command.activity_level ?? currentProfile.activity_level,
-      goal: command.goal ?? currentProfile.goal,
+      gender: mergedGender,
+      age: mergedAge,
+      weight_kg: mergedWeightKg,
+      height_cm: mergedHeightCm,
+      activity_level: mergedActivityLevel,
+      goal: mergedGoal,
       weight_loss_rate_kg_week:
         command.weight_loss_rate_kg_week ??
         currentProfile.weight_loss_rate_kg_week,
@@ -444,7 +507,7 @@ export async function updateMyProfile(
       eating_start_time: mergedEatingStartTime,
       eating_end_time: mergedEatingEndTime,
       selected_meals: selectedMeals,
-      macro_ratio: command.macro_ratio ?? currentProfile.macro_ratio,
+      macro_ratio: mergedMacroRatio,
     }
 
     // 5. Przeliczenie celów żywieniowych
@@ -491,24 +554,40 @@ export async function updateMyProfile(
     }
 
     // 8. Zapisz zdarzenie profile_updated do historii
-    const profileSnapshotUpdate: ProfileSnapshot = {
-      weight_kg: updatedProfile.weight_kg,
-      height_cm: updatedProfile.height_cm,
-      age: updatedProfile.age,
-      gender: updatedProfile.gender,
-      activity_level: updatedProfile.activity_level,
-      goal: updatedProfile.goal,
-      weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
-      target_calories: updatedProfile.target_calories,
-      target_protein_g: updatedProfile.target_protein_g,
-      target_carbs_g: updatedProfile.target_carbs_g,
-      target_fats_g: updatedProfile.target_fats_g,
-    }
+    // Walidacja wymaganych pól przed zapisem do historii
+    if (
+      !updatedProfile.gender ||
+      updatedProfile.age === null ||
+      updatedProfile.weight_kg === null ||
+      updatedProfile.height_cm === null ||
+      !updatedProfile.activity_level ||
+      !updatedProfile.goal ||
+      updatedProfile.target_calories === null ||
+      updatedProfile.target_protein_g === null ||
+      updatedProfile.target_carbs_g === null ||
+      updatedProfile.target_fats_g === null
+    ) {
+      console.warn('Brakujące dane profilu - pominięto zapis do historii')
+    } else {
+      const profileSnapshotUpdate: ProfileSnapshot = {
+        weight_kg: updatedProfile.weight_kg,
+        height_cm: updatedProfile.height_cm,
+        age: updatedProfile.age,
+        gender: updatedProfile.gender,
+        activity_level: updatedProfile.activity_level,
+        goal: updatedProfile.goal,
+        weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
+        target_calories: updatedProfile.target_calories,
+        target_protein_g: updatedProfile.target_protein_g,
+        target_carbs_g: updatedProfile.target_carbs_g,
+        target_fats_g: updatedProfile.target_fats_g,
+      }
 
-    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
-    recordProfileUpdated(profileSnapshotUpdate).catch((err) => {
-      console.warn('Błąd zapisu historii profile_updated:', err)
-    })
+      // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+      recordProfileUpdated(profileSnapshotUpdate).catch((err) => {
+        console.warn('Błąd zapisu historii profile_updated:', err)
+      })
+    }
 
     // 9. Usunięcie zaplanowanych posiłków (regeneracja planu)
     // Sprawdź czy dzisiaj są posiłki oznaczone jako zjedzone - jeśli tak, zachowaj dzisiejszy dzień
@@ -694,12 +773,30 @@ export async function generateMealPlan(): Promise<
       dates.push(formatLocalDate(date))
     }
 
-    // 4. Znajdź dni bez kompletnego planu
+    // 4. Walidacja wymaganych pól profilu przed generowaniem planu
+    if (
+      profile.target_calories === null ||
+      profile.target_protein_g === null ||
+      profile.target_carbs_g === null ||
+      profile.target_fats_g === null
+    ) {
+      return {
+        error: 'Niekompletne dane profilu - brakujące cele żywieniowe',
+        code: 'PROFILE_INCOMPLETE',
+      }
+    }
+
+    // 5. Znajdź dni bez kompletnego planu
     let missingDays: string[]
     let plannedMeals
 
     try {
-      missingDays = await findMissingDays(userId, dates)
+      missingDays = await findMissingDays(
+        userId,
+        dates,
+        profile.meal_plan_type,
+        profile.selected_meals
+      )
 
       // Jeśli wszystkie dni mają kompletny plan, zwróć konflikt
       if (missingDays.length === 0) {
@@ -736,7 +833,25 @@ export async function generateMealPlan(): Promise<
       }
     }
 
-    // 5. Batch insert do planned_meals
+    // 5. Usuń istniejące (niekompletne) posiłki dla dni, które będziemy regenerować
+    // Jest to konieczne gdy użytkownik zmienił meal_plan_type - mogą istnieć posiłki
+    // z poprzedniej konfiguracji, które powodują konflikt unique constraint
+    if (missingDays.length > 0) {
+      const { error: deleteIncompleteError } = await supabase
+        .from('planned_meals')
+        .delete()
+        .eq('user_id', userId)
+        .in('meal_date', missingDays)
+
+      if (deleteIncompleteError) {
+        console.warn(
+          'Błąd podczas usuwania niekompletnych posiłków (nie krytyczny):',
+          deleteIncompleteError
+        )
+      }
+    }
+
+    // 6. Batch insert do planned_meals
     const { error: insertError } = await supabase
       .from('planned_meals')
       .insert(plannedMeals)
@@ -749,7 +864,7 @@ export async function generateMealPlan(): Promise<
       }
     }
 
-    // 6. Zwrot statusu sukcesu
+    // 7. Zwrot statusu sukcesu
     const generatedDays = missingDays.length
     return {
       data: {
