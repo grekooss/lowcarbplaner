@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -125,12 +125,20 @@ export type Database = {
           carbs_per_100_units: number
           category: Database['public']['Enums']['ingredient_category_enum']
           created_at: string
+          /** Opis składnika, np. "tylko miąższ, bez pestki i skórki" */
+          description: string | null
           fats_per_100_units: number
+          fiber_per_100_units: number
           id: number
           image_url: string | null
           is_divisible: boolean
+          /** Czy składnik jest odpowiedni dla diety niskowęglowodanowej (net carbs <= 10g/100g) */
+          is_low_carb_friendly: boolean
           name: string
+          polyols_per_100_units: number
           protein_per_100_units: number
+          /** Tłuszcze nasycone na 100 jednostek */
+          saturated_fat_per_100_units: number
           unit: string
         }
         Insert: {
@@ -138,12 +146,20 @@ export type Database = {
           carbs_per_100_units: number
           category: Database['public']['Enums']['ingredient_category_enum']
           created_at?: string
+          /** Opis składnika, np. "tylko miąższ, bez pestki i skórki" */
+          description?: string | null
           fats_per_100_units: number
+          fiber_per_100_units?: number
           id?: number
           image_url?: string | null
           is_divisible?: boolean
+          /** Czy składnik jest odpowiedni dla diety niskowęglowodanowej (net carbs <= 10g/100g) */
+          is_low_carb_friendly?: boolean
           name: string
+          polyols_per_100_units?: number
           protein_per_100_units: number
+          /** Tłuszcze nasycone na 100 jednostek */
+          saturated_fat_per_100_units?: number
           unit?: string
         }
         Update: {
@@ -151,12 +167,20 @@ export type Database = {
           carbs_per_100_units?: number
           category?: Database['public']['Enums']['ingredient_category_enum']
           created_at?: string
+          /** Opis składnika, np. "tylko miąższ, bez pestki i skórki" */
+          description?: string | null
           fats_per_100_units?: number
+          fiber_per_100_units?: number
           id?: number
           image_url?: string | null
           is_divisible?: boolean
+          /** Czy składnik jest odpowiedni dla diety niskowęglowodanowej (net carbs <= 10g/100g) */
+          is_low_carb_friendly?: boolean
           name?: string
+          polyols_per_100_units?: number
           protein_per_100_units?: number
+          /** Tłuszcze nasycone na 100 jednostek */
+          saturated_fat_per_100_units?: number
           unit?: string
         }
         Relationships: []
@@ -220,6 +244,7 @@ export type Database = {
           eating_end_time: string
           eating_start_time: string
           email: string
+          excluded_equipment_ids: number[]
           gender: Database['public']['Enums']['gender_enum'] | null
           goal: Database['public']['Enums']['goal_enum'] | null
           height_cm: number | null
@@ -245,6 +270,7 @@ export type Database = {
           eating_end_time?: string
           eating_start_time?: string
           email: string
+          excluded_equipment_ids?: number[]
           gender?: Database['public']['Enums']['gender_enum'] | null
           goal?: Database['public']['Enums']['goal_enum'] | null
           height_cm?: number | null
@@ -272,6 +298,7 @@ export type Database = {
           eating_end_time?: string
           eating_start_time?: string
           email?: string
+          excluded_equipment_ids?: number[]
           gender?: Database['public']['Enums']['gender_enum'] | null
           goal?: Database['public']['Enums']['goal_enum'] | null
           height_cm?: number | null
@@ -333,10 +360,14 @@ export type Database = {
           calories: number | null
           carbs_g: number | null
           fats_g: number | null
+          fiber_g: number | null
           ingredient_id: number
           is_scalable: boolean
+          polyols_g: number | null
           protein_g: number | null
           recipe_id: number
+          /** Tłuszcze nasycone dla base_amount */
+          saturated_fat_g: number | null
           step_number: number | null
           unit: string
         }
@@ -345,10 +376,14 @@ export type Database = {
           calories?: number | null
           carbs_g?: number | null
           fats_g?: number | null
+          fiber_g?: number | null
           ingredient_id: number
           is_scalable?: boolean
+          polyols_g?: number | null
           protein_g?: number | null
           recipe_id: number
+          /** Tłuszcze nasycone dla base_amount */
+          saturated_fat_g?: number | null
           step_number?: number | null
           unit?: string
         }
@@ -357,10 +392,14 @@ export type Database = {
           calories?: number | null
           carbs_g?: number | null
           fats_g?: number | null
+          fiber_g?: number | null
           ingredient_id?: number
           is_scalable?: boolean
+          polyols_g?: number | null
           protein_g?: number | null
           recipe_id?: number
+          /** Tłuszcze nasycone dla base_amount */
+          saturated_fat_g?: number | null
           step_number?: number | null
           unit?: string
         }
@@ -398,7 +437,14 @@ export type Database = {
           total_calories: number | null
           total_carbs_g: number | null
           total_fats_g: number | null
+          total_fiber_g: number | null
+          /** Węglowodany netto = total_carbs_g - total_fiber_g - total_polyols_g */
+          total_net_carbs_g: number | null
+          /** Poliole (alkohole cukrowe) - erytrytol, ksylitol, maltitol itp. */
+          total_polyols_g: number | null
           total_protein_g: number | null
+          /** Całkowite tłuszcze nasycone w przepisie */
+          total_saturated_fat_g: number | null
           updated_at: string
         }
         Insert: {
@@ -417,7 +463,14 @@ export type Database = {
           total_calories?: number | null
           total_carbs_g?: number | null
           total_fats_g?: number | null
+          total_fiber_g?: number | null
+          /** Węglowodany netto = total_carbs_g - total_fiber_g - total_polyols_g */
+          total_net_carbs_g?: number | null
+          /** Poliole (alkohole cukrowe) - erytrytol, ksylitol, maltitol itp. */
+          total_polyols_g?: number | null
           total_protein_g?: number | null
+          /** Całkowite tłuszcze nasycone w przepisie */
+          total_saturated_fat_g?: number | null
           updated_at?: string
         }
         Update: {
@@ -436,7 +489,14 @@ export type Database = {
           total_calories?: number | null
           total_carbs_g?: number | null
           total_fats_g?: number | null
+          total_fiber_g?: number | null
+          /** Węglowodany netto = total_carbs_g - total_fiber_g - total_polyols_g */
+          total_net_carbs_g?: number | null
+          /** Poliole (alkohole cukrowe) - erytrytol, ksylitol, maltitol itp. */
+          total_polyols_g?: number | null
           total_protein_g?: number | null
+          /** Całkowite tłuszcze nasycone w przepisie */
+          total_saturated_fat_g?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -472,6 +532,48 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'user_history_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      user_recipe_ratings: {
+        Row: {
+          created_at: string
+          id: number
+          rating: number
+          recipe_id: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          rating: number
+          recipe_id: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          rating?: number
+          recipe_id?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_recipe_ratings_recipe_id_fkey'
+            columns: ['recipe_id']
+            isOneToOne: false
+            referencedRelation: 'recipes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'user_recipe_ratings_user_id_fkey'
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'profiles'
@@ -526,9 +628,9 @@ export type Database = {
       macro_ratio_enum:
         | '70_25_5'
         | '60_35_5'
-        | '60_30_10'
         | '60_25_15'
         | '50_30_20'
+        | '60_30_10'
         | '45_30_25'
         | '35_40_25'
       meal_plan_type_enum:
@@ -710,9 +812,9 @@ export const Constants = {
       macro_ratio_enum: [
         '70_25_5',
         '60_35_5',
-        '60_30_10',
         '60_25_15',
         '50_30_20',
+        '60_30_10',
         '45_30_25',
         '35_40_25',
       ],

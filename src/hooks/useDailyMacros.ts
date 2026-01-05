@@ -65,7 +65,8 @@ export function useDailyMacros({
           return {
             calories: acc.calories + adjustedNutrition.calories,
             protein_g: acc.protein_g + adjustedNutrition.protein_g,
-            carbs_g: acc.carbs_g + adjustedNutrition.carbs_g,
+            // Używamy net_carbs_g zamiast carbs_g dla diety keto/low-carb
+            carbs_g: acc.carbs_g + adjustedNutrition.net_carbs_g,
             fats_g: acc.fats_g + adjustedNutrition.fats_g,
           }
         },

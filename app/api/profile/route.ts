@@ -46,6 +46,7 @@ import {
   getClientIp,
   rateLimitHeaders,
 } from '@/lib/utils/rate-limit'
+import { logErrorLevel } from '@/lib/error-logger'
 
 /**
  * POST /api/profile
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
   try {
     // 0. Rate limiting check
     const clientIp = getClientIp(request)
-    const rateLimitResult = strictRateLimit.check(clientIp)
+    const rateLimitResult = await strictRateLimit.check(clientIp)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result.data, { status: 201 })
   } catch (err) {
     // 5. Catch-all dla nieoczekiwanych błędów
-    console.error('Nieoczekiwany błąd w POST /api/profile:', err)
+    logErrorLevel(err, { source: 'api.profile.POST' })
     return NextResponse.json(
       {
         error: {

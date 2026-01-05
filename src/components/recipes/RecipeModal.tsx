@@ -7,8 +7,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { RecipeViewModal } from '@/components/shared/RecipeViewModal'
+import { LazyRecipeViewModal } from '@/components/shared/lazy-modals'
 import { useRecipeViewModal } from '@/hooks/useRecipeViewModal'
+import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
 import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipeModalProps {
@@ -22,6 +23,7 @@ interface RecipeModalProps {
  */
 export function RecipeModal({ recipe }: RecipeModalProps) {
   const router = useRouter()
+  const { isAuthenticated } = useAuthCheck()
 
   const { ingredientEditor } = useRecipeViewModal({ recipe })
 
@@ -30,12 +32,13 @@ export function RecipeModal({ recipe }: RecipeModalProps) {
   }
 
   return (
-    <RecipeViewModal
+    <LazyRecipeViewModal
       recipe={recipe}
       isOpen={true}
       onClose={handleClose}
       ingredientEditor={ingredientEditor}
       testId='recipes-recipe-modal'
+      isAuthenticated={isAuthenticated ?? false}
     />
   )
 }

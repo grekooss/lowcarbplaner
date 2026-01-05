@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useMealToggle } from '@/hooks/useMealToggle'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
-import { SwapRecipeDialog } from '@/components/shared/SwapRecipeDialog'
+import { LazySwapRecipeDialog } from '@/components/shared/lazy-modals'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
@@ -32,6 +32,8 @@ interface MealCardProps {
   enableEatenCheckbox?: boolean
   onRecipePreview: (meal: PlannedMealDTO) => void
   mealTime?: string // Format HH:MM, np. "07:00"
+  /** Indeks karty w liście - używany do optymalizacji LCP (priority dla pierwszej) */
+  index?: number
 }
 
 const DIFFICULTY_LABEL: Record<'easy' | 'medium' | 'hard', string> = {
@@ -74,6 +76,7 @@ export const MealCard = memo(function MealCard({
   enableEatenCheckbox = true,
   onRecipePreview,
   mealTime,
+  index,
 }: MealCardProps) {
   const [swapDialogOpen, setSwapDialogOpen] = useState(false)
   const { mutate: toggleMeal, isPending } = useMealToggle()
@@ -111,7 +114,7 @@ export const MealCard = memo(function MealCard({
 
   const calories = nutrition.calories
   const protein = nutrition.protein_g
-  const carbs = nutrition.carbs_g
+  const netCarbs = nutrition.net_carbs_g
   const fats = nutrition.fats_g
 
   const difficultyKey = (meal.recipe.difficulty_level ??
@@ -163,7 +166,12 @@ export const MealCard = memo(function MealCard({
           <div className='flex-1'>
             {/* Stepper Label */}
             <div className='mb-0 flex h-7 items-center gap-3 sm:h-10'>
-              <h4 className='text-base font-bold tracking-wider text-gray-800 uppercase sm:text-lg'>
+              <h4
+                className={cn(
+                  'text-base font-bold tracking-wider text-gray-800 uppercase transition-all duration-300 sm:text-lg',
+                  meal.is_eaten && 'opacity-60 grayscale-[40%]'
+                )}
+              >
                 {MEAL_TYPE_LABELS[meal.meal_type]}
               </h4>
             </div>
@@ -191,6 +199,7 @@ export const MealCard = memo(function MealCard({
                     fill
                     className='object-cover grayscale-[10%]'
                     sizes='(max-width: 768px) 100vw, 96px'
+                    priority={index === 0}
                   />
                 ) : (
                   <div className='flex h-full w-full items-center justify-center text-gray-400'>
@@ -243,15 +252,15 @@ export const MealCard = memo(function MealCard({
                 </h3>
 
                 <div className='flex flex-wrap items-center justify-center gap-4 text-sm text-black md:justify-start'>
-                  {/* Carbs */}
+                  {/* Net Carbs */}
                   <div
                     className='flex items-center gap-1.5'
-                    title='Węglowodany'
+                    title='Węglowodany netto (Net Carbs)'
                   >
                     <Wheat className='text-tertiary h-5 w-5' />
                     <span className='flex items-baseline gap-0.5 text-gray-700'>
                       <span className='font-bold'>
-                        {formatNumber(carbs, 'g')}
+                        {formatNumber(netCarbs, 'g')}
                       </span>
                       <span>g</span>
                     </span>
@@ -294,7 +303,7 @@ export const MealCard = memo(function MealCard({
         </div>
       </div>
 
-      <SwapRecipeDialog
+      <LazySwapRecipeDialog
         meal={meal}
         open={swapDialogOpen}
         onOpenChange={setSwapDialogOpen}

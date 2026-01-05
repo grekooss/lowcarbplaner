@@ -48,7 +48,7 @@ export const CurrentTargetsCard = ({ targets }: CurrentTargetsCardProps) => {
           percentage={Math.round(ratios.fats * 100)}
         />
         <MacroCard
-          label='Węglowodany'
+          label='Węgl. netto'
           value={targets.target_carbs_g}
           unit='g'
           variant='carbs'

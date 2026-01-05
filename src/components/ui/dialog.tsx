@@ -173,7 +173,11 @@ const DialogContent = React.forwardRef<
           ref={ref}
           style={panelStyle}
           className={cn(
-            'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 border shadow-lg duration-200 sm:rounded-lg',
+            'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 border shadow-lg duration-200 sm:rounded-lg',
+            // Default bg-background only when not waiting for panelRect (prevents black flash)
+            !needsPanelRect && 'bg-background',
+            // When waiting for panelRect, hide until ready
+            needsPanelRect && !panelRect && 'opacity-0',
             // Default padding only when not covering main panel (full-screen modals handle their own padding)
             !effectiveCoverMainPanel && 'p-6',
             // Default viewport centering when not using panel-based positioning

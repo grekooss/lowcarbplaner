@@ -55,6 +55,7 @@ import {
   getClientIp,
   rateLimitHeaders,
 } from '@/lib/utils/rate-limit'
+import { logErrorLevel } from '@/lib/error-logger'
 
 /**
  * GET /api/profile/me
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
   try {
     // 0. Rate limiting check
     const clientIp = getClientIp(request)
-    const rateLimitResult = rateLimit.check(clientIp)
+    const rateLimitResult = await rateLimit.check(clientIp)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -136,7 +137,7 @@ export async function GET(request: NextRequest) {
       headers: userDataCacheHeaders,
     })
   } catch (err) {
-    console.error('Nieoczekiwany błąd w GET /api/profile/me:', err)
+    logErrorLevel(err, { source: 'api.profile.me.GET' })
     return NextResponse.json(
       {
         error: {
@@ -166,7 +167,7 @@ export async function PATCH(request: NextRequest) {
   try {
     // 0. Rate limiting check (strict for profile updates)
     const clientIp = getClientIp(request)
-    const rateLimitResult = strictRateLimit.check(clientIp)
+    const rateLimitResult = await strictRateLimit.check(clientIp)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -272,7 +273,7 @@ export async function PATCH(request: NextRequest) {
     // 4. Zwrócenie sukcesu (200 OK)
     return NextResponse.json(result.data, { status: 200 })
   } catch (err) {
-    console.error('Nieoczekiwany błąd w PATCH /api/profile/me:', err)
+    logErrorLevel(err, { source: 'api.profile.me.PATCH' })
     return NextResponse.json(
       {
         error: {

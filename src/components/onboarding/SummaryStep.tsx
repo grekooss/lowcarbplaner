@@ -161,7 +161,7 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
                 percentage={Math.round(ratio.fats * 100)}
               />
               <MacroCard
-                label='Węglowodany'
+                label='Węgl. netto'
                 value={calculatedTargets.target_carbs_g}
                 unit='g'
                 variant='carbs'

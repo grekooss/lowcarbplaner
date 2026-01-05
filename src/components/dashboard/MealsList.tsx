@@ -84,7 +84,7 @@ export function MealsList({
       )}
 
       <div className='space-y-6'>
-        {orderedMeals.map((meal) => (
+        {orderedMeals.map((meal, index) => (
           <MealCard
             key={meal.id}
             meal={meal}
@@ -92,6 +92,7 @@ export function MealsList({
             enableEatenCheckbox={isCurrentDate}
             onRecipePreview={onRecipePreview}
             mealTime={mealTimeMap.get(meal.meal_type)}
+            index={index}
           />
         ))}
       </div>

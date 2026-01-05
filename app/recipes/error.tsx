@@ -9,6 +9,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { logErrorLevel } from '@/lib/error-logger'
 
 interface RecipesErrorProps {
   error: Error & { digest?: string }
@@ -17,8 +18,7 @@ interface RecipesErrorProps {
 
 export default function RecipesError({ error, reset }: RecipesErrorProps) {
   useEffect(() => {
-    // Log błędu do error reporting service
-    console.error('Recipes page error:', error)
+    logErrorLevel(error, { source: 'page.recipes.error' })
   }, [error])
 
   return (

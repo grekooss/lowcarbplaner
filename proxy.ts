@@ -1,7 +1,9 @@
 /**
  * Next.js Proxy (Next.js 16+)
  *
- * Handles authentication and route protection:
+ * Handles:
+ * - CSP (Content Security Policy) with nonce generation
+ * - Authentication and route protection
  * - Updates Supabase auth session from cookies
  * - Protects authenticated routes (/dashboard, /meal-plan, etc.)
  * - Protects onboarding route (requires auth + no profile)
@@ -11,13 +13,96 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+/**
+ * Generate a cryptographically secure nonce
+ */
+function generateNonce(): string {
+  const uuid = crypto.randomUUID()
+  const buffer = new Uint8Array(16)
+  const hexPairs = uuid.replace(/-/g, '').match(/.{2}/g) || []
+  hexPairs.forEach((hex, i) => {
+    buffer[i] = parseInt(hex, 16)
+  })
+  return btoa(String.fromCharCode(...buffer))
+}
+
+/**
+ * Build Content Security Policy with nonce
+ */
+function buildCSP(nonce: string): string {
+  const policy = {
+    'default-src': ["'self'"],
+    'script-src': [
+      "'self'",
+      `'nonce-${nonce}'`,
+      "'strict-dynamic'",
+      "'unsafe-inline'",
+      'https:',
+    ],
+    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    'font-src': ["'self'", 'https://fonts.gstatic.com'],
+    'img-src': [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://pkjdgaqwdletfkvniljx.supabase.co',
+    ],
+    'connect-src': [
+      "'self'",
+      'https://pkjdgaqwdletfkvniljx.supabase.co',
+      'wss://pkjdgaqwdletfkvniljx.supabase.co',
+      'https://*.upstash.io',
+    ],
+    'frame-ancestors': ["'self'"],
+    'form-action': ["'self'"],
+    'base-uri': ["'self'"],
+    'object-src': ["'none'"],
+  }
+
+  return Object.entries(policy)
+    .map(([key, values]) => `${key} ${values.join(' ')}`)
+    .join('; ')
+}
+
+/**
+ * Apply security headers to response
+ */
+function applySecurityHeaders(response: NextResponse, nonce: string): void {
+  const csp = buildCSP(nonce)
+  response.headers.set('Content-Security-Policy', csp)
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=()'
+  )
+  response.headers.set(
+    'Strict-Transport-Security',
+    'max-age=63072000; includeSubDomains; preload'
+  )
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Create response object
+  // Generate nonce for CSP
+  const nonce = generateNonce()
+
+  // Create request headers with nonce
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+
+  // Create response object with modified headers
   let response = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   })
+
+  // Apply security headers
+  applySecurityHeaders(response, nonce)
 
   // Create Supabase client for proxy
   const supabase = createServerClient(
@@ -33,8 +118,12 @@ export async function proxy(request: NextRequest) {
             request.cookies.set(name, value)
           )
           response = NextResponse.next({
-            request,
+            request: {
+              headers: requestHeaders,
+            },
           })
+          // Re-apply security headers after response recreation
+          applySecurityHeaders(response, nonce)
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           )

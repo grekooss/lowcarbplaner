@@ -14,10 +14,9 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   ArrowLeft,
-  Star,
   Clock,
   Timer,
-  BarChart3,
+  ChefHat,
   ListOrdered,
   Flame,
   Wheat,
@@ -30,6 +29,7 @@ import {
 } from 'lucide-react'
 import { InstructionsList } from './InstructionsList'
 import { EquipmentList } from './EquipmentList'
+import { StarRating } from './StarRating'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
 import {
@@ -38,6 +38,7 @@ import {
 } from '@/types/recipes-view.types'
 import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 import type { RecipeDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
 
 interface RecipeDetailClientProps {
   recipe: RecipeDTO
@@ -62,6 +63,10 @@ interface RecipeDetailClientProps {
     calories: number
     protein_g: number
     carbs_g: number
+    /** Błonnik pokarmowy */
+    fiber_g: number
+    /** Węglowodany netto (Net Carbs) - kluczowe dla keto */
+    net_carbs_g: number
     fats_g: number
   }
   // Save button props (for Dashboard editing)
@@ -84,6 +89,12 @@ interface RecipeDetailClientProps {
   // External checkbox state (visual only, managed by parent)
   checkedIngredients?: Set<number>
   onToggleChecked?: (ingredientId: number) => void
+  // Selected meal type from the card that was clicked (for recipes with multiple meal types)
+  selectedMealType?: Enums<'meal_type_enum'> | null
+  // Rating props
+  userRating?: number | null
+  isAuthenticated?: boolean
+  onRatingChange?: (newRating: number) => void
 }
 
 /**
@@ -113,6 +124,10 @@ export function RecipeDetailClient({
   onToggleIngredientExcluded,
   checkedIngredients,
   onToggleChecked,
+  selectedMealType,
+  userRating = null,
+  isAuthenticated = false,
+  onRatingChange,
 }: RecipeDetailClientProps) {
   const router = useRouter()
 
@@ -164,9 +179,38 @@ export function RecipeDetailClient({
   const totalSteps =
     totalStepsProp ??
     (Array.isArray(recipe.instructions) ? recipe.instructions.length : 0)
+
+  // Display meal type - use selectedMealType if provided, otherwise first from recipe
+  const displayMealType =
+    selectedMealType ??
+    (recipe.meal_types.length > 0 ? recipe.meal_types[0] : null)
+
   // Prep time i cook time pobierane z bazy danych
   const prepTime = recipe.prep_time_minutes ?? 0
   const cookTime = recipe.cook_time_minutes ?? 0
+  const totalEquipment = Array.isArray(recipe.equipment)
+    ? recipe.equipment.length
+    : 0
+
+  // Difficulty helpers
+  const difficultyLabel: Record<string, string> = {
+    easy: 'Łatwy',
+    medium: 'Średni',
+    hard: 'Trudny',
+  }
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':
+        return 'bg-success'
+      case 'medium':
+        return 'bg-tertiary'
+      case 'hard':
+        return 'bg-primary'
+      default:
+        return 'bg-text-muted'
+    }
+  }
 
   // Sortowane instrukcje dla step mode
   const sortedInstructions = Array.isArray(recipe.instructions)
@@ -233,14 +277,19 @@ export function RecipeDetailClient({
           </div>
           {/* Makro */}
           <div className='flex items-center gap-3 text-sm'>
-            <div className='flex items-center gap-1.5' title='Węglowodany'>
+            <div
+              className='flex items-center gap-1.5'
+              title='Węglowodany netto (Net Carbs)'
+            >
               <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-orange-400'>
                 <Wheat className='h-3 w-3 text-white' />
               </div>
               <span className='text-[11px] text-gray-700'>
                 <span className='font-bold'>
                   {Math.round(
-                    adjustedNutrition?.carbs_g ?? recipe.total_carbs_g ?? 0
+                    adjustedNutrition?.net_carbs_g ??
+                      recipe.total_net_carbs_g ??
+                      0
                   )}
                 </span>{' '}
                 g
@@ -281,14 +330,14 @@ export function RecipeDetailClient({
         {/* LEWA KOLUMNA - Zdjęcie + Metadata */}
         <div
           className={cn(
-            'h-fit rounded-[16px] border-2 border-white bg-[var(--bg-card)] p-3 shadow-[var(--shadow-card)] lg:rounded-[20px] lg:p-4',
+            'h-fit rounded-[16px] border-2 border-white bg-white/60 p-3 shadow-[var(--shadow-card)] lg:rounded-[20px] lg:p-4',
             // W step mode na mobile - ukryj cały panel (tylko desktop widoczny)
             isStepMode && 'hidden lg:block'
           )}
         >
           {/* Mobile: zdjęcie + dane obok | Desktop: wszystko pod sobą */}
           <div className='flex gap-4 lg:block'>
-            {/* Zdjęcie przepisu */}
+            {/* Zdjęcie przepisu z gwiazdkami */}
             <div className='relative aspect-square w-[120px] flex-shrink-0 overflow-hidden rounded-[12px] lg:mb-4 lg:w-full'>
               {recipe.image_url ? (
                 <Image
@@ -302,19 +351,39 @@ export function RecipeDetailClient({
               ) : (
                 <RecipeImagePlaceholder recipeName={recipe.name} />
               )}
+              {/* Star Rating overlay na zdjęciu (tylko desktop) */}
+              <div className='absolute right-0 bottom-0 left-0 hidden bg-gradient-to-t from-black/60 to-transparent px-3 pt-6 pb-3 lg:block'>
+                <StarRating
+                  recipeId={recipe.id}
+                  userRating={userRating}
+                  averageRating={recipe.average_rating}
+                  reviewsCount={recipe.reviews_count}
+                  isAuthenticated={isAuthenticated}
+                  onRatingChange={onRatingChange}
+                  size='md'
+                  className='[&_span]:text-white [&_span]:text-white/80'
+                />
+              </div>
             </div>
 
             {/* Mobile: dane po prawej stronie zdjęcia */}
             <div className='flex flex-1 flex-col justify-between lg:hidden'>
-              {/* Badge posiłku + kalorie na górze */}
-              <div className='mb-1 flex items-center gap-2'>
-                {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
+              {/* Badge posiłku + trudność + kalorie na górze */}
+              <div className='mb-1 flex flex-wrap items-center gap-2'>
+                {displayMealType && (
                   <Badge
-                    className={`${getMealTypeBadgeClasses(recipe.meal_types[0])} h-[22px] w-fit px-2 text-[10px]`}
+                    className={`${getMealTypeBadgeClasses(displayMealType)} h-[22px] w-fit px-2 text-[10px]`}
                   >
-                    {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
+                    {MEAL_TYPE_LABELS[displayMealType]}
                   </Badge>
                 )}
+                {/* Difficulty Badge */}
+                <div className='flex h-[22px] items-center gap-1.5 rounded-sm border border-white bg-white px-2 text-[10px] font-bold tracking-wider text-gray-800 uppercase'>
+                  <span
+                    className={`h-3 w-1 rounded-full ${getDifficultyColor(recipe.difficulty_level)}`}
+                  />
+                  {difficultyLabel[recipe.difficulty_level]}
+                </div>
                 <div className='flex h-[22px] items-center gap-1 rounded-sm bg-red-600 px-2 text-[10px] text-white shadow-sm shadow-red-500/20'>
                   <Flame className='h-3 w-3' />
                   <span className='font-bold'>
@@ -328,20 +397,6 @@ export function RecipeDetailClient({
 
               {/* Metadata - kompaktowa wersja (bez opisów) */}
               <div className='grid grid-cols-2 gap-2'>
-                {/* Difficulty */}
-                <div className='flex items-center gap-1.5'>
-                  <div className='rounded-[6px] bg-white p-1.5 shadow-sm'>
-                    <BarChart3 className='size-3 text-[var(--text-main)]' />
-                  </div>
-                  <p className='text-[11px] font-semibold text-[var(--text-main)]'>
-                    {recipe.difficulty_level === 'easy'
-                      ? 'Łatwy'
-                      : recipe.difficulty_level === 'medium'
-                        ? 'Średni'
-                        : 'Trudny'}
-                  </p>
-                </div>
-
                 {/* Prep Time */}
                 <div className='flex items-center gap-1.5'>
                   <div className='rounded-[6px] bg-white p-1.5 shadow-sm'>
@@ -349,6 +404,16 @@ export function RecipeDetailClient({
                   </div>
                   <p className='text-[11px] font-semibold text-[var(--text-main)]'>
                     {prepTime > 0 ? `${prepTime} min` : '—'}
+                  </p>
+                </div>
+
+                {/* Total Steps */}
+                <div className='flex items-center gap-1.5'>
+                  <div className='rounded-[6px] bg-white p-1.5 shadow-sm'>
+                    <ListOrdered className='size-3 text-[var(--text-main)]' />
+                  </div>
+                  <p className='text-[11px] font-semibold text-[var(--text-main)]'>
+                    {totalSteps > 0 ? `${totalSteps}` : '—'}
                   </p>
                 </div>
 
@@ -362,27 +427,32 @@ export function RecipeDetailClient({
                   </p>
                 </div>
 
-                {/* Total Steps */}
+                {/* Equipment */}
                 <div className='flex items-center gap-1.5'>
                   <div className='rounded-[6px] bg-white p-1.5 shadow-sm'>
-                    <ListOrdered className='size-3 text-[var(--text-main)]' />
+                    <ChefHat className='size-3 text-[var(--text-main)]' />
                   </div>
                   <p className='text-[11px] font-semibold text-[var(--text-main)]'>
-                    {totalSteps > 0 ? `${totalSteps}` : '—'}
+                    {totalEquipment > 0 ? `${totalEquipment}` : '—'}
                   </p>
                 </div>
               </div>
 
               {/* Macro Badges - mobile compact (bez kalorii - są przy badge posiłku) */}
               <div className='mt-2 flex items-center gap-2 text-sm font-medium'>
-                <div className='flex items-center gap-1.5' title='Węglowodany'>
+                <div
+                  className='flex items-center gap-1.5'
+                  title='Węglowodany netto (Net Carbs)'
+                >
                   <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-orange-500'>
                     <Wheat className='h-3 w-3 text-white' />
                   </div>
                   <span className='text-[11px] text-gray-700'>
                     <span className='font-bold'>
                       {Math.round(
-                        adjustedNutrition?.carbs_g ?? recipe.total_carbs_g ?? 0
+                        adjustedNutrition?.net_carbs_g ??
+                          recipe.total_net_carbs_g ??
+                          0
                       )}
                     </span>{' '}
                     <span>g</span>
@@ -420,27 +490,27 @@ export function RecipeDetailClient({
             </div>
           </div>
 
+          {/* Desktop: Badges Row (hidden on mobile) */}
+          <div className='mb-3 hidden items-center gap-2 lg:flex'>
+            {/* Meal Type Badge */}
+            {displayMealType && (
+              <Badge
+                className={`${getMealTypeBadgeClasses(displayMealType)} px-2.5 py-1 text-xs`}
+              >
+                {MEAL_TYPE_LABELS[displayMealType]}
+              </Badge>
+            )}
+            {/* Difficulty Badge */}
+            <div className='flex items-center gap-1.5 rounded-sm border border-white bg-white px-2.5 py-1 text-xs font-bold tracking-wider text-gray-800 uppercase'>
+              <span
+                className={`h-3 w-1 rounded-full ${getDifficultyColor(recipe.difficulty_level)}`}
+              />
+              {difficultyLabel[recipe.difficulty_level]}
+            </div>
+          </div>
+
           {/* Desktop: Metadata grid 2x2 (hidden on mobile) */}
           <div className='hidden grid-cols-2 gap-3 lg:grid'>
-            {/* Difficulty */}
-            <div className='flex items-center gap-2'>
-              <div className='rounded-[8px] bg-white p-2 shadow-sm'>
-                <BarChart3 className='size-4 text-[var(--text-main)]' />
-              </div>
-              <div className='space-y-0'>
-                <p className='text-[10px] text-[var(--text-muted)] uppercase'>
-                  Trudność
-                </p>
-                <p className='text-xs font-semibold text-[var(--text-main)]'>
-                  {recipe.difficulty_level === 'easy'
-                    ? 'Łatwy'
-                    : recipe.difficulty_level === 'medium'
-                      ? 'Średni'
-                      : 'Trudny'}
-                </p>
-              </div>
-            </div>
-
             {/* Prep Time */}
             <div className='flex items-center gap-2'>
               <div className='rounded-[8px] bg-white p-2 shadow-sm'>
@@ -452,6 +522,21 @@ export function RecipeDetailClient({
                 </p>
                 <p className='text-xs font-semibold text-[var(--text-main)]'>
                   {prepTime > 0 ? `${prepTime} min` : '—'}
+                </p>
+              </div>
+            </div>
+
+            {/* Total Steps */}
+            <div className='flex items-center gap-2'>
+              <div className='rounded-[8px] bg-white p-2 shadow-sm'>
+                <ListOrdered className='size-4 text-[var(--text-main)]' />
+              </div>
+              <div className='space-y-0'>
+                <p className='text-[10px] text-[var(--text-muted)] uppercase'>
+                  Kroki
+                </p>
+                <p className='text-xs font-semibold text-[var(--text-main)]'>
+                  {totalSteps > 0 ? `${totalSteps}` : '—'}
                 </p>
               </div>
             </div>
@@ -471,47 +556,21 @@ export function RecipeDetailClient({
               </div>
             </div>
 
-            {/* Total Steps */}
+            {/* Equipment */}
             <div className='flex items-center gap-2'>
               <div className='rounded-[8px] bg-white p-2 shadow-sm'>
-                <ListOrdered className='size-4 text-[var(--text-main)]' />
+                <ChefHat className='size-4 text-[var(--text-main)]' />
               </div>
               <div className='space-y-0'>
                 <p className='text-[10px] text-[var(--text-muted)] uppercase'>
-                  Kroki
+                  Sprzęt
                 </p>
                 <p className='text-xs font-semibold text-[var(--text-main)]'>
-                  {totalSteps > 0 ? `${totalSteps}` : '—'}
+                  {totalEquipment > 0 ? `${totalEquipment}` : '—'}
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Reviews (both mobile and desktop) */}
-          {recipe.average_rating && recipe.reviews_count > 0 && (
-            <div className='mt-4 hidden space-y-2 lg:block'>
-              <div className='flex items-center gap-2'>
-                <div className='flex items-center gap-1'>
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`size-4 ${
-                        i < Math.round(recipe.average_rating ?? 0)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'fill-gray-200 text-gray-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className='text-sm font-semibold text-[var(--text-main)]'>
-                  {recipe.average_rating.toFixed(1)}/5
-                </span>
-                <span className='text-xs text-[var(--text-muted)]'>
-                  ({recipe.reviews_count} reviews)
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Desktop: Macro - siatka 2x2 */}
           <div className='mt-4 hidden grid-cols-2 gap-2 lg:grid'>
@@ -533,10 +592,10 @@ export function RecipeDetailClient({
               </div>
             </div>
 
-            {/* Carbs - biały panel */}
+            {/* Net Carbs - biały panel */}
             <div className='flex flex-col items-center rounded-sm border-2 border-white bg-white px-3 py-2 shadow-sm'>
               <span className='text-[10px] font-bold tracking-wide text-gray-400 uppercase'>
-                Węglowodany
+                Węgl. netto
               </span>
               <div className='flex items-center gap-1.5'>
                 <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-orange-400'>
@@ -545,7 +604,9 @@ export function RecipeDetailClient({
                 <span className='flex items-baseline gap-0.5'>
                   <span className='text-lg font-bold text-gray-800'>
                     {Math.round(
-                      adjustedNutrition?.carbs_g ?? recipe.total_carbs_g ?? 0
+                      adjustedNutrition?.net_carbs_g ??
+                        recipe.total_net_carbs_g ??
+                        0
                     )}
                   </span>
                   <span className='text-xs text-gray-500'>g</span>
@@ -603,11 +664,9 @@ export function RecipeDetailClient({
           {showBackButton && (
             <div className='hidden space-y-3 lg:block'>
               <h2 className='text-2xl font-bold'>{recipe.name}</h2>
-              {recipe.meal_types.length > 0 && recipe.meal_types[0] && (
-                <Badge
-                  className={getMealTypeBadgeClasses(recipe.meal_types[0])}
-                >
-                  {MEAL_TYPE_LABELS[recipe.meal_types[0]]}
+              {displayMealType && (
+                <Badge className={getMealTypeBadgeClasses(displayMealType)}>
+                  {MEAL_TYPE_LABELS[displayMealType]}
                 </Badge>
               )}
             </div>
@@ -618,7 +677,7 @@ export function RecipeDetailClient({
             <div className='mb-2 pl-1'>
               <h3 className='text-sm font-bold text-gray-800'>Składniki</h3>
             </div>
-            <div className='relative rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-2 shadow-[var(--shadow-card)]'>
+            <div className='relative rounded-[12px] border-2 border-white bg-white/60 p-2 shadow-[var(--shadow-card)]'>
               {/* Save button - absolute positioned in top right corner */}
               {enableIngredientEditing &&
                 hasChanges &&
@@ -652,7 +711,7 @@ export function RecipeDetailClient({
                 incrementAmount &&
                 decrementAmount ? (
                   displayIngredients.length > 0 ? (
-                    <ul className='divide-y divide-gray-100'>
+                    <ul className='space-y-2'>
                       {displayIngredients.map((ingredient) => (
                         <EditableIngredientRow
                           key={ingredient.id}
@@ -679,7 +738,7 @@ export function RecipeDetailClient({
                     </p>
                   )
                 ) : displayIngredients.length > 0 ? (
-                  <ul className='divide-y divide-gray-100'>
+                  <ul className='space-y-2'>
                     {displayIngredients.map((ingredient) => {
                       const displayAmount = getIngredientAmount
                         ? getIngredientAmount(ingredient.id)
@@ -691,7 +750,7 @@ export function RecipeDetailClient({
                         <li
                           key={ingredient.id}
                           className={cn(
-                            'flex cursor-pointer items-center gap-3 py-2 transition-all duration-200',
+                            'flex cursor-pointer items-center gap-3 rounded-lg border border-white bg-white/70 px-2 py-2 shadow-sm transition-all duration-200',
                             isChecked ? 'opacity-50' : ''
                           )}
                           onClick={() => toggleIngredient(ingredient.id)}
@@ -708,10 +767,10 @@ export function RecipeDetailClient({
                           {/* Mini Checkbox */}
                           <div
                             className={cn(
-                              'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-all duration-200',
+                              'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 shadow-md transition-all duration-200',
                               isChecked
                                 ? 'border-red-500 bg-red-500'
-                                : 'border-gray-300 bg-white'
+                                : 'border-white bg-white'
                             )}
                           >
                             {isChecked && (
@@ -762,7 +821,7 @@ export function RecipeDetailClient({
                   Potrzebny sprzęt
                 </h3>
               </div>
-              <div className='rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-2 shadow-[var(--shadow-card)]'>
+              <div className='rounded-[12px] border-2 border-white bg-white/60 p-2 shadow-[var(--shadow-card)]'>
                 <EquipmentList equipment={recipe.equipment} compact />
               </div>
             </div>
@@ -780,7 +839,7 @@ export function RecipeDetailClient({
         {/* PRAWA KOLUMNA - Składniki + Makro (tylko desktop) */}
         <div className='hidden space-y-6 lg:block'>
           {/* Ingredients - Panel style like image card */}
-          <div className='rounded-[20px] border-2 border-white bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]'>
+          <div className='rounded-[20px] border-2 border-white bg-white/60 p-4 shadow-[var(--shadow-card)]'>
             {/* Header with title and save button */}
             <div className='mb-3 flex items-center justify-between'>
               <h3 className='text-lg font-bold text-gray-800'>Składniki</h3>
@@ -814,7 +873,11 @@ export function RecipeDetailClient({
               )}
             </div>
             {saveError && (
-              <p className='mb-3 text-xs font-medium text-red-600'>
+              <p
+                role='alert'
+                aria-live='polite'
+                className='mb-3 text-xs font-medium text-red-600'
+              >
                 {saveError}
               </p>
             )}
@@ -825,7 +888,7 @@ export function RecipeDetailClient({
               incrementAmount &&
               decrementAmount ? (
                 // Editable mode - Dashboard (with checkboxes)
-                <ul className='divide-y divide-gray-100'>
+                <ul className='space-y-2'>
                   {recipe.ingredients.map((ingredient) => (
                     <EditableIngredientRow
                       key={ingredient.id}
@@ -845,7 +908,7 @@ export function RecipeDetailClient({
                 </ul>
               ) : (
                 // Read-only mode - MealPlan / Recipes (Shopping list style with checkboxes)
-                <ul className='divide-y divide-gray-100'>
+                <ul className='space-y-2'>
                   {recipe.ingredients.map((ingredient) => {
                     // Show adjusted amount if available, otherwise original
                     const displayAmount = getIngredientAmount
@@ -858,8 +921,8 @@ export function RecipeDetailClient({
                       <li
                         key={ingredient.id}
                         className={cn(
-                          'group flex cursor-pointer items-center gap-4 rounded-lg px-3 py-3 transition-all duration-200',
-                          isChecked ? 'bg-red-50/50' : 'hover:bg-gray-50/50'
+                          'group flex cursor-pointer items-center gap-4 rounded-lg border border-white bg-white/70 px-3 py-3 shadow-sm transition-all duration-200',
+                          isChecked ? 'bg-red-50/50' : 'hover:bg-white/90'
                         )}
                         onClick={() => toggleIngredient(ingredient.id)}
                         role='button'
@@ -875,10 +938,10 @@ export function RecipeDetailClient({
                         {/* Custom Checkbox */}
                         <div
                           className={cn(
-                            'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200',
+                            'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 shadow-md transition-all duration-200',
                             isChecked
                               ? 'border-red-500 bg-red-500'
-                              : 'border-gray-300 bg-white group-hover:border-red-600'
+                              : 'border-white bg-white group-hover:border-red-600'
                           )}
                         >
                           {isChecked && (
@@ -920,7 +983,7 @@ export function RecipeDetailClient({
 
           {/* Equipment - Panel for kitchen equipment (only if recipe has equipment) */}
           {recipe.equipment && recipe.equipment.length > 0 && (
-            <div className='rounded-[20px] border-2 border-white bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]'>
+            <div className='rounded-[20px] border-2 border-white bg-white/60 p-4 shadow-[var(--shadow-card)]'>
               <h3 className='mb-3 text-lg font-bold text-gray-800'>
                 Potrzebny sprzęt
               </h3>

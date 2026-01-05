@@ -14,6 +14,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { calculateNutritionTargets } from '@/services/nutrition-calculator'
 import { formatLocalDate } from '@/lib/utils/date-formatting'
+import { logErrorLevel, logWarning } from '@/lib/error-logger'
 import type {
   CreateProfileResponseDTO,
   ProfileDTO,
@@ -33,6 +34,7 @@ import {
   type ProfileSnapshot,
 } from '@/lib/actions/user-history'
 import { calculateSelectedMealsFromTimeWindow } from '@/types/onboarding-view.types'
+import { withRetryResult } from '@/lib/utils/retry'
 
 /**
  * Standardowy typ wyniku Server Action (Discriminated Union)
@@ -177,7 +179,11 @@ export async function createProfile(
       .single()
 
     if (upsertError) {
-      console.error('Błąd podczas zapisywania profilu:', upsertError)
+      logErrorLevel(upsertError, {
+        source: 'profile.createProfile',
+        userId: user.id,
+        metadata: { errorCode: upsertError.code },
+      })
       return {
         error: `Błąd bazy danych: ${upsertError.message}`,
         code: 'DATABASE_ERROR',
@@ -198,7 +204,10 @@ export async function createProfile(
       !createdProfile.target_carbs_g ||
       !createdProfile.target_fats_g
     ) {
-      console.warn('Brakujące dane profilu - pominięto zapis do historii')
+      logWarning('Brakujące dane profilu - pominięto zapis do historii', {
+        source: 'profile.createProfile.history',
+        userId: user.id,
+      })
     } else {
       const profileSnapshot: ProfileSnapshot = {
         weight_kg: createdProfile.weight_kg,
@@ -216,7 +225,11 @@ export async function createProfile(
 
       // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
       recordProfileCreated(profileSnapshot).catch((err) => {
-        console.warn('Błąd zapisu historii profile_created:', err)
+        logWarning(err, {
+          source: 'profile.createProfile.recordHistory',
+          userId: user.id,
+          metadata: { event: 'profile_created' },
+        })
       })
     }
 
@@ -270,7 +283,7 @@ export async function createProfile(
 
     return { data: response }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w createProfile:', err)
+    logErrorLevel(err, { source: 'profile.createProfile' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -329,7 +342,11 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
           code: 'PROFILE_NOT_FOUND',
         }
       }
-      console.error('Błąd podczas pobierania profilu:', fetchError)
+      logErrorLevel(fetchError, {
+        source: 'profile.getMyProfile',
+        userId: user.id,
+        metadata: { errorCode: fetchError.code },
+      })
       return {
         error: `Błąd bazy danych: ${fetchError.message}`,
         code: 'DATABASE_ERROR',
@@ -357,11 +374,12 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       target_carbs_g: profile.target_carbs_g,
       target_protein_g: profile.target_protein_g,
       target_fats_g: profile.target_fats_g,
+      excluded_equipment_ids: profile.excluded_equipment_ids,
     }
 
     return { data: profileDTO }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getMyProfile:', err)
+    logErrorLevel(err, { source: 'profile.getMyProfile' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -444,7 +462,11 @@ export async function updateMyProfile(
           code: 'PROFILE_NOT_FOUND',
         }
       }
-      console.error('Błąd podczas pobierania profilu:', fetchError)
+      logErrorLevel(fetchError, {
+        source: 'profile.updateMyProfile',
+        userId: user.id,
+        metadata: { errorCode: fetchError.code },
+      })
       return {
         error: `Błąd bazy danych: ${fetchError.message}`,
         code: 'DATABASE_ERROR',
@@ -546,7 +568,11 @@ export async function updateMyProfile(
       .single()
 
     if (updateError) {
-      console.error('Błąd podczas aktualizacji profilu:', updateError)
+      logErrorLevel(updateError, {
+        source: 'profile.updateMyProfile',
+        userId: user.id,
+        metadata: { errorCode: updateError.code },
+      })
       return {
         error: `Błąd bazy danych: ${updateError.message}`,
         code: 'DATABASE_ERROR',
@@ -567,7 +593,10 @@ export async function updateMyProfile(
       updatedProfile.target_carbs_g === null ||
       updatedProfile.target_fats_g === null
     ) {
-      console.warn('Brakujące dane profilu - pominięto zapis do historii')
+      logWarning('Brakujące dane profilu - pominięto zapis do historii', {
+        source: 'profile.updateMyProfile.history',
+        userId: user.id,
+      })
     } else {
       const profileSnapshotUpdate: ProfileSnapshot = {
         weight_kg: updatedProfile.weight_kg,
@@ -585,52 +614,55 @@ export async function updateMyProfile(
 
       // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
       recordProfileUpdated(profileSnapshotUpdate).catch((err) => {
-        console.warn('Błąd zapisu historii profile_updated:', err)
+        logWarning(err, {
+          source: 'profile.updateMyProfile.recordHistory',
+          userId: user.id,
+          metadata: { event: 'profile_updated' },
+        })
       })
     }
 
     // 9. Usunięcie zaplanowanych posiłków (regeneracja planu)
-    // Sprawdź czy dzisiaj są posiłki oznaczone jako zjedzone - jeśli tak, zachowaj dzisiejszy dzień
+    // Strategia: zawsze usuwamy przyszłe posiłki + niezjedzone dzisiejsze posiłki
+    // Zachowujemy TYLKO zjedzone posiłki z dzisiaj (ich makra są już zapisane w historii)
+    //
+    // UWAGA: Te operacje są wykonywane z retry, ponieważ ich niepowodzenie
+    // może spowodować konflikt przy następnej regeneracji planu (duplicate key).
+    // Mimo że aktualizacja profilu już się zakończyła, posiłki muszą być usunięte.
     const today = formatLocalDate(new Date())
 
-    const { data: todayEatenMeals } = await supabase
-      .from('planned_meals')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('meal_date', today)
-      .eq('is_eaten', true)
-      .limit(1)
-
-    const hasTodayEatenMeals = todayEatenMeals && todayEatenMeals.length > 0
-
-    if (hasTodayEatenMeals) {
-      // Jeśli użytkownik zjadł jakiś posiłek dzisiaj, usuń tylko posiłki od jutra
-      const { error: deleteMealsError } = await supabase
-        .from('planned_meals')
-        .delete()
-        .eq('user_id', user.id)
-        .gt('meal_date', today)
-
-      if (deleteMealsError) {
-        console.warn(
-          'Błąd podczas usuwania przyszłych posiłków (nie krytyczny):',
-          deleteMealsError
-        )
-      }
-    } else {
-      // Jeśli żaden posiłek dzisiaj nie jest zjedzony, usuń wszystkie posiłki
-      const { error: deleteMealsError } = await supabase
-        .from('planned_meals')
-        .delete()
-        .eq('user_id', user.id)
-
-      if (deleteMealsError) {
-        console.warn(
-          'Błąd podczas usuwania starych posiłków (nie krytyczny):',
-          deleteMealsError
-        )
-      }
-    }
+    // Usuń przyszłe i dzisiejsze niezjedzone posiłki równolegle z retry
+    await Promise.all([
+      // Usuń wszystkie przyszłe posiłki (od jutra)
+      withRetryResult(
+        async () =>
+          supabase
+            .from('planned_meals')
+            .delete()
+            .eq('user_id', user.id)
+            .gt('meal_date', today),
+        {
+          source: 'profile.updateMyProfile.deleteFutureMeals',
+          userId: user.id,
+          metadata: { today },
+        }
+      ),
+      // Usuń dzisiejsze NIEZJEDZONE posiłki (zjedzone zachowujemy)
+      withRetryResult(
+        async () =>
+          supabase
+            .from('planned_meals')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('meal_date', today)
+            .eq('is_eaten', false),
+        {
+          source: 'profile.updateMyProfile.deleteTodayUneaten',
+          userId: user.id,
+          metadata: { today },
+        }
+      ),
+    ])
 
     // 10. Transformacja do DTO
     const profileDTO: ProfileDTO = {
@@ -653,11 +685,12 @@ export async function updateMyProfile(
       target_carbs_g: updatedProfile.target_carbs_g,
       target_protein_g: updatedProfile.target_protein_g,
       target_fats_g: updatedProfile.target_fats_g,
+      excluded_equipment_ids: updatedProfile.excluded_equipment_ids,
     }
 
     return { data: profileDTO }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w updateMyProfile:', err)
+    logErrorLevel(err, { source: 'profile.updateMyProfile' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -713,7 +746,7 @@ export async function generateMealPlan(): Promise<
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'id, target_calories, target_carbs_g, target_protein_g, target_fats_g, meal_plan_type, selected_meals'
+        'id, target_calories, target_carbs_g, target_protein_g, target_fats_g, meal_plan_type, selected_meals, excluded_equipment_ids'
       )
       .eq('id', userId)
       .single()
@@ -725,7 +758,11 @@ export async function generateMealPlan(): Promise<
           code: 'PROFILE_NOT_FOUND',
         }
       }
-      console.error('Błąd podczas pobierania profilu:', profileError)
+      logErrorLevel(profileError, {
+        source: 'profile.generateMealPlan',
+        userId: user.id,
+        metadata: { errorCode: profileError.code },
+      })
       return {
         error: `Błąd bazy danych: ${profileError.message}`,
         code: 'DATABASE_ERROR',
@@ -739,10 +776,11 @@ export async function generateMealPlan(): Promise<
     try {
       await cleanupOldMealPlans(userId)
     } catch (cleanupError) {
-      console.warn(
-        'Błąd czyszczenia starych planów (nie krytyczny):',
-        cleanupError
-      )
+      logWarning(cleanupError, {
+        source: 'profile.generateMealPlan.cleanup',
+        userId,
+        metadata: { operation: 'cleanupOldMealPlans' },
+      })
     }
 
     const { findMissingDays } = await import('@/services/meal-plan-generator')
@@ -807,23 +845,24 @@ export async function generateMealPlan(): Promise<
         }
       }
 
-      // Generuj plan tylko dla brakujących dni
-      const { generateDayPlan } = await import('@/services/meal-plan-generator')
-      plannedMeals = []
+      // Generuj plan tylko dla brakujących dni (z optymalizacją N+1 queries)
+      const { generateMealsForDates } =
+        await import('@/services/meal-plan-generator')
 
-      for (const date of missingDays) {
-        const dayPlan = await generateDayPlan(userId, date, {
-          target_calories: profile.target_calories,
-          target_protein_g: profile.target_protein_g,
-          target_carbs_g: profile.target_carbs_g,
-          target_fats_g: profile.target_fats_g,
-          meal_plan_type: profile.meal_plan_type,
-          selected_meals: profile.selected_meals,
-        })
-        plannedMeals.push(...dayPlan)
-      }
+      plannedMeals = await generateMealsForDates(userId, missingDays, {
+        target_calories: profile.target_calories,
+        target_protein_g: profile.target_protein_g,
+        target_carbs_g: profile.target_carbs_g,
+        target_fats_g: profile.target_fats_g,
+        meal_plan_type: profile.meal_plan_type,
+        selected_meals: profile.selected_meals,
+        excluded_equipment_ids: profile.excluded_equipment_ids,
+      })
     } catch (generatorError) {
-      console.error('Błąd generatora planu:', generatorError)
+      logErrorLevel(generatorError, {
+        source: 'profile.generateMealPlan.generator',
+        userId: user.id,
+      })
       return {
         error:
           generatorError instanceof Error
@@ -844,10 +883,11 @@ export async function generateMealPlan(): Promise<
         .in('meal_date', missingDays)
 
       if (deleteIncompleteError) {
-        console.warn(
-          'Błąd podczas usuwania niekompletnych posiłków (nie krytyczny):',
-          deleteIncompleteError
-        )
+        logWarning(deleteIncompleteError, {
+          source: 'profile.generateMealPlan.deleteIncomplete',
+          userId,
+          metadata: { missingDays: missingDays.length },
+        })
       }
     }
 
@@ -857,7 +897,14 @@ export async function generateMealPlan(): Promise<
       .insert(plannedMeals)
 
     if (insertError) {
-      console.error('Błąd podczas zapisu planu posiłków:', insertError)
+      logErrorLevel(insertError, {
+        source: 'profile.generateMealPlan.insert',
+        userId: user.id,
+        metadata: {
+          errorCode: insertError.code,
+          mealsCount: plannedMeals.length,
+        },
+      })
       return {
         error: `Błąd bazy danych: ${insertError.message}`,
         code: 'DATABASE_ERROR',
@@ -874,7 +921,7 @@ export async function generateMealPlan(): Promise<
       },
     }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w generateMealPlan:', err)
+    logErrorLevel(err, { source: 'profile.generateMealPlan' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',

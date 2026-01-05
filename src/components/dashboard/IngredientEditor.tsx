@@ -67,7 +67,8 @@ export function IngredientEditor({
   const originalNutrition = {
     calories: recipe.total_calories,
     protein_g: recipe.total_protein_g,
-    carbs_g: recipe.total_carbs_g,
+    // Używamy net_carbs_g dla diety keto/low-carb
+    net_carbs_g: recipe.total_net_carbs_g,
     fats_g: recipe.total_fats_g,
   }
 

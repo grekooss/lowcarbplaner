@@ -112,7 +112,7 @@ export function EquipmentList({
         </div>
       ) : (
         // Widok pełny - lista z detalami
-        <ul className='divide-y divide-gray-100'>
+        <ul className='space-y-2'>
           {equipment.map((item) => {
             const Icon = CATEGORY_ICONS[item.category]
             const colorClass = CATEGORY_COLORS[item.category]
@@ -120,7 +120,7 @@ export function EquipmentList({
             return (
               <li
                 key={item.id}
-                className='flex items-center gap-3 py-2.5 first:pt-0 last:pb-0'
+                className='flex items-center gap-3 rounded-lg border border-white bg-white/70 px-3 py-2.5 shadow-sm'
               >
                 <div
                   className={cn(

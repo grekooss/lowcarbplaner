@@ -11,6 +11,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/server'
+import { logErrorLevel } from '@/lib/error-logger'
 import type { RecipeDTO } from '@/types/dto.types'
 import {
   recipeQueryParamsSchema,
@@ -99,6 +100,8 @@ export async function getRecipes(
         total_calories,
         total_protein_g,
         total_carbs_g,
+        total_fiber_g,
+        total_net_carbs_g,
         total_fats_g,
         recipe_ingredients (
           base_amount,
@@ -107,6 +110,7 @@ export async function getRecipes(
           calories,
           protein_g,
           carbs_g,
+          fiber_g,
           fats_g,
           step_number,
           ingredient:ingredients (
@@ -151,7 +155,10 @@ export async function getRecipes(
     const { data, error, count } = await query
 
     if (error) {
-      console.error('Błąd Supabase w getRecipes:', error)
+      logErrorLevel(error, {
+        source: 'recipes.getRecipes',
+        metadata: { query: validated.data, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -187,7 +194,7 @@ export async function getRecipes(
       },
     }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getRecipes:', err)
+    logErrorLevel(err, { source: 'recipes.getRecipes' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -242,6 +249,8 @@ export async function getRecipeById(
         total_calories,
         total_protein_g,
         total_carbs_g,
+        total_fiber_g,
+        total_net_carbs_g,
         total_fats_g,
         recipe_ingredients (
           base_amount,
@@ -250,6 +259,7 @@ export async function getRecipeById(
           calories,
           protein_g,
           carbs_g,
+          fiber_g,
           fats_g,
           step_number,
           ingredient:ingredients (
@@ -283,7 +293,10 @@ export async function getRecipeById(
       if (error.code === 'PGRST116') {
         return { error: 'Przepis nie został znaleziony', code: 'NOT_FOUND' }
       }
-      console.error('Błąd Supabase w getRecipeById:', error)
+      logErrorLevel(error, {
+        source: 'recipes.getRecipeById',
+        metadata: { recipeId, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -295,7 +308,7 @@ export async function getRecipeById(
 
     return { data: recipe }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getRecipeById:', err)
+    logErrorLevel(err, { source: 'recipes.getRecipeById' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }

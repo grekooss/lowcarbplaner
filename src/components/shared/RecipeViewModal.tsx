@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { RecipeDetailClient } from '@/components/recipes/detail/RecipeDetailClient'
 import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { cn } from '@/lib/utils'
 import {
   ChevronLeft,
@@ -32,8 +33,32 @@ import {
   Wheat,
   Beef,
   Droplet,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react'
 import type { RecipeDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
+
+/**
+ * Fallback UI dla błędów w RecipeViewModal
+ */
+function RecipeViewModalErrorFallback({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className='flex min-h-[300px] flex-col items-center justify-center rounded-lg p-6 text-center'>
+      <AlertTriangle className='mb-4 h-12 w-12 text-red-500' />
+      <h3 className='mb-2 text-lg font-bold text-gray-800'>
+        Błąd podczas wyświetlania przepisu
+      </h3>
+      <p className='mb-4 text-sm text-gray-600'>
+        Przepraszamy, wystąpił nieoczekiwany błąd.
+      </p>
+      <Button variant='outline' onClick={onRetry} className='gap-2'>
+        <RefreshCw className='h-4 w-4' />
+        Spróbuj ponownie
+      </Button>
+    </div>
+  )
+}
 
 interface IngredientEditorApi {
   getIngredientAmount: (ingredientId: number) => number
@@ -56,6 +81,10 @@ interface IngredientEditorApi {
     calories: number
     protein_g: number
     carbs_g: number
+    /** Błonnik pokarmowy */
+    fiber_g: number
+    /** Węglowodany netto (Net Carbs) - kluczowe dla keto */
+    net_carbs_g: number
     fats_g: number
   } | null
 }
@@ -86,6 +115,10 @@ interface RecipeViewModalProps {
   checkedIngredients?: Set<number>
   /** Callback to toggle checked state (persisted by parent) */
   onToggleChecked?: (ingredientId: number) => void
+  /** Selected meal type from the card that was clicked (for recipes with multiple meal types) */
+  selectedMealType?: Enums<'meal_type_enum'> | null
+  /** Whether the user is authenticated (for rating functionality) */
+  isAuthenticated?: boolean
 }
 
 /**
@@ -102,10 +135,13 @@ export function RecipeViewModal({
   zIndexClass,
   checkedIngredients: externalCheckedIngredients,
   onToggleChecked: externalToggleChecked,
+  selectedMealType,
+  isAuthenticated = false,
 }: RecipeViewModalProps) {
   // Mobile step-by-step mode state
   const [isStepMode, setIsStepMode] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
+  const [errorBoundaryKey, setErrorBoundaryKey] = useState(0)
 
   // Local checked ingredients state (fallback if no external state provided)
   const [localCheckedIngredients, setLocalCheckedIngredients] = useState<
@@ -235,7 +271,7 @@ export function RecipeViewModal({
           preventOutsideClose ? (e) => e.preventDefault() : undefined
         }
         className={cn(
-          'flex flex-col overflow-hidden rounded-md border-2 border-white bg-white/40 p-0 shadow-2xl backdrop-blur-md sm:rounded-2xl md:rounded-3xl',
+          'flex flex-col overflow-hidden rounded-md border-2 border-white bg-white/60 p-0 shadow-2xl backdrop-blur-md sm:rounded-2xl md:rounded-3xl',
           zIndexClass
         )}
       >
@@ -268,163 +304,178 @@ export function RecipeViewModal({
 
         {/* Scrollable Content - different layout for step mode on mobile */}
         <div className='custom-scrollbar flex-1 overflow-x-hidden overflow-y-auto'>
-          {/* Mobile Step Mode: Step panel takes entire content area */}
-          {isStepMode && totalSteps > 0 ? (
-            <div className='flex h-full flex-col gap-3 p-3 lg:hidden'>
-              {/* Macro badges panel */}
-              <div className='flex items-center justify-center gap-4 rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-2 shadow-[var(--shadow-card)]'>
-                {/* Calories */}
-                <div className='flex h-[22px] items-center gap-1 rounded-sm bg-red-600 px-2 text-[10px] text-white shadow-sm shadow-red-500/20'>
-                  <Flame className='h-3 w-3' />
-                  <span className='font-bold'>
-                    {Math.round(
-                      adjustedNutrition?.calories ?? recipe.total_calories ?? 0
-                    )}
-                  </span>
-                  <span className='font-normal'>kcal</span>
-                </div>
-                {/* Macros */}
-                <div className='flex items-center gap-3 text-sm'>
-                  <div
-                    className='flex items-center gap-1.5'
-                    title='Węglowodany'
-                  >
-                    <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-orange-400'>
-                      <Wheat className='h-3 w-3 text-white' />
-                    </div>
-                    <span className='text-[11px] text-gray-700'>
-                      <span className='font-bold'>
-                        {Math.round(
-                          adjustedNutrition?.carbs_g ??
-                            recipe.total_carbs_g ??
-                            0
-                        )}
-                      </span>{' '}
-                      g
+          <ErrorBoundary
+            key={errorBoundaryKey}
+            fallback={
+              <RecipeViewModalErrorFallback
+                onRetry={() => setErrorBoundaryKey((k) => k + 1)}
+              />
+            }
+          >
+            {/* Mobile Step Mode: Step panel takes entire content area */}
+            {isStepMode && totalSteps > 0 ? (
+              <div className='flex h-full flex-col gap-3 p-3 lg:hidden'>
+                {/* Macro badges panel */}
+                <div className='flex items-center justify-center gap-4 rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-2 shadow-[var(--shadow-card)]'>
+                  {/* Calories */}
+                  <div className='flex h-[22px] items-center gap-1 rounded-sm bg-red-600 px-2 text-[10px] text-white shadow-sm shadow-red-500/20'>
+                    <Flame className='h-3 w-3' />
+                    <span className='font-bold'>
+                      {Math.round(
+                        adjustedNutrition?.calories ??
+                          recipe.total_calories ??
+                          0
+                      )}
                     </span>
+                    <span className='font-normal'>kcal</span>
                   </div>
-                  <div className='flex items-center gap-1.5' title='Białko'>
-                    <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-blue-400'>
-                      <Beef className='h-3 w-3 text-white' />
-                    </div>
-                    <span className='text-[11px] text-gray-700'>
-                      <span className='font-bold'>
-                        {Math.round(
-                          adjustedNutrition?.protein_g ??
-                            recipe.total_protein_g ??
-                            0
-                        )}
-                      </span>{' '}
-                      g
-                    </span>
-                  </div>
-                  <div className='flex items-center gap-1.5' title='Tłuszcze'>
-                    <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-400'>
-                      <Droplet className='h-3 w-3 text-white' />
-                    </div>
-                    <span className='text-[11px] text-gray-700'>
-                      <span className='font-bold'>
-                        {Math.round(
-                          adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
-                        )}
-                      </span>{' '}
-                      g
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step panel */}
-              <div className='relative flex flex-1 flex-col rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-3 shadow-[var(--shadow-card)]'>
-                {/* Save button - absolute positioned in top right corner */}
-                {saveConfig?.hasChanges &&
-                  !saveConfig?.isSaveSuccessful &&
-                  saveConfig?.onSave && (
-                    <Button
-                      onClick={saveConfig.onSave}
-                      disabled={saveConfig.isSaving}
-                      size='sm'
-                      className='absolute top-2 right-2 h-[22px] rounded-sm bg-red-600 px-2 text-[10px] font-bold text-white shadow-sm shadow-red-500/20 hover:bg-red-700'
+                  {/* Macros */}
+                  <div className='flex items-center gap-3 text-sm'>
+                    <div
+                      className='flex items-center gap-1.5'
+                      title='Węglowodany netto (Net Carbs)'
                     >
-                      {saveConfig.isSaving ? 'Zapisuję...' : 'Zapisz'}
-                    </Button>
-                  )}
-                {saveConfig?.isSaveSuccessful && (
-                  <span className='absolute top-2 right-2 text-[10px] font-bold text-red-600'>
-                    ✓ Zapisano
-                  </span>
-                )}
-
-                {/* Header: step number */}
-                <div className='mb-3 pl-1'>
-                  <h3 className='text-base font-bold text-gray-800'>
-                    Krok {currentStep} z {totalSteps}
-                  </h3>
+                      <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-orange-400'>
+                        <Wheat className='h-3 w-3 text-white' />
+                      </div>
+                      <span className='text-[11px] text-gray-700'>
+                        <span className='font-bold'>
+                          {Math.round(
+                            adjustedNutrition?.net_carbs_g ??
+                              recipe.total_net_carbs_g ??
+                              0
+                          )}
+                        </span>{' '}
+                        g
+                      </span>
+                    </div>
+                    <div className='flex items-center gap-1.5' title='Białko'>
+                      <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-blue-400'>
+                        <Beef className='h-3 w-3 text-white' />
+                      </div>
+                      <span className='text-[11px] text-gray-700'>
+                        <span className='font-bold'>
+                          {Math.round(
+                            adjustedNutrition?.protein_g ??
+                              recipe.total_protein_g ??
+                              0
+                          )}
+                        </span>{' '}
+                        g
+                      </span>
+                    </div>
+                    <div className='flex items-center gap-1.5' title='Tłuszcze'>
+                      <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-400'>
+                        <Droplet className='h-3 w-3 text-white' />
+                      </div>
+                      <span className='text-[11px] text-gray-700'>
+                        <span className='font-bold'>
+                          {Math.round(
+                            adjustedNutrition?.fats_g ??
+                              recipe.total_fats_g ??
+                              0
+                          )}
+                        </span>{' '}
+                        g
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Ingredients for current step */}
-                {currentStepIngredients.length > 0 && (
-                  <div className='mb-3'>
-                    <ul className='divide-y divide-gray-100'>
-                      {currentStepIngredients.map((ingredient) => (
-                        <EditableIngredientRow
-                          key={ingredient.id}
-                          ingredient={ingredient}
-                          currentAmount={getIngredientAmount(ingredient.id)}
-                          isAutoAdjusted={isAutoAdjusted(ingredient.id)}
-                          onAmountChange={updateIngredientAmount}
-                          onIncrement={incrementAmount}
-                          onDecrement={decrementAmount}
-                          isChecked={isIngredientChecked(ingredient.id)}
-                          onToggleChecked={toggleIngredient}
-                          onExclude={(id) => updateIngredientAmount(id, 0)}
-                          compact
-                        />
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {/* Step panel */}
+                <div className='relative flex flex-1 flex-col rounded-[12px] border-2 border-white bg-[var(--bg-card)] p-3 shadow-[var(--shadow-card)]'>
+                  {/* Save button - absolute positioned in top right corner */}
+                  {saveConfig?.hasChanges &&
+                    !saveConfig?.isSaveSuccessful &&
+                    saveConfig?.onSave && (
+                      <Button
+                        onClick={saveConfig.onSave}
+                        disabled={saveConfig.isSaving}
+                        size='sm'
+                        className='absolute top-2 right-2 h-[22px] rounded-sm bg-red-600 px-2 text-[10px] font-bold text-white shadow-sm shadow-red-500/20 hover:bg-red-700'
+                      >
+                        {saveConfig.isSaving ? 'Zapisuję...' : 'Zapisz'}
+                      </Button>
+                    )}
+                  {saveConfig?.isSaveSuccessful && (
+                    <span className='absolute top-2 right-2 text-[10px] font-bold text-red-600'>
+                      ✓ Zapisano
+                    </span>
+                  )}
 
-                {/* Step description */}
-                <div className='flex flex-1 items-start gap-3'>
-                  <div className='bg-primary flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[8px] text-base font-bold text-white'>
-                    {currentStep}
+                  {/* Header: step number */}
+                  <div className='mb-3 pl-1'>
+                    <h3 className='text-base font-bold text-gray-800'>
+                      Krok {currentStep} z {totalSteps}
+                    </h3>
                   </div>
-                  <p className='flex-1 text-sm leading-relaxed font-medium text-gray-700'>
-                    {sortedInstructions[currentStep - 1]?.description}
-                  </p>
+
+                  {/* Ingredients for current step */}
+                  {currentStepIngredients.length > 0 && (
+                    <div className='mb-3'>
+                      <ul className='divide-y divide-gray-100'>
+                        {currentStepIngredients.map((ingredient) => (
+                          <EditableIngredientRow
+                            key={ingredient.id}
+                            ingredient={ingredient}
+                            currentAmount={getIngredientAmount(ingredient.id)}
+                            isAutoAdjusted={isAutoAdjusted(ingredient.id)}
+                            onAmountChange={updateIngredientAmount}
+                            onIncrement={incrementAmount}
+                            onDecrement={decrementAmount}
+                            isChecked={isIngredientChecked(ingredient.id)}
+                            onToggleChecked={toggleIngredient}
+                            onExclude={(id) => updateIngredientAmount(id, 0)}
+                            compact
+                          />
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Step description */}
+                  <div className='flex flex-1 items-start gap-3'>
+                    <div className='bg-primary flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[8px] text-base font-bold text-white'>
+                      {currentStep}
+                    </div>
+                    <p className='flex-1 text-sm leading-relaxed font-medium text-gray-700'>
+                      {sortedInstructions[currentStep - 1]?.description}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {/* Desktop: always show RecipeDetailClient */}
-          {/* Mobile: show RecipeDetailClient only when NOT in step mode */}
-          {!isStepMode && (
-            <RecipeDetailClient
-              recipe={recipe}
-              showBackButton={false}
-              enableIngredientEditing={true}
-              getIngredientAmount={getIngredientAmount}
-              isAutoAdjusted={isAutoAdjusted}
-              updateIngredientAmount={updateIngredientAmount}
-              incrementAmount={incrementAmount}
-              decrementAmount={decrementAmount}
-              adjustedNutrition={adjustedNutrition ?? undefined}
-              hasChanges={saveConfig?.hasChanges ?? false}
-              isSaving={saveConfig?.isSaving ?? false}
-              onSave={saveConfig?.onSave}
-              saveError={saveConfig?.saveError ?? null}
-              isSaveSuccessful={saveConfig?.isSaveSuccessful ?? false}
-              isStepMode={isStepMode}
-              currentStep={currentStep}
-              onOpenStepMode={openStepMode}
-              totalSteps={totalSteps}
-              hideStepsButton={true}
-              checkedIngredients={checkedIngredients}
-              onToggleChecked={toggleIngredient}
-            />
-          )}
+            {/* Desktop: always show RecipeDetailClient */}
+            {/* Mobile: show RecipeDetailClient only when NOT in step mode */}
+            {!isStepMode && (
+              <RecipeDetailClient
+                recipe={recipe}
+                showBackButton={false}
+                enableIngredientEditing={true}
+                getIngredientAmount={getIngredientAmount}
+                isAutoAdjusted={isAutoAdjusted}
+                updateIngredientAmount={updateIngredientAmount}
+                incrementAmount={incrementAmount}
+                decrementAmount={decrementAmount}
+                adjustedNutrition={adjustedNutrition ?? undefined}
+                hasChanges={saveConfig?.hasChanges ?? false}
+                isSaving={saveConfig?.isSaving ?? false}
+                onSave={saveConfig?.onSave}
+                saveError={saveConfig?.saveError ?? null}
+                isSaveSuccessful={saveConfig?.isSaveSuccessful ?? false}
+                isStepMode={isStepMode}
+                currentStep={currentStep}
+                onOpenStepMode={openStepMode}
+                totalSteps={totalSteps}
+                hideStepsButton={true}
+                checkedIngredients={checkedIngredients}
+                onToggleChecked={toggleIngredient}
+                selectedMealType={selectedMealType}
+                isAuthenticated={isAuthenticated}
+              />
+            )}
+          </ErrorBoundary>
         </div>
 
         {/* Fixed Footer - Dots + Arrow to enter step mode (only when not in step mode) */}

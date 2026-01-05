@@ -40,33 +40,35 @@ interface SectionConfig {
   description: string
 }
 
-const SECTIONS: SectionConfig[] = [
-  {
-    id: 'body',
-    title: 'Dane fizyczne',
-    description: 'Waga, wzrost i wiek',
-  },
-  {
-    id: 'activity',
-    title: 'Poziom aktywności',
-    description: 'Twoja codzienna aktywność fizyczna',
-  },
-  {
-    id: 'goal',
-    title: 'Cel i tempo',
-    description: 'Cel żywieniowy i tempo zmian',
-  },
-  {
-    id: 'meals',
-    title: 'Plan posiłków',
-    description: 'Liczba i godziny posiłków',
-  },
-  {
-    id: 'macros',
-    title: 'Proporcje makro',
-    description: 'Rozkład makroskładników',
-  },
-]
+const SECTION_BODY: SectionConfig = {
+  id: 'body',
+  title: 'Dane fizyczne',
+  description: 'Waga, wzrost i wiek',
+}
+
+const SECTION_ACTIVITY: SectionConfig = {
+  id: 'activity',
+  title: 'Poziom aktywności',
+  description: 'Twoja codzienna aktywność fizyczna',
+}
+
+const SECTION_GOAL: SectionConfig = {
+  id: 'goal',
+  title: 'Cel i tempo',
+  description: 'Cel żywieniowy i tempo zmian',
+}
+
+const SECTION_MEALS: SectionConfig = {
+  id: 'meals',
+  title: 'Plan posiłków',
+  description: 'Liczba i godziny posiłków',
+}
+
+const SECTION_MACROS: SectionConfig = {
+  id: 'macros',
+  title: 'Proporcje makro',
+  description: 'Rozkład makroskładników',
+}
 
 // Numeric field slider configuration
 const WEIGHT_CONFIG = {
@@ -300,7 +302,7 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
     <form onSubmit={onSubmit} className='space-y-4'>
       {/* Body Section */}
       <CollapsibleSection
-        config={SECTIONS[0]!}
+        config={SECTION_BODY}
         isOpen={openSections.has('body')}
         onToggle={() => toggleSection('body')}
       >
@@ -331,7 +333,7 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
 
       {/* Activity Level Section */}
       <CollapsibleSection
-        config={SECTIONS[1]!}
+        config={SECTION_ACTIVITY}
         isOpen={openSections.has('activity')}
         onToggle={() => toggleSection('activity')}
       >
@@ -348,7 +350,7 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
 
       {/* Goal Section */}
       <CollapsibleSection
-        config={SECTIONS[2]!}
+        config={SECTION_GOAL}
         isOpen={openSections.has('goal')}
         onToggle={() => toggleSection('goal')}
       >
@@ -378,7 +380,7 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
 
       {/* Meal Plan Section */}
       <CollapsibleSection
-        config={SECTIONS[3]!}
+        config={SECTION_MEALS}
         isOpen={openSections.has('meals')}
         onToggle={() => toggleSection('meals')}
       >
@@ -407,7 +409,7 @@ export const ProfileEditForm = ({ initialData }: ProfileEditFormProps) => {
 
       {/* Macro Ratio Section */}
       <CollapsibleSection
-        config={SECTIONS[4]!}
+        config={SECTION_MACROS}
         isOpen={openSections.has('macros')}
         onToggle={() => toggleSection('macros')}
       >

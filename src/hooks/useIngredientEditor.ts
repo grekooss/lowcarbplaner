@@ -5,10 +5,14 @@
  * Allows flexible ingredient quantity adjustments with warning at >±15% change.
  */
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { IngredientOverrides, RecipeDTO } from '@/types/dto.types'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
+import {
+  validateIngredientAmount,
+  type ValidatableIngredient,
+} from '@/lib/utils/ingredient-validation'
 
 interface UseIngredientEditorParams {
   mealId: number
@@ -37,14 +41,11 @@ export function useIngredientEditor({
 
   // Sync overrides when initialOverrides changes (e.g., after save or navigation)
   // Using _overridesKey to detect actual data changes from server
-  const prevOverridesKeyRef = useRef(_overridesKey)
   useEffect(() => {
-    prevOverridesKeyRef.current = _overridesKey
     setOverrides(initialOverrides || [])
     // Data synced from server - clear waiting state
     setIsWaitingForSync(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_overridesKey])
+  }, [_overridesKey, initialOverrides])
 
   // Check if there are any changes from initial state
   const hasChanges = useMemo(() => {
@@ -106,36 +107,15 @@ export function useIngredientEditor({
         return { valid: false, error: 'Składnik nie znaleziony' }
       }
 
-      // Non-scalable ingredients: allow only 0 (excluded) or original amount (restored)
-      if (!ingredient.is_scalable && newAmount !== 0) {
-        // Allow restoring to original amount
-        if (Math.abs(newAmount - ingredient.amount) > 0.01) {
-          return { valid: false, error: 'Ten składnik nie może być skalowany' }
-        }
+      const validatable: ValidatableIngredient = {
+        id: ingredient.id,
+        amount: ingredient.amount,
+        is_scalable: ingredient.is_scalable,
       }
 
-      if (newAmount < 0) {
-        return { valid: false, error: 'Ilość nie może być ujemna' }
-      }
-
-      // Amount = 0 means excluded ingredient - no warning needed
-      if (newAmount === 0) {
-        return { valid: true }
-      }
-
-      const originalAmount = ingredient.amount
-      const diffPercent =
-        Math.abs((newAmount - originalAmount) / originalAmount) * 100
-
-      // Show warning if change > ±15%
-      if (diffPercent > 15) {
-        return {
-          valid: true,
-          warning: `Duża zmiana (${diffPercent.toFixed(1)}%) - może to zaburzyć proporcje przepisu`,
-        }
-      }
-
-      return { valid: true }
+      return validateIngredientAmount(validatable, newAmount, {
+        includeWarnings: true,
+      })
     },
     [ingredients]
   )

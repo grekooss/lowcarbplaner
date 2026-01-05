@@ -189,8 +189,8 @@ export function EditableIngredientRow({
     <div
       data-testid='ingredient-row'
       className={cn(
-        'space-y-1 rounded-lg',
-        compact ? 'px-1 py-2' : 'px-3 py-3',
+        'space-y-1 rounded-lg border border-white bg-white/70 shadow-sm',
+        compact ? 'px-2 py-2' : 'px-3 py-3',
         isExcluded && 'bg-gray-100/50'
       )}
     >
@@ -203,8 +203,8 @@ export function EditableIngredientRow({
             isExcluded
               ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-50'
               : isChecked
-                ? 'border-primary bg-primary cursor-pointer'
-                : 'border-border hover:border-primary cursor-pointer bg-white'
+                ? 'border-primary bg-primary cursor-pointer shadow-md'
+                : 'hover:border-primary cursor-pointer border-white bg-white shadow-md'
           )}
           onClick={handleCheckboxClick}
           onKeyDown={handleCheckboxKeyDown}
@@ -248,17 +248,17 @@ export function EditableIngredientRow({
                 isExcluded ? 'pointer-events-none opacity-50' : ''
               )}
             >
-              {/* Amount display - pokazuje przyjazną jednostkę z +/- nad gramami z +/- */}
-              <div className='flex flex-col items-center gap-1 whitespace-nowrap'>
-                {/* Przyjazna jednostka (np. 1 szt) z przyciskami +/- - jeśli dostępna */}
-                {ingredient.display_unit && (
-                  <div className='flex items-center gap-1'>
+              {/* Amount display - kolumny: minus | wartości | plus */}
+              <div className='flex items-center gap-1 whitespace-nowrap'>
+                {/* Kolumna z przyciskami minus */}
+                <div className='flex flex-col items-center gap-1'>
+                  {ingredient.display_unit && (
                     <button
                       type='button'
                       onClick={handleDisplayUnitDecrement}
                       disabled={currentAmount <= 0 || isExcluded}
                       className={cn(
-                        'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                        'hover:border-primary flex items-center justify-center rounded-md border border-white bg-white shadow-md transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50',
                         compact ? 'h-5 w-5' : 'h-6 w-6'
                       )}
                     >
@@ -269,6 +269,28 @@ export function EditableIngredientRow({
                         )}
                       />
                     </button>
+                  )}
+                  <button
+                    type='button'
+                    onClick={handleGramDecrement}
+                    disabled={isExcluded}
+                    className={cn(
+                      'hover:border-primary flex items-center justify-center rounded-md border border-white bg-white shadow-md transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50',
+                      compact ? 'h-5 w-5' : 'h-6 w-6'
+                    )}
+                  >
+                    <Minus
+                      className={cn(
+                        compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                        'text-gray-600'
+                      )}
+                    />
+                  </button>
+                </div>
+
+                {/* Kolumna z wartościami */}
+                <div className='flex flex-col items-end gap-1'>
+                  {ingredient.display_unit && (
                     <div className='flex items-baseline'>
                       <span
                         className={cn(
@@ -294,42 +316,7 @@ export function EditableIngredientRow({
                         {ingredient.display_unit}
                       </span>
                     </div>
-                    <button
-                      type='button'
-                      onClick={handleDisplayUnitIncrement}
-                      disabled={isExcluded}
-                      className={cn(
-                        'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                        compact ? 'h-5 w-5' : 'h-6 w-6'
-                      )}
-                    >
-                      <Plus
-                        className={cn(
-                          compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                          'text-gray-600'
-                        )}
-                      />
-                    </button>
-                  </div>
-                )}
-                {/* Oryginalna jednostka (g/ml) - edytowalna z przyciskami +/- */}
-                <div className='flex items-center gap-1'>
-                  <button
-                    type='button'
-                    onClick={handleGramDecrement}
-                    disabled={isExcluded}
-                    className={cn(
-                      'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
-                      compact ? 'h-5 w-5' : 'h-6 w-6'
-                    )}
-                  >
-                    <Minus
-                      className={cn(
-                        compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                        'text-gray-600'
-                      )}
-                    />
-                  </button>
+                  )}
                   <div className='flex items-baseline'>
                     <Input
                       type='number'
@@ -353,12 +340,34 @@ export function EditableIngredientRow({
                       {ingredient.unit}
                     </span>
                   </div>
+                </div>
+
+                {/* Kolumna z przyciskami plus */}
+                <div className='flex flex-col items-center gap-1'>
+                  {ingredient.display_unit && (
+                    <button
+                      type='button'
+                      onClick={handleDisplayUnitIncrement}
+                      disabled={isExcluded}
+                      className={cn(
+                        'hover:border-primary flex items-center justify-center rounded-md border border-white bg-white shadow-md transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50',
+                        compact ? 'h-5 w-5' : 'h-6 w-6'
+                      )}
+                    >
+                      <Plus
+                        className={cn(
+                          compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                          'text-gray-600'
+                        )}
+                      />
+                    </button>
+                  )}
                   <button
                     type='button'
                     onClick={handleIncrement}
                     disabled={isExcluded}
                     className={cn(
-                      'border-border hover:border-primary flex items-center justify-center rounded-md border-2 bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+                      'hover:border-primary flex items-center justify-center rounded-md border border-white bg-white shadow-md transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50',
                       compact ? 'h-5 w-5' : 'h-6 w-6'
                     )}
                   >
@@ -380,13 +389,13 @@ export function EditableIngredientRow({
                 onClick={handleExcludeClick}
                 disabled={isChecked && !isExcluded}
                 className={cn(
-                  'ml-1 flex items-center justify-center rounded-md border-2 transition-all duration-200',
+                  'ml-1 flex items-center justify-center rounded-md border shadow-md transition-all duration-200',
                   compact ? 'h-5 w-5' : 'h-6 w-6',
                   isChecked && !isExcluded
                     ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-50'
                     : isExcluded
                       ? 'border-primary bg-primary/10 hover:bg-primary/20'
-                      : 'border-border bg-white hover:border-red-400 hover:bg-red-50'
+                      : 'border-white bg-white hover:border-red-400 hover:bg-red-50'
                 )}
                 title={
                   isChecked && !isExcluded
@@ -475,13 +484,13 @@ export function EditableIngredientRow({
                 onClick={handleExcludeClick}
                 disabled={isChecked && !isExcluded}
                 className={cn(
-                  'ml-1 flex items-center justify-center rounded-md border-2 transition-all duration-200',
+                  'ml-1 flex items-center justify-center rounded-md border shadow-md transition-all duration-200',
                   compact ? 'h-5 w-5' : 'h-6 w-6',
                   isChecked && !isExcluded
                     ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-50'
                     : isExcluded
                       ? 'border-primary bg-primary/10 hover:bg-primary/20'
-                      : 'border-border bg-white hover:border-red-400 hover:bg-red-50'
+                      : 'border-white bg-white hover:border-red-400 hover:bg-red-50'
                 )}
                 title={
                   isChecked && !isExcluded

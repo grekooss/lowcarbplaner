@@ -30,7 +30,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'name', label: 'Nazwa' },
   { value: 'calories', label: 'Kalorie' },
   { value: 'fats', label: 'Tłuszcze' },
-  { value: 'carbs', label: 'Węglowodany' },
+  { value: 'carbs', label: 'Węgl. netto' },
   { value: 'protein', label: 'Białko' },
 ]
 

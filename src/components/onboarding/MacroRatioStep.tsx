@@ -143,7 +143,7 @@ export function MacroRatioStep({
                       )}
                     />
                     <MacroCard
-                      label='Węglowodany'
+                      label='Węgl. netto'
                       value={macros.carbs}
                       unit='g'
                       variant='carbs'

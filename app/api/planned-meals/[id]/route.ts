@@ -26,6 +26,7 @@ import {
   getClientIp,
   rateLimitHeaders,
 } from '@/lib/utils/rate-limit'
+import { logErrorLevel } from '@/lib/error-logger'
 
 /**
  * PATCH /api/planned-meals/{id}
@@ -41,7 +42,7 @@ export async function PATCH(
   try {
     // 0. Rate limiting check (strict for meal updates)
     const clientIp = getClientIp(request)
-    const rateLimitResult = strictRateLimit.check(clientIp)
+    const rateLimitResult = await strictRateLimit.check(clientIp)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -138,7 +139,7 @@ export async function PATCH(
     return NextResponse.json({ data: result.data }, { status: 200 })
   } catch (err) {
     // 7. Catch-all dla nieoczekiwanych błędów
-    console.error('Nieoczekiwany błąd w PATCH /api/planned-meals/{id}:', err)
+    logErrorLevel(err, { source: 'api.planned-meals.[id].PATCH' })
     return NextResponse.json(
       {
         error: {

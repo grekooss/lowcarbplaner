@@ -16,12 +16,17 @@ import { DAY_NAMES, MONTH_NAMES } from '@/types/viewmodels'
  * @returns Tablica 7 dni z metadanymi dla UI
  */
 export function useCalendarDays(selectedDate: Date): CalendarDayViewModel[] {
+  // Normalizujemy Date do stringa YYYY-MM-DD dla stabilnej zależności useMemo
+  // Zapobiega to niepotrzebnym przeliczeniom gdy referencja Date się zmienia
+  // ale data pozostaje ta sama
+  const selectedDateStr = selectedDate.toISOString().split('T')[0] as string
+
   return useMemo(() => {
     // Zacznij od dzisiaj
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const normalizedSelected = new Date(selectedDate)
+    const normalizedSelected = new Date(selectedDateStr)
     normalizedSelected.setHours(0, 0, 0, 0)
 
     const days: CalendarDayViewModel[] = []
@@ -42,5 +47,5 @@ export function useCalendarDays(selectedDate: Date): CalendarDayViewModel[] {
     }
 
     return days
-  }, [selectedDate])
+  }, [selectedDateStr])
 }

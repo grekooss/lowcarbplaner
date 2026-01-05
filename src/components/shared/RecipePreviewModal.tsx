@@ -7,6 +7,7 @@
 
 import { RecipeViewModal } from './RecipeViewModal'
 import { useRecipeViewModal } from '@/hooks/useRecipeViewModal'
+import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
 import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipePreviewModalProps {
@@ -25,6 +26,7 @@ export function RecipePreviewModal({
   onClose,
 }: RecipePreviewModalProps) {
   const { ingredientEditor } = useRecipeViewModal({ recipe })
+  const { isAuthenticated } = useAuthCheck()
 
   return (
     <RecipeViewModal
@@ -35,6 +37,7 @@ export function RecipePreviewModal({
       testId='recipe-preview-modal'
       preventOutsideClose={true}
       zIndexClass='z-[60]'
+      isAuthenticated={isAuthenticated ?? false}
     />
   )
 }

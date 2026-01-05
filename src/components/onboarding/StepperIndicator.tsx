@@ -39,9 +39,9 @@ export function StepperIndicator({ steps }: StepperIndicatorProps) {
         <div className='relative h-2 overflow-hidden rounded-full bg-white/60'>
           <div
             className='bg-primary absolute top-0 left-0 h-full transition-all duration-300'
-            style={{
-              width: `${((steps.findIndex((s) => s.isCurrent) + 1) / steps.length) * 100}%`,
-            }}
+            data-value={Math.round(
+              ((steps.findIndex((s) => s.isCurrent) + 1) / steps.length) * 100
+            )}
           />
         </div>
       </div>

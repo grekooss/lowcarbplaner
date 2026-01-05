@@ -64,11 +64,10 @@ function AnimatedProgressBar({
 
   return (
     <div
-      className='border-border-light bg-bg-tertiary w-full overflow-hidden rounded-full border'
-      style={{ height }}
+      className={`border-border-light bg-bg-tertiary w-full overflow-hidden rounded-full border ${height === 8 ? 'progress-h-8' : 'progress-h-12'}`}
     >
       {isMounted && (
-        <ResponsiveContainer width='100%' height='100%'>
+        <ResponsiveContainer width='100%' height={height} minHeight={height}>
           <BarChart
             data={data}
             layout='vertical'
@@ -145,7 +144,8 @@ export function MacroProgressSection({
         return {
           calories: acc.calories + nutrition.calories,
           protein_g: acc.protein_g + nutrition.protein_g,
-          carbs_g: acc.carbs_g + nutrition.carbs_g,
+          // Używamy net_carbs_g zamiast carbs_g dla diety keto/low-carb
+          carbs_g: acc.carbs_g + nutrition.net_carbs_g,
           fats_g: acc.fats_g + nutrition.fats_g,
         }
       },
@@ -175,7 +175,7 @@ export function MacroProgressSection({
     },
     {
       key: 'carbs' as const,
-      label: 'Węglowodany',
+      label: 'Węgl. netto',
       consumed: macros.consumed.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
@@ -209,7 +209,7 @@ export function MacroProgressSection({
     },
     {
       key: 'carbs' as const,
-      label: 'Węglowodany',
+      label: 'Węgl. netto',
       value: plannedTotals.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
@@ -330,7 +330,7 @@ export function MacroProgressSection({
 
         <div className='relative flex h-56 items-center justify-center'>
           {isMounted && (
-            <ResponsiveContainer width='100%' height='100%'>
+            <ResponsiveContainer width='100%' height={224} minHeight={224}>
               <PieChart>
                 <Pie
                   data={chartData}

@@ -28,7 +28,11 @@ const emptyRecipe: RecipeDTO = {
   total_calories: null,
   total_protein_g: null,
   total_carbs_g: null,
+  total_fiber_g: null,
+  total_polyols_g: null,
+  total_net_carbs_g: null,
   total_fats_g: null,
+  total_saturated_fat_g: null,
   ingredients: [],
   equipment: [],
 }

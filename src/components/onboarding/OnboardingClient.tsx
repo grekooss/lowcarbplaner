@@ -8,7 +8,6 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import type {
   OnboardingFormData,
   CalculatedTargets,
@@ -19,6 +18,7 @@ import {
   generateWeightLossOptions,
 } from '@/lib/utils/nutrition-calculator-client'
 import { createProfile } from '@/lib/actions/profile'
+import { logErrorLevel } from '@/lib/error-logger'
 import { GenderStep } from './GenderStep'
 import { AgeStep } from './AgeStep'
 import { WeightStep } from './WeightStep'
@@ -50,8 +50,39 @@ const INITIAL_FORM_DATA: OnboardingFormData = {
 
 const TOTAL_STEPS = 10
 
+/**
+ * Type guard sprawdzający czy wszystkie wymagane pola formularza są wypełnione
+ * Używane do bezpiecznego dostępu do wartości bez non-null assertions
+ */
+function isFormDataComplete(
+  data: OnboardingFormData
+): data is OnboardingFormData & {
+  gender: NonNullable<OnboardingFormData['gender']>
+  age: NonNullable<OnboardingFormData['age']>
+  weight_kg: NonNullable<OnboardingFormData['weight_kg']>
+  height_cm: NonNullable<OnboardingFormData['height_cm']>
+  activity_level: NonNullable<OnboardingFormData['activity_level']>
+  goal: NonNullable<OnboardingFormData['goal']>
+  meal_plan_type: NonNullable<OnboardingFormData['meal_plan_type']>
+  eating_start_time: NonNullable<OnboardingFormData['eating_start_time']>
+  eating_end_time: NonNullable<OnboardingFormData['eating_end_time']>
+  macro_ratio: NonNullable<OnboardingFormData['macro_ratio']>
+} {
+  return (
+    data.gender !== null &&
+    data.age !== null &&
+    data.weight_kg !== null &&
+    data.height_cm !== null &&
+    data.activity_level !== null &&
+    data.goal !== null &&
+    data.meal_plan_type !== null &&
+    data.eating_start_time !== null &&
+    data.eating_end_time !== null &&
+    data.macro_ratio !== null
+  )
+}
+
 export function OnboardingClient() {
-  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] =
     useState<OnboardingFormData>(INITIAL_FORM_DATA)
@@ -176,7 +207,7 @@ export function OnboardingClient() {
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    if (!isStep10Valid || !calculatedTargets) {
+    if (!isStep10Valid || !calculatedTargets || !isFormDataComplete(formData)) {
       toast.error('Musisz zaakceptować oświadczenie przed kontynuowaniem.')
       return
     }
@@ -185,20 +216,20 @@ export function OnboardingClient() {
     setSubmitError(null)
 
     try {
-      // Create profile
+      // Create profile - formData is now type-safe after isFormDataComplete check
       const profileResult = await createProfile({
-        gender: formData.gender!,
-        age: formData.age!,
-        weight_kg: formData.weight_kg!,
-        height_cm: formData.height_cm!,
-        activity_level: formData.activity_level!,
-        goal: formData.goal!,
+        gender: formData.gender,
+        age: formData.age,
+        weight_kg: formData.weight_kg,
+        height_cm: formData.height_cm,
+        activity_level: formData.activity_level,
+        goal: formData.goal,
         weight_loss_rate_kg_week:
           formData.weight_loss_rate_kg_week ?? undefined,
-        meal_plan_type: formData.meal_plan_type!,
-        eating_start_time: formData.eating_start_time!,
-        eating_end_time: formData.eating_end_time!,
-        macro_ratio: formData.macro_ratio!,
+        meal_plan_type: formData.meal_plan_type,
+        eating_start_time: formData.eating_start_time,
+        eating_end_time: formData.eating_end_time,
+        macro_ratio: formData.macro_ratio,
         disclaimer_accepted_at: new Date().toISOString(),
       })
 
@@ -213,13 +244,13 @@ export function OnboardingClient() {
       // Using window.location for reliable redirect on Vercel (avoids SSR prefetch issues)
       window.location.href = '/dashboard'
     } catch (error) {
-      console.error('Onboarding submission error:', error)
+      logErrorLevel(error, { source: 'OnboardingClient.handleSubmit' })
       setSubmitError(
         error instanceof Error ? error.message : 'Wystąpił nieznany błąd'
       )
       setIsSubmitting(false)
     }
-  }, [formData, calculatedTargets, isStep10Valid, router])
+  }, [formData, calculatedTargets, isStep10Valid])
 
   // Keyboard navigation
   useEffect(() => {

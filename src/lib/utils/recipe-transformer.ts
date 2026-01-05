@@ -31,7 +31,13 @@ export interface RawRecipeIngredient {
   calories: number | null
   protein_g: number | null
   carbs_g: number | null
+  /** Błonnik pokarmowy */
+  fiber_g: number | null
+  /** Poliole (alkohole cukrowe) - opcjonalne dla kompatybilności wstecznej */
+  polyols_g?: number | null
   fats_g: number | null
+  /** Tłuszcze nasycone - opcjonalne dla kompatybilności wstecznej */
+  saturated_fat_g?: number | null
   step_number: number | null
   ingredient: {
     id: number
@@ -75,7 +81,15 @@ export interface RawRecipe {
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
+  /** Błonnik całkowity */
+  total_fiber_g: number | null
+  /** Poliole całkowite (alkohole cukrowe) - opcjonalne dla kompatybilności wstecznej */
+  total_polyols_g?: number | null
+  /** Węglowodany netto (total_carbs_g - total_fiber_g - total_polyols_g) */
+  total_net_carbs_g: number | null
   total_fats_g: number | null
+  /** Całkowite tłuszcze nasycone - opcjonalne dla kompatybilności wstecznej */
+  total_saturated_fat_g?: number | null
   recipe_ingredients?: RawRecipeIngredient[]
   recipe_equipment?: RawRecipeEquipment[]
 }
@@ -308,6 +322,12 @@ export function transformRecipeToDTO(
         ri.ingredient.ingredient_unit_conversions
       )
 
+      const carbsG = ri.carbs_g || 0
+      const fiberG = ri.fiber_g || 0
+      const polyolsG = ri.polyols_g || 0
+      // Net Carbs = Total Carbs - Fiber - Polyols (zawsze >= 0)
+      const netCarbsG = Math.max(0, carbsG - fiberG - polyolsG)
+
       return {
         id: ri.ingredient.id,
         name: ri.ingredient.name,
@@ -317,8 +337,12 @@ export function transformRecipeToDTO(
         display_unit: conversion.display_unit,
         calories: ri.calories || 0,
         protein_g: ri.protein_g || 0,
-        carbs_g: ri.carbs_g || 0,
+        carbs_g: carbsG,
+        fiber_g: fiberG,
+        polyols_g: polyolsG,
+        net_carbs_g: netCarbsG,
         fats_g: ri.fats_g || 0,
+        saturated_fat_g: ri.saturated_fat_g || 0,
         category: ri.ingredient.category as IngredientDTO['category'],
         is_scalable: ri.is_scalable,
         step_number: ri.step_number ?? null,
@@ -344,6 +368,15 @@ export function transformRecipeToDTO(
     ? getRecipeImageUrl(recipe.image_url)
     : recipe.image_url
 
+  // Oblicz net carbs z total carbs, fiber i polyols
+  const totalCarbsG = recipe.total_carbs_g ?? 0
+  const totalFiberG = recipe.total_fiber_g ?? 0
+  const totalPolyolsG = recipe.total_polyols_g ?? 0
+  // Użyj wartości z bazy jeśli dostępna, inaczej oblicz
+  const totalNetCarbsG =
+    recipe.total_net_carbs_g ??
+    Math.max(0, totalCarbsG - totalFiberG - totalPolyolsG)
+
   return {
     id: recipe.id,
     name: recipe.name,
@@ -359,7 +392,11 @@ export function transformRecipeToDTO(
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
+    total_fiber_g: recipe.total_fiber_g,
+    total_polyols_g: recipe.total_polyols_g ?? null,
+    total_net_carbs_g: totalNetCarbsG,
     total_fats_g: recipe.total_fats_g,
+    total_saturated_fat_g: recipe.total_saturated_fat_g ?? null,
     ingredients,
     equipment,
   }
@@ -382,7 +419,11 @@ export const RECIPE_SELECT_FULL = `
   total_calories,
   total_protein_g,
   total_carbs_g,
+  total_fiber_g,
+  total_polyols_g,
+  total_net_carbs_g,
   total_fats_g,
+  total_saturated_fat_g,
   recipe_ingredients (
     base_amount,
     unit,
@@ -390,7 +431,10 @@ export const RECIPE_SELECT_FULL = `
     calories,
     protein_g,
     carbs_g,
+    fiber_g,
+    polyols_g,
     fats_g,
+    saturated_fat_g,
     step_number,
     ingredient:ingredients (
       id,

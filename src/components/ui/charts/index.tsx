@@ -25,12 +25,9 @@ import type {
 /**
  * Loading placeholder for charts
  */
-function ChartLoading({ height = 200 }: { height?: number }) {
+function ChartLoading() {
   return (
-    <div
-      className='flex animate-pulse items-center justify-center rounded-lg bg-white/20'
-      style={{ height }}
-    >
+    <div className='flex h-[200px] animate-pulse items-center justify-center rounded-lg bg-white/20'>
       <span className='text-sm text-gray-400'>Ładowanie wykresu...</span>
     </div>
   )

@@ -6,7 +6,7 @@ import { UtensilsCrossed, RefreshCw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { SwapRecipeDialog } from '@/components/shared/SwapRecipeDialog'
+import { LazySwapRecipeDialog } from '@/components/shared/lazy-modals'
 import type { PlannedMealDTO } from '@/types/dto.types'
 import type { MealType } from '@/types/meal-plan-view.types'
 import { MEAL_TYPE_LABELS } from '@/types/meal-plan-view.types'
@@ -114,7 +114,7 @@ export const MealCard = memo(function MealCard({
         </div>
       </div>
 
-      <SwapRecipeDialog
+      <LazySwapRecipeDialog
         meal={meal}
         open={swapDialogOpen}
         onOpenChange={setSwapDialogOpen}

@@ -11,6 +11,7 @@
  */
 
 import { createServerClient } from '@/lib/supabase/server'
+import { logErrorLevel } from '@/lib/error-logger'
 import type { ShoppingListResponseDTO } from '@/types/dto.types'
 import type { Enums } from '@/types/database.types'
 
@@ -83,7 +84,11 @@ export async function generateShoppingList(
     .not('recipe_id', 'is', null)
 
   if (error) {
-    console.error('Error fetching planned meals for shopping list:', error)
+    logErrorLevel(error, {
+      source: 'shopping-list.generateShoppingList',
+      userId,
+      metadata: { startDate, endDate, errorCode: error.code },
+    })
     throw new Error('Failed to fetch planned meals')
   }
 

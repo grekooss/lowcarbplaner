@@ -8,16 +8,19 @@
 
 'use client'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { RecipeCard } from './RecipeCard'
 import { RecipeAdPlaceholder } from './RecipeAdPlaceholder'
 import type { RecipeDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
 
 interface RecipesGridProps {
   recipes: RecipeDTO[]
-  onRecipeClick: (recipeId: number) => void
+  onRecipeClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void
   /** Ukryj badge z typem posiłku (gdy filtr jest aktywny) */
   hideMealTypeBadge?: boolean
+  /** Aktywny filtr typu posiłku - używany gdy hideMealTypeBadge=true */
+  activeMealTypeFilter?: Enums<'meal_type_enum'>
 }
 
 /**
@@ -27,8 +30,9 @@ interface RecipesGridProps {
  */
 function buildGridItems(
   recipes: RecipeDTO[],
-  onRecipeClick: (recipeId: number) => void,
-  hideMealTypeBadge: boolean
+  onRecipeClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void,
+  hideMealTypeBadge: boolean,
+  activeMealTypeFilter?: Enums<'meal_type_enum'>
 ) {
   const items: React.ReactNode[] = []
   let recipeIndex = 0
@@ -56,6 +60,8 @@ function buildGridItems(
             recipe={recipe}
             onClick={onRecipeClick}
             hideMealTypeBadge={hideMealTypeBadge}
+            activeMealTypeFilter={activeMealTypeFilter}
+            index={recipeIndex}
           />
         )
         recipeIndex++
@@ -82,7 +88,19 @@ export const RecipesGrid = memo(function RecipesGrid({
   recipes,
   onRecipeClick,
   hideMealTypeBadge = false,
+  activeMealTypeFilter,
 }: RecipesGridProps) {
+  const gridItems = useMemo(
+    () =>
+      buildGridItems(
+        recipes,
+        onRecipeClick,
+        hideMealTypeBadge,
+        activeMealTypeFilter
+      ),
+    [recipes, onRecipeClick, hideMealTypeBadge, activeMealTypeFilter]
+  )
+
   if (recipes.length === 0) {
     return (
       <div className='py-12 text-center'>
@@ -92,8 +110,6 @@ export const RecipesGrid = memo(function RecipesGrid({
       </div>
     )
   }
-
-  const gridItems = buildGridItems(recipes, onRecipeClick, hideMealTypeBadge)
 
   return (
     <div className='grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'>

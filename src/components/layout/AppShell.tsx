@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
+import { logWarning } from '@/lib/error-logger'
 import {
   LayoutDashboard,
   CalendarRange,
@@ -51,8 +52,6 @@ const NAV_ITEMS: NavItem[] = [
     requiresAuth: true,
   },
 ]
-
-const textShadowStyle = { textShadow: '0 1px 3px rgba(0,0,0,0.3)' }
 
 const getViewInfo = (pathname: string) => {
   // Root path - will redirect, show nothing
@@ -126,7 +125,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       setHeaderMenuOpen(false)
     } catch (error) {
       toast.error('Błąd podczas wylogowania')
-      console.error('Logout error:', error)
+      logWarning(error, { source: 'AppShell.handleLogout' })
     }
   }
 
@@ -192,15 +191,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Icon
             className={cn(
               'h-5 w-5',
-              isActive ? 'text-text-muted' : 'text-white'
+              isActive ? 'text-text-muted' : 'icon-shadow-nav text-white'
             )}
-            style={
-              !isActive
-                ? { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }
-                : {}
-            }
           />
-          <span style={!isActive ? textShadowStyle : {}}>{item.label}</span>
+          <span className={!isActive ? 'text-shadow-nav' : ''}>
+            {item.label}
+          </span>
         </Link>
       )
     })
@@ -208,17 +204,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       {/* Full viewport container with background */}
-      <div className='relative flex h-screen w-full items-center justify-center overflow-hidden font-sans'>
-        {/* Background Image */}
-        <div className='pointer-events-none fixed inset-0 z-0'>
-          <div
-            className='absolute inset-0 bg-cover bg-center'
-            style={{
-              backgroundImage: "url('/GeneratedImage.png')",
-            }}
-          />
-        </div>
-
+      <div className='bg-app-background relative flex h-screen w-full items-center justify-center overflow-hidden font-sans'>
         {/* Main Container Wrapper for Panel + Ads */}
         <div className='ad-layout-container relative z-30 flex h-full w-full max-w-[1800px] gap-4 lg:gap-6 lg:p-10'>
           {/* Main Glass Panel */}
@@ -233,10 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <div className='bg-primary shadow-primary/30 rounded-lg p-1.5 shadow-lg'>
                   <Hexagon className='h-5 w-5 fill-current text-white' />
                 </div>
-                <span
-                  className='text-xl font-bold tracking-tight'
-                  style={textShadowStyle}
-                >
+                <span className='text-shadow-nav text-xl font-bold tracking-tight'>
                   LowCarbPlaner
                 </span>
               </div>
@@ -244,10 +227,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className='no-scrollbar flex-1 space-y-8 overflow-y-auto'>
                 {/* Main Menu */}
                 <div>
-                  <h3
-                    className='mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'
-                    style={textShadowStyle}
-                  >
+                  <h3 className='text-shadow-nav mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'>
                     Menu
                   </h3>
                   <nav className='space-y-2'>{renderNavLinks()}</nav>
@@ -256,10 +236,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {/* System - only show when logged in */}
                 {user && (
                   <div>
-                    <h3
-                      className='mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'
-                      style={textShadowStyle}
-                    >
+                    <h3 className='text-shadow-nav mb-4 px-2 text-xs font-bold tracking-wider text-white/80 uppercase'>
                       System
                     </h3>
                     <div className='space-y-1'>
@@ -267,25 +244,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         href='/profile'
                         className='flex items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
                       >
-                        <Settings
-                          className='h-5 w-5 text-white'
-                          style={{
-                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-                          }}
-                        />
-                        <span style={textShadowStyle}>Ustawienia</span>
+                        <Settings className='icon-shadow-nav h-5 w-5 text-white' />
+                        <span className='text-shadow-nav'>Ustawienia</span>
                       </Link>
                       <button
                         onClick={handleLogout}
                         className='flex w-full items-center gap-3 rounded-md border-2 border-transparent px-4 py-3 font-medium text-white transition-all hover:bg-white/10 hover:text-white'
                       >
-                        <LogOut
-                          className='h-5 w-5 text-white'
-                          style={{
-                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-                          }}
-                        />
-                        <span style={textShadowStyle}>Wyloguj</span>
+                        <LogOut className='icon-shadow-nav h-5 w-5 text-white' />
+                        <span className='text-shadow-nav'>Wyloguj</span>
                       </button>
                     </div>
                   </div>

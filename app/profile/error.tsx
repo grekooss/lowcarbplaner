@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
+import { logErrorLevel } from '@/lib/error-logger'
 
 export default function ProfileError({
   error,
@@ -23,7 +24,7 @@ export default function ProfileError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('Profile page error:', error)
+    logErrorLevel(error, { source: 'page.profile.error' })
   }, [error])
 
   return (

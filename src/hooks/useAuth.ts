@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClientComponentClient } from '@/lib/supabase/client'
 import { translateAuthError } from '@/lib/utils/auth-errors'
+import { env } from '@/lib/env'
 import type { UseAuthReturn } from '@/types/auth-view.types'
 import type { PostgrestError } from '@supabase/supabase-js'
 
@@ -82,8 +83,6 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const supabase = createClientComponentClient()
-
   /**
    * Logowanie z email i hasłem
    */
@@ -93,6 +92,9 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       setError(null)
 
       try {
+        // Tworzenie klienta wewnątrz callback zapewnia stabilną referencję
+        const supabase = createClientComponentClient()
+
         // Logowanie przez Supabase Auth
         const { data, error: authError } =
           await supabase.auth.signInWithPassword({
@@ -129,7 +131,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
         setIsLoading(false)
       }
     },
-    [supabase, router, redirectTo]
+    [router, redirectTo]
   )
 
   /**
@@ -141,9 +143,10 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       setError(null)
 
       try {
+        const supabase = createClientComponentClient()
+
         // Use NEXT_PUBLIC_SITE_URL if set, otherwise use current origin
-        const siteUrl =
-          process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+        const siteUrl = env.NEXT_PUBLIC_SITE_URL || window.location.origin
 
         // Rejestracja przez Supabase Auth
         const { data, error: authError } = await supabase.auth.signUp({
@@ -180,7 +183,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
         setIsLoading(false)
       }
     },
-    [supabase, router]
+    [router]
   )
 
   /**
@@ -191,8 +194,10 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
     setError(null)
 
     try {
+      const supabase = createClientComponentClient()
+
       // Use NEXT_PUBLIC_SITE_URL if set, otherwise use current origin
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const siteUrl = env.NEXT_PUBLIC_SITE_URL || window.location.origin
       // redirectTo must EXACTLY match a Redirect URL in Supabase Dashboard (no query params)
       const callbackUrl = `${siteUrl}/auth/callback`
 
@@ -213,58 +218,57 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       })
       setIsGoogleLoading(false)
     }
-  }, [supabase])
+  }, [])
 
   /**
    * Wysyłka email z linkiem do resetowania hasła
    * Sprawdza najpierw czy email istnieje w bazie
    * @returns true jeśli email został wysłany, false w przypadku błędu
    */
-  const resetPassword = useCallback(
-    async (email: string): Promise<boolean> => {
-      setIsLoading(true)
-      setError(null)
+  const resetPassword = useCallback(async (email: string): Promise<boolean> => {
+    setIsLoading(true)
+    setError(null)
 
-      try {
-        // Sprawdź czy użytkownik z takim emailem istnieje (używamy RPC aby ominąć RLS)
-        const { data: emailExists, error: checkError } = await checkEmailExists(
-          supabase,
-          email
-        )
+    try {
+      const supabase = createClientComponentClient()
 
-        if (checkError) throw checkError
+      // Sprawdź czy użytkownik z takim emailem istnieje (używamy RPC aby ominąć RLS)
+      const { data: emailExists, error: checkError } = await checkEmailExists(
+        supabase,
+        email
+      )
 
-        if (!emailExists) {
-          throw new Error('Nie znaleziono konta z tym adresem email')
-        }
+      if (checkError) throw checkError
 
-        const { error: authError } = await supabase.auth.resetPasswordForEmail(
-          email,
-          {
-            redirectTo: `${window.location.origin}/auth/reset-password`,
-          }
-        )
-
-        if (authError) throw authError
-
-        toast.success('Email wysłany', {
-          description:
-            'Sprawdź swoją skrzynkę i kliknij w link resetujący hasło.',
-        })
-        return true
-      } catch (err: unknown) {
-        const errorMessage = translateAuthError(getErrorMessage(err))
-        setError(errorMessage)
-        toast.error('Błąd', {
-          description: errorMessage,
-        })
-        return false
-      } finally {
-        setIsLoading(false)
+      if (!emailExists) {
+        throw new Error('Nie znaleziono konta z tym adresem email')
       }
-    },
-    [supabase]
-  )
+
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        }
+      )
+
+      if (authError) throw authError
+
+      toast.success('Email wysłany', {
+        description:
+          'Sprawdź swoją skrzynkę i kliknij w link resetujący hasło.',
+      })
+      return true
+    } catch (err: unknown) {
+      const errorMessage = translateAuthError(getErrorMessage(err))
+      setError(errorMessage)
+      toast.error('Błąd', {
+        description: errorMessage,
+      })
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   /**
    * Aktualizacja hasła (po kliknięciu link z email)
@@ -275,6 +279,8 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
       setError(null)
 
       try {
+        const supabase = createClientComponentClient()
+
         const { error: authError } = await supabase.auth.updateUser({
           password,
         })
@@ -296,7 +302,7 @@ export function useAuth(redirectTo?: string): UseAuthReturn {
         setIsLoading(false)
       }
     },
-    [supabase, router]
+    [router]
   )
 
   return {

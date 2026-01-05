@@ -110,15 +110,6 @@ function MealTimeSlider({
     onMealsChange(updatedMeals)
   }
 
-  // Rozdziel posiłki na główne i przekąski
-  const mainMeals = meals.filter(
-    (m) => m.type === 'breakfast' || m.type === 'lunch' || m.type === 'dinner'
-  )
-  const snackMeals = meals.filter(
-    (m) => m.type === 'snack_morning' || m.type === 'snack_afternoon'
-  )
-  const hasSnacks = snackMeals.length > 0
-
   // Funkcja do określenia wyrównania etykiety w zależności od pozycji
   const getLabelAlignment = (position: number): string => {
     if (position <= 10) return 'left-0 translate-x-0' // Lewa krawędź
@@ -146,30 +137,45 @@ function MealTimeSlider({
     return ''
   }
 
+  // Funkcja do formatowania etykiety - przekąski w dwóch liniach
+  const formatLabel = (label: string): React.ReactNode => {
+    if (label.startsWith('Przekąska ')) {
+      const parts = label.split(' ')
+      return (
+        <>
+          {parts[0]}
+          <br />
+          {parts.slice(1).join(' ')}
+        </>
+      )
+    }
+    return label
+  }
+
   return (
     <div className='mt-2 border-t border-white/50 pt-2'>
-      {/* Etykiety nad sliderem - główne posiłki (pierwszy wiersz) */}
-      <div className='relative mb-2 h-8'>
-        {mainMeals.map((meal, idx) => {
+      {/* Etykiety nad sliderem - wszystkie posiłki w jednym wierszu */}
+      <div className='relative mb-2 h-12'>
+        {meals.map((meal, idx) => {
           const position =
             ((meal.index - startIndex) / (endIndex - startIndex)) * 100
           const clampedPosition = Math.max(0, Math.min(100, position))
           return (
             <div
-              key={`label-main-${meal.type}-${idx}`}
+              key={`label-${meal.type}-${idx}`}
               className={cn(
-                'absolute flex flex-col transition-all duration-150',
+                'absolute flex h-full flex-col justify-end transition-all duration-150',
                 getLabelAlignment(clampedPosition),
                 getLabelTextAlign(clampedPosition)
               )}
               style={getLabelStyle(clampedPosition)}
             >
-              <span className='text-muted-foreground text-[10px] leading-tight whitespace-nowrap'>
-                {meal.label}
+              <span className='text-muted-foreground text-center text-[10px] leading-tight'>
+                {formatLabel(meal.label)}
               </span>
               <span
                 className={cn(
-                  'text-foreground text-xs leading-tight font-semibold',
+                  'text-foreground text-center text-xs leading-tight font-semibold',
                   getTimeAlign(clampedPosition)
                 )}
               >
@@ -179,40 +185,6 @@ function MealTimeSlider({
           )
         })}
       </div>
-
-      {/* Etykiety nad sliderem - przekąski (drugi wiersz) */}
-      {hasSnacks && (
-        <div className='relative mb-2 h-8'>
-          {snackMeals.map((meal, idx) => {
-            const position =
-              ((meal.index - startIndex) / (endIndex - startIndex)) * 100
-            const clampedPosition = Math.max(0, Math.min(100, position))
-            return (
-              <div
-                key={`label-snack-${meal.type}-${idx}`}
-                className={cn(
-                  'absolute flex flex-col transition-all duration-150',
-                  getLabelAlignment(clampedPosition),
-                  getLabelTextAlign(clampedPosition)
-                )}
-                style={getLabelStyle(clampedPosition)}
-              >
-                <span className='text-muted-foreground text-[10px] leading-tight whitespace-nowrap'>
-                  {meal.label}
-                </span>
-                <span
-                  className={cn(
-                    'text-foreground text-xs leading-tight font-semibold',
-                    getTimeAlign(clampedPosition)
-                  )}
-                >
-                  {indexToTime(meal.index)}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
 
       {/* Slider z wieloma uchwytami */}
       <SliderPrimitive.Root

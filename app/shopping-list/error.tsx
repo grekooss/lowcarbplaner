@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { AsyncErrorFallback } from '@/components/shared/ErrorBoundary'
 
 /**
  * ShoppingListError - Error boundary dla strony Lista Zakupów
@@ -15,12 +15,10 @@ export default function ShoppingListError({
   reset: () => void
 }) {
   return (
-    <div className='container mx-auto px-4 py-16 text-center'>
-      <h1 className='mb-4 text-2xl font-bold'>
-        Nie udało się załadować listy zakupów
-      </h1>
-      <p className='text-muted-foreground mb-8'>{error.message}</p>
-      <Button onClick={reset}>Spróbuj ponownie</Button>
-    </div>
+    <AsyncErrorFallback
+      error={error}
+      reset={reset}
+      featureName='Lista Zakupów'
+    />
   )
 }

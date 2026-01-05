@@ -9,9 +9,10 @@
  * @module components/shared/ErrorBoundary
  */
 
-import { Component, type ReactNode, type ErrorInfo } from 'react'
+import { Component, type ReactNode, type ErrorInfo, useEffect } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { logErrorLevel } from '@/lib/error-logger'
 
 interface ErrorBoundaryProps {
   /** Child components to wrap */
@@ -58,8 +59,14 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error
-    console.error('Error caught by ErrorBoundary:', error, errorInfo)
+    // Log the error using the centralized error logger
+    logErrorLevel(error, {
+      source: 'ErrorBoundary.componentDidCatch',
+      metadata: {
+        featureName: this.props.featureName,
+        componentStack: errorInfo.componentStack,
+      },
+    })
 
     // Call optional error handler
     this.props.onError?.(error, errorInfo)
@@ -119,6 +126,13 @@ export function AsyncErrorFallback({
   reset,
   featureName,
 }: AsyncErrorFallbackProps) {
+  useEffect(() => {
+    logErrorLevel(error, {
+      source: 'AsyncErrorFallback',
+      metadata: { featureName, digest: error.digest },
+    })
+  }, [error, featureName])
+
   return (
     <div className='flex min-h-[400px] flex-col items-center justify-center p-6 text-center'>
       <AlertTriangle className='mb-4 h-16 w-16 text-red-500' />

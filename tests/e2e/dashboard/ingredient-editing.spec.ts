@@ -56,13 +56,13 @@ test.describe('Dashboard - Ingredient Editing', () => {
     await expect(ingredients.first()).toBeVisible()
   })
 
-  // TODO: Fix ingredient editing functionality
+  // FIXME: Ingredient editing functionality needs debugging
   // Issue: Modal "Zapisz zmiany" button doesn't persist changes to database
-  // Root cause: Ingredient quantity changes are not being saved
+  // Root cause: Ingredient quantity changes are not being saved via Server Action
   // Expected: Macro values should update after editing ingredient quantity
   // Actual: Macro values remain unchanged (proteinAfter === proteinBefore)
   // Test passes when run individually due to timing, but fails in suite
-  test.skip('should edit ingredient quantity', async ({
+  test.fixme('should edit ingredient quantity', async ({
     authenticatedPage: page,
   }) => {
     const dashboard = new DashboardPage(page)
@@ -87,12 +87,12 @@ test.describe('Dashboard - Ingredient Editing', () => {
     expect(proteinAfter).toBeGreaterThan(0)
   })
 
-  // TODO: Fix live macro preview feature
+  // FIXME: Live macro preview feature needs implementation
   // Depends on: Ingredient editing functionality (see test above)
   // Issue: Live preview component [data-testid="live-preview"] not rendering
   // Expected: Preview shows updated macro values while editing
   // Actual: Preview element not found in DOM
-  test.skip('should show live macro preview while editing', async ({
+  test.fixme('should show live macro preview while editing', async ({
     authenticatedPage: page,
   }) => {
     const dashboard = new DashboardPage(page)
@@ -122,12 +122,12 @@ test.describe('Dashboard - Ingredient Editing', () => {
     await expect(livePreview).toContainText(/węglowodany/i)
   })
 
-  // TODO: Fix cancel ingredient edit functionality
+  // FIXME: Cancel ingredient edit depends on working edit feature
   // Depends on: Ingredient editing functionality (see tests above)
   // Issue: Cancel button behavior not working correctly
   // Expected: Macros remain unchanged after cancel
   // Actual: Test timing issues, depends on working edit feature first
-  test.skip('should cancel ingredient edit', async ({
+  test.fixme('should cancel ingredient edit', async ({
     authenticatedPage: page,
   }) => {
     const dashboard = new DashboardPage(page)
@@ -160,12 +160,12 @@ test.describe('Dashboard - Ingredient Editing', () => {
     expect(proteinAfter).toBe(proteinBefore)
   })
 
-  // TODO: Fix calendar navigation functionality
+  // FIXME: Calendar navigation button selector needs update
   // Issue: Next day button [aria-label="Następny dzień"] not found or not clickable
   // Error: TimeoutError waiting for nextDayButton.click()
   // Expected: Calendar navigation works between days
   // Actual: Button element not present or timing issue
-  test.skip('should navigate between days', async ({
+  test.fixme('should navigate between days', async ({
     authenticatedPage: page,
   }) => {
     const dashboard = new DashboardPage(page)
@@ -194,12 +194,12 @@ test.describe('Dashboard - Ingredient Editing', () => {
     await dashboard.goToToday()
   })
 
-  // TODO: Fix validation for ingredient editing
+  // FIXME: Validation depends on working ingredient editing
   // Depends on: Ingredient editing functionality (see tests above)
   // Issue: Validation may not work if save functionality is broken
   // Expected: Validation error for negative quantities
   // Actual: Needs working save feature to test validation
-  test.skip('should handle ingredient edit validation', async ({
+  test.fixme('should handle ingredient edit validation', async ({
     authenticatedPage: page,
   }) => {
     const dashboard = new DashboardPage(page)
@@ -227,12 +227,12 @@ test.describe('Dashboard - Ingredient Editing', () => {
     await expect(page.locator('text=/dodatnia|positive/i')).toBeVisible()
   })
 
-  // TODO: Fix persistence of ingredient changes
+  // FIXME: Persistence depends on working ingredient editing
   // Depends on: Ingredient editing functionality (see tests above)
   // Issue: Cannot test persistence when save functionality doesn't work
   // Expected: Changes persist after page reload
   // Actual: Needs working save feature to test persistence
-  test.skip('should persist ingredient changes after reload', async ({
+  test.fixme('should persist ingredient changes after reload', async ({
     authenticatedPage: page,
   }) => {
     const dashboard = new DashboardPage(page)

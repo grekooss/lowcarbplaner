@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { updateMyProfile } from '@/lib/actions/profile'
+import { logWarning } from '@/lib/error-logger'
 import { toast } from 'sonner'
 import type { ProfileDTO } from '@/types/dto.types'
 import {
@@ -66,7 +67,10 @@ export function useProfileForm(initialProfile: ProfileDTO) {
   }
 
   const handleSubmit = form.handleSubmit(onSubmit, (errors) => {
-    console.error('Form validation errors:', errors)
+    logWarning(errors, {
+      source: 'useProfileForm.handleSubmit',
+      metadata: { errors },
+    })
     const firstError = Object.values(errors)[0]
     if (firstError?.message) {
       toast.error('Błąd walidacji', {

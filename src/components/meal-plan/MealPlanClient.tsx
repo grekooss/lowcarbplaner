@@ -231,7 +231,7 @@ export const MealPlanClient = ({
     <div className='space-y-3 sm:space-y-8'>
       {/* Wskaźnik generowania planu */}
       {isGenerating && (
-        <div className='bg-info/10 rounded-md border p-4 sm:rounded-2xl'>
+        <div className='rounded-md border-2 border-white bg-white/40 p-4 backdrop-blur-md sm:rounded-2xl'>
           <div className='flex items-center gap-3'>
             <Loader2 className='text-info h-5 w-5 animate-spin' />
             <div>

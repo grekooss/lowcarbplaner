@@ -10,7 +10,27 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { logErrorLevel } from '@/lib/error-logger'
 import type { Database, Json } from '@/types/database.types'
+
+/**
+ * Type-safe JSON conversion helper
+ *
+ * Converts a typed object to Supabase's Json type for database storage.
+ * Using JSON.parse(JSON.stringify()) ensures:
+ * 1. The object is actually JSON-serializable (no functions, circular refs, etc.)
+ * 2. The result matches what will be stored in the database
+ * 3. Runtime validation that the data can be serialized
+ *
+ * This is safer than direct `as unknown as Json` because:
+ * - It validates at runtime that the object is JSON-serializable
+ * - Non-serializable values (functions, circular refs) throw an error
+ * - The cast is explicit and documented
+ */
+function toJsonColumn<T>(obj: T): Json {
+  // Runtime validation: JSON.stringify will throw if obj is not serializable
+  return JSON.parse(JSON.stringify(obj)) as Json
+}
 
 type HistoryEventType = Database['public']['Enums']['history_event_type_enum']
 
@@ -85,13 +105,17 @@ export async function recordProfileCreated(
       .insert({
         user_id: user.id,
         event_type: 'profile_created' as HistoryEventType,
-        profile_snapshot: profileSnapshot as unknown as Json,
+        profile_snapshot: toJsonColumn(profileSnapshot),
       })
       .select('id')
       .single()
 
     if (error) {
-      console.error('Błąd zapisu historii profile_created:', error)
+      logErrorLevel(error, {
+        source: 'user-history.recordProfileCreated',
+        userId: user.id,
+        metadata: { errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -100,7 +124,7 @@ export async function recordProfileCreated(
 
     return { data: { id: data.id } }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w recordProfileCreated:', err)
+    logErrorLevel(err, { source: 'user-history.recordProfileCreated' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -130,13 +154,17 @@ export async function recordProfileUpdated(
       .insert({
         user_id: user.id,
         event_type: 'profile_updated' as HistoryEventType,
-        profile_snapshot: profileSnapshot as unknown as Json,
+        profile_snapshot: toJsonColumn(profileSnapshot),
       })
       .select('id')
       .single()
 
     if (error) {
-      console.error('Błąd zapisu historii profile_updated:', error)
+      logErrorLevel(error, {
+        source: 'user-history.recordProfileUpdated',
+        userId: user.id,
+        metadata: { errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -145,7 +173,7 @@ export async function recordProfileUpdated(
 
     return { data: { id: data.id } }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w recordProfileUpdated:', err)
+    logErrorLevel(err, { source: 'user-history.recordProfileUpdated' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -176,13 +204,17 @@ export async function recordMealEaten(
         user_id: user.id,
         event_type: 'meal_eaten' as HistoryEventType,
         event_date: mealData.meal_date,
-        meal_data: mealData as unknown as Json,
+        meal_data: toJsonColumn(mealData),
       })
       .select('id')
       .single()
 
     if (error) {
-      console.error('Błąd zapisu historii meal_eaten:', error)
+      logErrorLevel(error, {
+        source: 'user-history.recordMealEaten',
+        userId: user.id,
+        metadata: { mealData, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -191,7 +223,7 @@ export async function recordMealEaten(
 
     return { data: { id: data.id } }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w recordMealEaten:', err)
+    logErrorLevel(err, { source: 'user-history.recordMealEaten' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -225,7 +257,11 @@ export async function removeMealEaten(
       .filter('meal_data->>planned_meal_id', 'eq', plannedMealId.toString())
 
     if (error) {
-      console.error('Błąd usuwania historii meal_eaten:', error)
+      logErrorLevel(error, {
+        source: 'user-history.removeMealEaten',
+        userId: user.id,
+        metadata: { plannedMealId, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -234,7 +270,7 @@ export async function removeMealEaten(
 
     return { data: { deleted: true } }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w removeMealEaten:', err)
+    logErrorLevel(err, { source: 'user-history.removeMealEaten' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -298,7 +334,11 @@ export async function getUserHistory(params: {
     const { data, error } = await query
 
     if (error) {
-      console.error('Błąd pobierania historii:', error)
+      logErrorLevel(error, {
+        source: 'user-history.getUserHistory',
+        userId: user.id,
+        metadata: { params, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -316,7 +356,7 @@ export async function getUserHistory(params: {
       })),
     }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getUserHistory:', err)
+    logErrorLevel(err, { source: 'user-history.getUserHistory' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -357,7 +397,11 @@ export async function getDailySummary(date: string): Promise<
       .eq('event_date', date)
 
     if (error) {
-      console.error('Błąd pobierania podsumowania dziennego:', error)
+      logErrorLevel(error, {
+        source: 'user-history.getDailySummary',
+        userId: user.id,
+        metadata: { date, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
@@ -380,7 +424,7 @@ export async function getDailySummary(date: string): Promise<
 
     return { data: summary }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getDailySummary:', err)
+    logErrorLevel(err, { source: 'user-history.getDailySummary' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
