@@ -19,6 +19,7 @@ import {
   getClientIp,
   rateLimitHeaders,
 } from '@/lib/utils/rate-limit'
+import { logErrorLevel } from '@/lib/error-logger'
 
 /**
  * GET /api/recipes/[id]
@@ -33,7 +34,7 @@ export async function GET(
   try {
     // 0. Rate limiting check
     const clientIp = getClientIp(request)
-    const rateLimitResult = rateLimit.check(clientIp)
+    const rateLimitResult = await rateLimit.check(clientIp)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -100,7 +101,7 @@ export async function GET(
     })
   } catch (err) {
     // 6. Catch-all dla nieoczekiwanych błędów
-    console.error('Nieoczekiwany błąd w GET /api/recipes/[id]:', err)
+    logErrorLevel(err, { source: 'api.recipes.[id].GET' })
     return NextResponse.json(
       {
         error: {

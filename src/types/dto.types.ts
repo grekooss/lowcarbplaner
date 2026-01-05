@@ -44,6 +44,7 @@ export type IngredientOverrides = {
 /**
  * Command Model: Dane wejściowe z formularza onboardingu
  * Bazuje na TablesInsert<"profiles"> z wybranymi polami
+ * eating_start_time i eating_end_time są wymagane (non-optional)
  */
 export type OnboardingCommand = Pick<
   TablesInsert<'profiles'>,
@@ -56,7 +57,10 @@ export type OnboardingCommand = Pick<
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
   | 'macro_ratio'
->
+> & {
+  eating_start_time: string
+  eating_end_time: string
+}
 
 /**
  * DTO: Obliczone cele kaloryczne i makroskładniki
@@ -94,6 +98,9 @@ export type CreateProfileResponseDTO = {
   goal: Enums<'goal_enum'>
   weight_loss_rate_kg_week: number | null
   meal_plan_type: Enums<'meal_plan_type_enum'>
+  eating_start_time: string
+  eating_end_time: string
+  selected_meals: Enums<'meal_type_enum'>[] | null
   macro_ratio: Enums<'macro_ratio_enum'>
   disclaimer_accepted_at: string
   target_calories: number
@@ -127,6 +134,8 @@ export type UpdateProfileCommand = Pick<
   | 'goal'
   | 'weight_loss_rate_kg_week'
   | 'meal_plan_type'
+  | 'eating_start_time'
+  | 'eating_end_time'
   | 'macro_ratio'
 >
 
@@ -144,18 +153,57 @@ export type GeneratePlanResponseDTO = {
 // ============================================================================
 
 /**
+ * DTO: Pojedyncze naczynie/sprzęt kuchenny
+ * Bazuje na Tables<'equipment'> + Tables<'recipe_equipment'>
+ */
+export type EquipmentDTO = {
+  id: number
+  name: string
+  name_plural: string | null
+  category: Enums<'equipment_category_enum'>
+  icon_name: string | null
+  quantity: number
+  notes: string | null
+}
+
+/**
  * DTO: Pojedynczy składnik z ilością w przepisie
  * Bazuje na Tables<'recipe_ingredients', { schema: 'public' }> + join z Tables<'ingredients', { schema: 'public' }>
+ *
+ * Jednostki:
+ * - amount/unit: oryginalna wartość w gramach/ml (używana do obliczeń i modyfikacji ±)
+ * - display_amount/display_unit: przyjazna jednostka np. "1 sztuka" (używana do wyświetlania)
+ *
+ * Węglowodany:
+ * - carbs_g: węglowodany całkowite (Total Carbs)
+ * - fiber_g: błonnik
+ * - polyols_g: poliole (alkohole cukrowe: erytrytol, ksylitol, maltitol, sorbitol)
+ * - net_carbs_g: węglowodany netto (carbs_g - fiber_g - polyols_g) - kluczowe dla diety keto/low-carb
  */
 export type IngredientDTO = {
   id: number
   name: string
+  /** Ilość w oryginalnej jednostce (g/ml) - używana do obliczeń */
   amount: number
+  /** Oryginalna jednostka (g/ml) - używana do obliczeń */
   unit: string
+  /** Ilość w przyjaznej jednostce (np. 1 sztuka) - do wyświetlania */
+  display_amount: number
+  /** Przyjazna jednostka (np. sztuka) - do wyświetlania, null jeśli brak konwersji */
+  display_unit: string | null
   calories: number
   protein_g: number
+  /** Węglowodany całkowite (Total Carbs) */
   carbs_g: number
+  /** Błonnik pokarmowy */
+  fiber_g: number
+  /** Poliole (alkohole cukrowe: erytrytol, ksylitol, maltitol, sorbitol) */
+  polyols_g: number
+  /** Węglowodany netto (Net Carbs = carbs_g - fiber_g - polyols_g) - kluczowe dla keto */
+  net_carbs_g: number
   fats_g: number
+  /** Tłuszcze nasycone */
+  saturated_fat_g: number
   category: Enums<'ingredient_category_enum'>
   is_scalable: boolean
   step_number: number | null
@@ -164,6 +212,12 @@ export type IngredientDTO = {
 /**
  * DTO: Pojedynczy przepis z zagnieżdżonymi składnikami
  * Bazuje na Tables<'recipes', { schema: 'public' }> + recipe_ingredients + ingredients
+ *
+ * Węglowodany:
+ * - total_carbs_g: węglowodany całkowite (Total Carbs)
+ * - total_fiber_g: błonnik całkowity
+ * - total_polyols_g: poliole całkowite (alkohole cukrowe)
+ * - total_net_carbs_g: węglowodany netto (total_carbs_g - total_fiber_g - total_polyols_g) - kluczowe dla keto
  */
 export type RecipeDTO = {
   id: number
@@ -179,9 +233,19 @@ export type RecipeDTO = {
   cook_time_minutes: number | null
   total_calories: number | null
   total_protein_g: number | null
+  /** Węglowodany całkowite (Total Carbs) */
   total_carbs_g: number | null
+  /** Błonnik całkowity */
+  total_fiber_g: number | null
+  /** Poliole całkowite (alkohole cukrowe: erytrytol, ksylitol, maltitol, sorbitol) */
+  total_polyols_g: number | null
+  /** Węglowodany netto (Net Carbs = total_carbs_g - total_fiber_g - total_polyols_g) - kluczowe dla keto */
+  total_net_carbs_g: number | null
   total_fats_g: number | null
+  /** Całkowite tłuszcze nasycone */
+  total_saturated_fat_g: number | null
   ingredients: IngredientDTO[]
+  equipment: EquipmentDTO[]
 }
 
 /**
@@ -232,8 +296,17 @@ export type MealSummaryDTO = {
   recipe_id: number
   calories: number
   protein_g: number
+  /** Węglowodany całkowite (Total Carbs) */
   carbs_g: number
+  /** Błonnik pokarmowy */
+  fiber_g: number
+  /** Poliole (alkohole cukrowe) */
+  polyols_g: number
+  /** Węglowodany netto (Net Carbs = carbs_g - fiber_g - polyols_g) */
+  net_carbs_g: number
   fats_g: number
+  /** Tłuszcze nasycone */
+  saturated_fat_g: number
 }
 
 /**
@@ -244,10 +317,20 @@ export type DailyProgressDTO = {
   date: string // ISO date string (YYYY-MM-DD)
   consumed_calories: number
   consumed_protein_g: number
+  /** Spożyte węglowodany całkowite (Total Carbs) */
   consumed_carbs_g: number
+  /** Spożyty błonnik */
+  consumed_fiber_g: number
+  /** Spożyte poliole (alkohole cukrowe) */
+  consumed_polyols_g: number
+  /** Spożyte węglowodany netto (Net Carbs = carbs - fiber - polyols) */
+  consumed_net_carbs_g: number
   consumed_fats_g: number
+  /** Spożyte tłuszcze nasycone */
+  consumed_saturated_fat_g: number
   target_calories: number
   target_protein_g: number
+  /** Dzienny cel węglowodanów całkowitych */
   target_carbs_g: number
   target_fats_g: number
   meals: MealSummaryDTO[]
@@ -274,28 +357,6 @@ export type MealStatusDTO = Pick<Tables<'planned_meals'>, 'id' | 'is_eaten'> & {
 // ============================================================================
 // 6. SHOPPING LIST API
 // ============================================================================
-
-/**
- * DTO: Pojedynczy element listy zakupów (legacy - do usunięcia)
- * @deprecated Użyj ShoppingListResponseDTO
- */
-export type ShoppingItemDTO = {
-  ingredient_id: number
-  ingredient_name: string
-  total_amount: number
-  unit: string
-  category: Enums<'ingredient_category_enum'>
-  is_purchased: boolean // Stan kliencki (przechowywany w localStorage/Zustand)
-}
-
-/**
- * DTO: Kompletna lista zakupów (legacy - do usunięcia)
- * @deprecated Użyj ShoppingListResponseDTO
- */
-export type ShoppingListDTO = {
-  items: ShoppingItemDTO[]
-  categories: Enums<'ingredient_category_enum'>[] // Unikalne kategorie
-}
 
 /**
  * DTO: Odpowiedź API dla listy zakupów (zgodna ze specyfikacją API)
@@ -370,8 +431,17 @@ export type ReplacementRecipeDTO = {
   difficulty_level: Enums<'difficulty_level_enum'>
   total_calories: number | null
   total_protein_g: number | null
+  /** Węglowodany całkowite (Total Carbs) */
   total_carbs_g: number | null
+  /** Błonnik całkowity */
+  total_fiber_g: number | null
+  /** Poliole całkowite (alkohole cukrowe) */
+  total_polyols_g: number | null
+  /** Węglowodany netto (Net Carbs = carbs - fiber - polyols) */
+  total_net_carbs_g: number | null
   total_fats_g: number | null
+  /** Całkowite tłuszcze nasycone */
+  total_saturated_fat_g: number | null
   calorie_diff: number // Różnica kaloryczna względem oryginalnego przepisu
 }
 

@@ -11,8 +11,11 @@ import { formatMacro } from '@/types/recipes-view.types'
 interface MacroSummaryProps {
   calories: number | null
   protein_g: number | null
-  carbs_g: number | null
+  /** Węglowodany netto (Net Carbs) - kluczowe dla keto */
+  net_carbs_g: number | null
   fats_g: number | null
+  /** Opcjonalnie: błonnik do wyświetlenia w tooltip */
+  fiber_g?: number | null
 }
 
 /**
@@ -23,15 +26,16 @@ interface MacroSummaryProps {
  * <MacroSummary
  *   calories={450}
  *   protein_g={25.5}
- *   carbs_g={3.2}
+ *   net_carbs_g={1.8}
  *   fats_g={35.8}
+ *   fiber_g={6.7}
  * />
  * ```
  */
 export function MacroSummary({
   calories,
   protein_g,
-  carbs_g,
+  net_carbs_g,
   fats_g,
 }: MacroSummaryProps) {
   const macros = [
@@ -41,19 +45,19 @@ export function MacroSummary({
       color: 'text-orange-600',
     },
     {
-      label: 'Białko',
-      value: formatMacro(protein_g, 'g'),
-      color: 'text-blue-600',
-    },
-    {
-      label: 'Węglowodany',
-      value: formatMacro(carbs_g, 'g'),
-      color: 'text-green-600',
-    },
-    {
       label: 'Tłuszcze',
       value: formatMacro(fats_g, 'g'),
       color: 'text-purple-600',
+    },
+    {
+      label: 'Węgl. netto',
+      value: formatMacro(net_carbs_g, 'g'),
+      color: 'text-green-600',
+    },
+    {
+      label: 'Białko',
+      value: formatMacro(protein_g, 'g'),
+      color: 'text-blue-600',
     },
   ]
 

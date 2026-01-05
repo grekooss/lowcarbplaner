@@ -28,13 +28,16 @@ import {
   transformRecipeToDTO,
   PLANNED_MEAL_SELECT_FULL,
 } from '@/lib/utils/recipe-transformer'
-import { isValidMealData } from '@/lib/utils/type-guards'
+import { logErrorLevel } from '@/lib/error-logger'
+import { isValidMealData, type PlannedMealRow } from '@/lib/utils/type-guards'
+import { validateIngredientOverrides } from '@/lib/utils/ingredient-validation'
 import {
   recordMealEaten,
   removeMealEaten,
   type MealEatenData,
 } from '@/lib/actions/user-history'
 import { calculateRecipeNutritionWithOverrides } from '@/lib/utils/recipe-calculator'
+import { withRetry } from '@/lib/utils/retry'
 
 /**
  * Kody błędów dla akcji planned meals
@@ -56,45 +59,10 @@ type ActionResult<T> =
 /**
  * Transformuje raw planned meal row z Supabase do PlannedMealDTO
  *
- * @param meal - Raw row z tabeli planned_meals + joins
+ * @param meal - Raw row z tabeli planned_meals + joins (validated by isValidMealData)
  * @returns PlannedMealDTO - Typowany obiekt zgodny z DTO
  */
-function transformPlannedMealToDTO(meal: {
-  id: number
-  meal_date: string
-  meal_type: unknown
-  is_eaten: boolean
-  ingredient_overrides: unknown
-  created_at: string
-  recipe: {
-    id: number
-    name: string
-    instructions: unknown
-    meal_types: unknown
-    tags: string[] | null
-    image_url: string | null
-    difficulty_level: unknown
-    total_calories: number | null
-    total_protein_g: number | null
-    total_carbs_g: number | null
-    total_fats_g: number | null
-    recipe_ingredients?: {
-      base_amount: number
-      unit: string
-      is_scalable: boolean
-      calories: number | null
-      protein_g: number | null
-      carbs_g: number | null
-      fats_g: number | null
-      step_number: number | null
-      ingredient: {
-        id: number
-        name: string
-        category: unknown
-      }
-    }[]
-  }
-}): PlannedMealDTO {
+function transformPlannedMealToDTO(meal: PlannedMealRow): PlannedMealDTO {
   return {
     id: meal.id,
     meal_date: meal.meal_date,
@@ -164,37 +132,25 @@ export async function getPlannedMeals(
       .order('meal_type', { ascending: true })
 
     if (error) {
-      console.error('Błąd Supabase w getPlannedMeals:', error)
+      logErrorLevel(error, {
+        source: 'planned-meals.getPlannedMeals',
+        userId: user.id,
+        metadata: { start_date, end_date, errorCode: error.code },
+      })
       return {
         error: `Błąd bazy danych: ${error.message}`,
         code: 'DATABASE_ERROR',
       }
     }
 
-    // 5. Transformacja do DTO (filtrujemy posiłki bez przepisu)
-    type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
-    const rawMeals = data ?? []
-    const validMeals: PlannedMealRow[] = []
-
-    for (const meal of rawMeals) {
-      // Skip if meal doesn't have required structure
-      const mealObj = meal as unknown as Record<string, unknown> | null
-      if (
-        mealObj &&
-        typeof mealObj === 'object' &&
-        'id' in mealObj &&
-        'recipe' in mealObj &&
-        mealObj.recipe !== null
-      ) {
-        validMeals.push(mealObj as PlannedMealRow)
-      }
-    }
-
+    // 5. Transformacja do DTO (filtrujemy posiłki bez przepisu używając type guard)
+    const rawMeals: unknown[] = data ?? []
+    const validMeals = rawMeals.filter(isValidMealData)
     const meals = validMeals.map((meal) => transformPlannedMealToDTO(meal))
 
     return { data: meals }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getPlannedMeals:', err)
+    logErrorLevel(err, { source: 'planned-meals.getPlannedMeals' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -287,7 +243,7 @@ export async function updatePlannedMeal(
 
     return { error: 'Nieznana akcja', code: 'VALIDATION_ERROR' }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w updatePlannedMeal:', err)
+    logErrorLevel(err, { source: 'planned-meals.updatePlannedMeal' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }
@@ -345,17 +301,14 @@ async function markMealAsEaten(
   }
 
   // Type guard check for recipe
-  type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
-  const mealData = data as unknown
-
-  if (!isValidMealData(mealData)) {
+  if (!isValidMealData(data)) {
     return {
       error: 'Przepis nie został znaleziony dla tego posiłku',
       code: 'NOT_FOUND',
     }
   }
 
-  const transformedMeal = transformPlannedMealToDTO(mealData as PlannedMealRow)
+  const transformedMeal = transformPlannedMealToDTO(data)
 
   // 3. Aktualizuj historię w zależności od stanu is_eaten
   if (isEaten) {
@@ -378,15 +331,28 @@ async function markMealAsEaten(
       ingredient_overrides: transformedMeal.ingredient_overrides,
     }
 
-    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
-    recordMealEaten(mealEatenData).catch((err) => {
-      console.warn('Błąd zapisu historii meal_eaten:', err)
-    })
+    // Zapisz do historii z retry (nie blokujemy na błędzie - historia jest poboczna)
+    // Retry z exponential backoff zapewnia większą niezawodność zapisu
+    withRetry(
+      () => recordMealEaten(mealEatenData),
+      { maxRetries: 3, delayMs: 500, backoff: true },
+      {
+        source: 'planned-meals.updatePlannedMeal.recordMealEaten',
+        userId,
+        metadata: { mealId, mealEatenData },
+      }
+    )
   } else {
-    // Posiłek odkliknięty - usuń z historii
-    removeMealEaten(transformedMeal.id).catch((err) => {
-      console.warn('Błąd usuwania historii meal_eaten:', err)
-    })
+    // Posiłek odkliknięty - usuń z historii z retry
+    withRetry(
+      () => removeMealEaten(transformedMeal.id),
+      { maxRetries: 3, delayMs: 500, backoff: true },
+      {
+        source: 'planned-meals.updatePlannedMeal.removeMealEaten',
+        userId,
+        metadata: { mealId: transformedMeal.id },
+      }
+    )
   }
 
   return {
@@ -499,10 +465,7 @@ async function swapMealRecipe(
   }
 
   // Type guard check for recipe
-  type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
-  const mealData = data as unknown
-
-  if (!isValidMealData(mealData)) {
+  if (!isValidMealData(data)) {
     return {
       error: 'Przepis nie został znaleziony dla tego posiłku',
       code: 'NOT_FOUND',
@@ -510,7 +473,7 @@ async function swapMealRecipe(
   }
 
   return {
-    data: transformPlannedMealToDTO(mealData as PlannedMealRow),
+    data: transformPlannedMealToDTO(data),
   }
 }
 
@@ -570,40 +533,24 @@ async function modifyMealIngredients(
     }
   }
 
-  // 2. Walidacja każdego override
-  for (const override of overrides) {
-    const ingredient = meal.recipe.recipe_ingredients.find(
-      (ri) => ri.ingredient_id === override.ingredient_id
-    )
+  // 2. Walidacja każdego override (używając współdzielonej logiki walidacji)
+  const recipeIngredientsMap = new Map(
+    meal.recipe.recipe_ingredients.map((ri) => [
+      ri.ingredient_id,
+      { base_amount: ri.base_amount, is_scalable: ri.is_scalable },
+    ])
+  )
 
-    if (!ingredient) {
-      return {
-        error: `Składnik o ID ${override.ingredient_id} nie istnieje w przepisie`,
-        code: 'VALIDATION_ERROR',
-      }
+  const validationResult = validateIngredientOverrides(
+    overrides,
+    recipeIngredientsMap
+  )
+
+  if (!validationResult.valid) {
+    return {
+      error: validationResult.error!,
+      code: 'VALIDATION_ERROR',
     }
-
-    // Walidacja podstawowa (ilość >= 0, 0 oznacza wykluczenie składnika)
-    if (override.new_amount < 0) {
-      return {
-        error: `Ilość składnika o ID ${override.ingredient_id} nie może być ujemna`,
-        code: 'VALIDATION_ERROR',
-      }
-    }
-
-    // Składniki nie-skalowalne mogą być tylko wykluczane (0) lub przywracane do oryginalnej wartości
-    if (!ingredient.is_scalable && override.new_amount !== 0) {
-      // Allow restoring to original amount
-      if (Math.abs(override.new_amount - ingredient.base_amount) > 0.01) {
-        return {
-          error: `Składnik o ID ${override.ingredient_id} nie może być skalowany (tylko wykluczenie lub oryginalna wartość)`,
-          code: 'VALIDATION_ERROR',
-        }
-      }
-    }
-
-    // Note: Backend accepts any positive value
-    // Frontend shows warning at ±15% but allows changes
   }
 
   // 3. Update (pusta tablica = null, czyli reset do oryginalnych wartości)
@@ -625,10 +572,7 @@ async function modifyMealIngredients(
   }
 
   // Type guard check for recipe
-  type PlannedMealRow = Parameters<typeof transformPlannedMealToDTO>[0]
-  const mealData = data as unknown
-
-  if (!isValidMealData(mealData)) {
+  if (!isValidMealData(data)) {
     return {
       error: 'Przepis nie został znaleziony dla tego posiłku',
       code: 'NOT_FOUND',
@@ -636,7 +580,7 @@ async function modifyMealIngredients(
   }
 
   return {
-    data: transformPlannedMealToDTO(mealData as PlannedMealRow),
+    data: transformPlannedMealToDTO(data),
   }
 }
 
@@ -746,12 +690,15 @@ export async function getReplacementRecipes(
     // Jeśli są nadpisania składników, przelicz kalorie
     const overrides = meal.ingredient_overrides as IngredientOverrides | null
     if (overrides && overrides.length > 0 && meal.recipe.recipe_ingredients) {
+      // Build Map for O(1) lookup instead of O(n) find() in loop
+      const overrideMap = new Map(
+        overrides.map((o) => [o.ingredient_id, o.new_amount])
+      )
+
       originalCalories = meal.recipe.recipe_ingredients.reduce((total, ri) => {
-        const override = overrides.find(
-          (o) => o.ingredient_id === ri.ingredient.id
-        )
         const originalAmount = ri.base_amount
-        const adjustedAmount = override?.new_amount ?? originalAmount
+        const adjustedAmount =
+          overrideMap.get(ri.ingredient.id) ?? originalAmount
 
         if (originalAmount === 0) return total
 
@@ -767,7 +714,7 @@ export async function getReplacementRecipes(
     const { data: replacements, error: searchError } = await supabase
       .from('recipes')
       .select(
-        'id, name, image_url, meal_types, difficulty_level, total_calories, total_protein_g, total_carbs_g, total_fats_g'
+        'id, name, image_url, meal_types, difficulty_level, total_calories, total_protein_g, total_carbs_g, total_fiber_g, total_polyols_g, total_net_carbs_g, total_fats_g, total_saturated_fat_g'
       )
       .contains('meal_types', [meal.meal_type])
       .neq('id', meal.recipe.id)
@@ -783,22 +730,36 @@ export async function getReplacementRecipes(
       }
     }
 
-    // 6. Dodanie calorie_diff i sortowanie
+    // 6. Dodanie calorie_diff i sortowanie (z fiber, polyols i net carbs)
     const replacementsWithDiff: ReplacementRecipeDTO[] = (
       replacements || []
-    ).map((recipe) => ({
-      id: recipe.id,
-      name: recipe.name,
-      image_url: recipe.image_url,
-      meal_types: recipe.meal_types as ReplacementRecipeDTO['meal_types'],
-      difficulty_level:
-        recipe.difficulty_level as ReplacementRecipeDTO['difficulty_level'],
-      total_calories: recipe.total_calories,
-      total_protein_g: recipe.total_protein_g,
-      total_carbs_g: recipe.total_carbs_g,
-      total_fats_g: recipe.total_fats_g,
-      calorie_diff: (recipe.total_calories || 0) - originalCalories,
-    }))
+    ).map((recipe) => {
+      const totalCarbsG = recipe.total_carbs_g ?? 0
+      const totalFiberG = recipe.total_fiber_g ?? 0
+      const totalPolyolsG = recipe.total_polyols_g ?? 0
+      // Użyj wartości z bazy jeśli dostępna, inaczej oblicz (Net Carbs = Carbs - Fiber - Polyols)
+      const totalNetCarbsG =
+        recipe.total_net_carbs_g ??
+        Math.max(0, totalCarbsG - totalFiberG - totalPolyolsG)
+
+      return {
+        id: recipe.id,
+        name: recipe.name,
+        image_url: recipe.image_url,
+        meal_types: recipe.meal_types as ReplacementRecipeDTO['meal_types'],
+        difficulty_level:
+          recipe.difficulty_level as ReplacementRecipeDTO['difficulty_level'],
+        total_calories: recipe.total_calories,
+        total_protein_g: recipe.total_protein_g,
+        total_carbs_g: recipe.total_carbs_g,
+        total_fiber_g: recipe.total_fiber_g,
+        total_polyols_g: recipe.total_polyols_g,
+        total_net_carbs_g: totalNetCarbsG,
+        total_fats_g: recipe.total_fats_g,
+        total_saturated_fat_g: recipe.total_saturated_fat_g,
+        calorie_diff: (recipe.total_calories || 0) - originalCalories,
+      }
+    })
 
     replacementsWithDiff.sort(
       (a, b) => Math.abs(a.calorie_diff) - Math.abs(b.calorie_diff)
@@ -806,7 +767,7 @@ export async function getReplacementRecipes(
 
     return { data: replacementsWithDiff }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getReplacementRecipes:', err)
+    logErrorLevel(err, { source: 'planned-meals.getReplacementRecipes' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }

@@ -14,20 +14,28 @@ import type { Enums } from '@/types/database.types'
 interface GenderStepProps {
   value: Enums<'gender_enum'> | null
   onChange: (value: Enums<'gender_enum'>) => void
+  /** Hide header and description (for use in profile edit) */
+  hideHeader?: boolean
 }
 
-export function GenderStep({ value, onChange }: GenderStepProps) {
+export function GenderStep({
+  value,
+  onChange,
+  hideHeader = false,
+}: GenderStepProps) {
   return (
     <div className='space-y-4'>
-      <div className='space-y-1'>
-        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
-          Jaka jest Twoja płeć?
-        </h2>
-        <p className='text-muted-foreground text-xs sm:text-sm'>
-          Potrzebujemy tej informacji do obliczenia Twojego dziennego
-          zapotrzebowania kalorycznego.
-        </p>
-      </div>
+      {!hideHeader && (
+        <div className='space-y-1'>
+          <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
+            Jaka jest Twoja płeć?
+          </h2>
+          <p className='text-muted-foreground text-xs sm:text-sm'>
+            Potrzebujemy tej informacji do obliczenia Twojego dziennego
+            zapotrzebowania kalorycznego.
+          </p>
+        </div>
+      )}
 
       <RadioGroup
         value={value || ''}
@@ -36,7 +44,7 @@ export function GenderStep({ value, onChange }: GenderStepProps) {
       >
         <Label
           htmlFor='female'
-          className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
+          className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md transition-colors'
         >
           <RadioGroupItem value='female' id='female' />
           <div className='font-medium'>Kobieta</div>
@@ -44,7 +52,7 @@ export function GenderStep({ value, onChange }: GenderStepProps) {
 
         <Label
           htmlFor='male'
-          className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
+          className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md transition-colors'
         >
           <RadioGroupItem value='male' id='male' />
           <div className='font-medium'>Mężczyzna</div>

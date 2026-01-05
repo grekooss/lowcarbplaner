@@ -8,7 +8,6 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import type {
   OnboardingFormData,
   CalculatedTargets,
@@ -19,6 +18,7 @@ import {
   generateWeightLossOptions,
 } from '@/lib/utils/nutrition-calculator-client'
 import { createProfile } from '@/lib/actions/profile'
+import { logErrorLevel } from '@/lib/error-logger'
 import { GenderStep } from './GenderStep'
 import { AgeStep } from './AgeStep'
 import { WeightStep } from './WeightStep'
@@ -42,14 +42,47 @@ const INITIAL_FORM_DATA: OnboardingFormData = {
   goal: null,
   weight_loss_rate_kg_week: null,
   meal_plan_type: null,
+  eating_start_time: '07:00',
+  eating_end_time: '19:00',
   macro_ratio: null,
   disclaimer_accepted: false,
 }
 
 const TOTAL_STEPS = 10
 
+/**
+ * Type guard sprawdzający czy wszystkie wymagane pola formularza są wypełnione
+ * Używane do bezpiecznego dostępu do wartości bez non-null assertions
+ */
+function isFormDataComplete(
+  data: OnboardingFormData
+): data is OnboardingFormData & {
+  gender: NonNullable<OnboardingFormData['gender']>
+  age: NonNullable<OnboardingFormData['age']>
+  weight_kg: NonNullable<OnboardingFormData['weight_kg']>
+  height_cm: NonNullable<OnboardingFormData['height_cm']>
+  activity_level: NonNullable<OnboardingFormData['activity_level']>
+  goal: NonNullable<OnboardingFormData['goal']>
+  meal_plan_type: NonNullable<OnboardingFormData['meal_plan_type']>
+  eating_start_time: NonNullable<OnboardingFormData['eating_start_time']>
+  eating_end_time: NonNullable<OnboardingFormData['eating_end_time']>
+  macro_ratio: NonNullable<OnboardingFormData['macro_ratio']>
+} {
+  return (
+    data.gender !== null &&
+    data.age !== null &&
+    data.weight_kg !== null &&
+    data.height_cm !== null &&
+    data.activity_level !== null &&
+    data.goal !== null &&
+    data.meal_plan_type !== null &&
+    data.eating_start_time !== null &&
+    data.eating_end_time !== null &&
+    data.macro_ratio !== null
+  )
+}
+
 export function OnboardingClient() {
-  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] =
     useState<OnboardingFormData>(INITIAL_FORM_DATA)
@@ -97,7 +130,7 @@ export function OnboardingClient() {
   // Validation helpers
   const isStep1Valid = formData.gender !== null
   const isStep2Valid =
-    formData.age !== null && formData.age >= 18 && formData.age <= 100
+    formData.age !== null && formData.age >= 16 && formData.age <= 100
   const isStep3Valid =
     formData.weight_kg !== null &&
     formData.weight_kg >= 40 &&
@@ -114,7 +147,10 @@ export function OnboardingClient() {
         weightLossOptions.find(
           (opt) => opt.value === formData.weight_loss_rate_kg_week
         )?.isDisabled === false))
-  const isStep7Valid = formData.meal_plan_type !== null
+  const isStep7Valid =
+    formData.meal_plan_type !== null &&
+    formData.eating_start_time !== null &&
+    formData.eating_end_time !== null
   const isStep8Valid = formData.macro_ratio !== null
   const isStep9Valid = true // Summary step is always valid
   const isStep10Valid = formData.disclaimer_accepted === true
@@ -171,7 +207,7 @@ export function OnboardingClient() {
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    if (!isStep10Valid || !calculatedTargets) {
+    if (!isStep10Valid || !calculatedTargets || !isFormDataComplete(formData)) {
       toast.error('Musisz zaakceptować oświadczenie przed kontynuowaniem.')
       return
     }
@@ -180,18 +216,20 @@ export function OnboardingClient() {
     setSubmitError(null)
 
     try {
-      // Create profile
+      // Create profile - formData is now type-safe after isFormDataComplete check
       const profileResult = await createProfile({
-        gender: formData.gender!,
-        age: formData.age!,
-        weight_kg: formData.weight_kg!,
-        height_cm: formData.height_cm!,
-        activity_level: formData.activity_level!,
-        goal: formData.goal!,
+        gender: formData.gender,
+        age: formData.age,
+        weight_kg: formData.weight_kg,
+        height_cm: formData.height_cm,
+        activity_level: formData.activity_level,
+        goal: formData.goal,
         weight_loss_rate_kg_week:
           formData.weight_loss_rate_kg_week ?? undefined,
-        meal_plan_type: formData.meal_plan_type!,
-        macro_ratio: formData.macro_ratio!,
+        meal_plan_type: formData.meal_plan_type,
+        eating_start_time: formData.eating_start_time,
+        eating_end_time: formData.eating_end_time,
+        macro_ratio: formData.macro_ratio,
         disclaimer_accepted_at: new Date().toISOString(),
       })
 
@@ -206,13 +244,13 @@ export function OnboardingClient() {
       // Using window.location for reliable redirect on Vercel (avoids SSR prefetch issues)
       window.location.href = '/dashboard'
     } catch (error) {
-      console.error('Onboarding submission error:', error)
+      logErrorLevel(error, { source: 'OnboardingClient.handleSubmit' })
       setSubmitError(
         error instanceof Error ? error.message : 'Wystąpił nieznany błąd'
       )
       setIsSubmitting(false)
     }
-  }, [formData, calculatedTargets, isStep10Valid, router])
+  }, [formData, calculatedTargets, isStep10Valid])
 
   // Keyboard navigation
   useEffect(() => {
@@ -271,7 +309,7 @@ export function OnboardingClient() {
             onChange={(value) => updateField('age', value)}
             error={
               formData.age !== null && !isStep2Valid
-                ? 'Wiek musi być między 18 a 100 lat'
+                ? 'Wiek musi być między 16 a 100 lat'
                 : undefined
             }
           />
@@ -330,6 +368,14 @@ export function OnboardingClient() {
           <MealPlanTypeStep
             value={formData.meal_plan_type}
             onChange={(value) => updateField('meal_plan_type', value)}
+            eatingStartTime={formData.eating_start_time}
+            eatingEndTime={formData.eating_end_time}
+            onEatingStartTimeChange={(time) =>
+              updateField('eating_start_time', time)
+            }
+            onEatingEndTimeChange={(time) =>
+              updateField('eating_end_time', time)
+            }
           />
         )
       case 8:
@@ -337,6 +383,7 @@ export function OnboardingClient() {
           <MacroRatioStep
             value={formData.macro_ratio}
             onChange={(value) => updateField('macro_ratio', value)}
+            targetCalories={calculatedTargets?.target_calories ?? null}
           />
         )
       case 9:

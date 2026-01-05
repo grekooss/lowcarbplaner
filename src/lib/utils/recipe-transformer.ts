@@ -8,9 +8,18 @@
 import type {
   RecipeDTO,
   IngredientDTO,
+  EquipmentDTO,
   RecipeInstructions,
 } from '@/types/dto.types'
 import { getRecipeImageUrl } from './supabase-storage'
+
+/**
+ * Unit conversion data from ingredient_unit_conversions table
+ */
+export interface RawUnitConversion {
+  unit_name: string
+  grams_equivalent: number
+}
 
 /**
  * Raw recipe ingredient type from Supabase join
@@ -22,12 +31,35 @@ export interface RawRecipeIngredient {
   calories: number | null
   protein_g: number | null
   carbs_g: number | null
+  /** Błonnik pokarmowy */
+  fiber_g: number | null
+  /** Poliole (alkohole cukrowe) - opcjonalne dla kompatybilności wstecznej */
+  polyols_g?: number | null
   fats_g: number | null
+  /** Tłuszcze nasycone - opcjonalne dla kompatybilności wstecznej */
+  saturated_fat_g?: number | null
   step_number: number | null
   ingredient: {
     id: number
     name: string
     category: unknown
+    unit: string
+    ingredient_unit_conversions?: RawUnitConversion[]
+  }
+}
+
+/**
+ * Raw recipe equipment type from Supabase join
+ */
+export interface RawRecipeEquipment {
+  quantity: number
+  notes: string | null
+  equipment: {
+    id: number
+    name: string
+    name_plural: string | null
+    category: unknown
+    icon_name: string | null
   }
 }
 
@@ -49,8 +81,17 @@ export interface RawRecipe {
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
+  /** Błonnik całkowity */
+  total_fiber_g: number | null
+  /** Poliole całkowite (alkohole cukrowe) - opcjonalne dla kompatybilności wstecznej */
+  total_polyols_g?: number | null
+  /** Węglowodany netto (total_carbs_g - total_fiber_g - total_polyols_g) */
+  total_net_carbs_g: number | null
   total_fats_g: number | null
+  /** Całkowite tłuszcze nasycone - opcjonalne dla kompatybilności wstecznej */
+  total_saturated_fat_g?: number | null
   recipe_ingredients?: RawRecipeIngredient[]
+  recipe_equipment?: RawRecipeEquipment[]
 }
 
 /**
@@ -167,6 +208,89 @@ export interface TransformOptions {
 }
 
 /**
+ * Result of unit conversion
+ */
+export interface UnitConversionResult {
+  /** Original amount (g/ml) - for calculations */
+  amount: number
+  /** Original unit (g/ml) - for calculations */
+  unit: string
+  /** Display amount in friendly unit (e.g., 1 sztuka) */
+  display_amount: number
+  /** Display unit name (e.g., "sztuka"), null if no conversion */
+  display_unit: string | null
+}
+
+/**
+ * Converts grams to a user-friendly unit if a matching conversion exists.
+ *
+ * Logic:
+ * 1. Always preserves original amount/unit for calculations
+ * 2. Adds display_amount/display_unit for user-friendly display
+ * 3. Matches whole numbers and half units (within 1% tolerance)
+ *
+ * @param originalAmount - Amount from recipe_ingredients.base_amount
+ * @param originalUnit - Unit from recipe_ingredients.unit
+ * @param conversions - Available unit conversions for this ingredient
+ * @returns Object with original and display amounts/units
+ *
+ * @example
+ * // 60g egg with conversion { unit_name: 'sztuka', grams_equivalent: 60 }
+ * // Returns: { amount: 60, unit: 'g', display_amount: 1, display_unit: 'sztuka' }
+ */
+export function convertToUserFriendlyUnit(
+  originalAmount: number,
+  originalUnit: string,
+  conversions?: RawUnitConversion[]
+): UnitConversionResult {
+  // Base result - no conversion
+  const result: UnitConversionResult = {
+    amount: originalAmount,
+    unit: originalUnit,
+    display_amount: originalAmount,
+    display_unit: null,
+  }
+
+  // Only convert from grams/ml
+  if (originalUnit !== 'g' && originalUnit !== 'ml') {
+    return result
+  }
+
+  // No conversions available
+  if (!conversions || conversions.length === 0) {
+    return result
+  }
+
+  // Try to find a matching conversion
+  for (const conv of conversions) {
+    const unitCount = originalAmount / conv.grams_equivalent
+    const roundedCount = Math.round(unitCount)
+
+    // Check if it's a whole number (within 1% tolerance)
+    if (roundedCount > 0 && Math.abs(unitCount - roundedCount) < 0.01) {
+      return {
+        ...result,
+        display_amount: roundedCount,
+        display_unit: conv.unit_name,
+      }
+    }
+
+    // Check for half units (0.5) - common for eggs, etc.
+    const halfCount = Math.round(unitCount * 2) / 2
+    if (halfCount > 0 && Math.abs(unitCount - halfCount) < 0.01) {
+      return {
+        ...result,
+        display_amount: halfCount,
+        display_unit: conv.unit_name,
+      }
+    }
+  }
+
+  // No good conversion found
+  return result
+}
+
+/**
  * Transforms raw recipe row from Supabase to RecipeDTO
  *
  * @param recipe - Raw row from recipes table with joins
@@ -190,18 +314,52 @@ export function transformRecipeToDTO(
 
   // Aggregate ingredients from recipe_ingredients + ingredients
   const ingredients: IngredientDTO[] = (recipe.recipe_ingredients || []).map(
-    (ri) => ({
-      id: ri.ingredient.id,
-      name: ri.ingredient.name,
-      amount: ri.base_amount,
-      unit: ri.unit,
-      calories: ri.calories || 0,
-      protein_g: ri.protein_g || 0,
-      carbs_g: ri.carbs_g || 0,
-      fats_g: ri.fats_g || 0,
-      category: ri.ingredient.category as IngredientDTO['category'],
-      is_scalable: ri.is_scalable,
-      step_number: ri.step_number ?? null,
+    (ri) => {
+      // Convert grams to user-friendly units if possible
+      const conversion = convertToUserFriendlyUnit(
+        ri.base_amount,
+        ri.unit,
+        ri.ingredient.ingredient_unit_conversions
+      )
+
+      const carbsG = ri.carbs_g || 0
+      const fiberG = ri.fiber_g || 0
+      const polyolsG = ri.polyols_g || 0
+      // Net Carbs = Total Carbs - Fiber - Polyols (zawsze >= 0)
+      const netCarbsG = Math.max(0, carbsG - fiberG - polyolsG)
+
+      return {
+        id: ri.ingredient.id,
+        name: ri.ingredient.name,
+        amount: conversion.amount,
+        unit: conversion.unit,
+        display_amount: conversion.display_amount,
+        display_unit: conversion.display_unit,
+        calories: ri.calories || 0,
+        protein_g: ri.protein_g || 0,
+        carbs_g: carbsG,
+        fiber_g: fiberG,
+        polyols_g: polyolsG,
+        net_carbs_g: netCarbsG,
+        fats_g: ri.fats_g || 0,
+        saturated_fat_g: ri.saturated_fat_g || 0,
+        category: ri.ingredient.category as IngredientDTO['category'],
+        is_scalable: ri.is_scalable,
+        step_number: ri.step_number ?? null,
+      }
+    }
+  )
+
+  // Aggregate equipment from recipe_equipment + equipment
+  const equipment: EquipmentDTO[] = (recipe.recipe_equipment || []).map(
+    (re) => ({
+      id: re.equipment.id,
+      name: re.equipment.name,
+      name_plural: re.equipment.name_plural,
+      category: re.equipment.category as EquipmentDTO['category'],
+      icon_name: re.equipment.icon_name,
+      quantity: re.quantity,
+      notes: re.notes,
     })
   )
 
@@ -209,6 +367,15 @@ export function transformRecipeToDTO(
   const imageUrl = processImageUrl
     ? getRecipeImageUrl(recipe.image_url)
     : recipe.image_url
+
+  // Oblicz net carbs z total carbs, fiber i polyols
+  const totalCarbsG = recipe.total_carbs_g ?? 0
+  const totalFiberG = recipe.total_fiber_g ?? 0
+  const totalPolyolsG = recipe.total_polyols_g ?? 0
+  // Użyj wartości z bazy jeśli dostępna, inaczej oblicz
+  const totalNetCarbsG =
+    recipe.total_net_carbs_g ??
+    Math.max(0, totalCarbsG - totalFiberG - totalPolyolsG)
 
   return {
     id: recipe.id,
@@ -225,8 +392,13 @@ export function transformRecipeToDTO(
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
+    total_fiber_g: recipe.total_fiber_g,
+    total_polyols_g: recipe.total_polyols_g ?? null,
+    total_net_carbs_g: totalNetCarbsG,
     total_fats_g: recipe.total_fats_g,
+    total_saturated_fat_g: recipe.total_saturated_fat_g ?? null,
     ingredients,
+    equipment,
   }
 }
 
@@ -247,7 +419,11 @@ export const RECIPE_SELECT_FULL = `
   total_calories,
   total_protein_g,
   total_carbs_g,
+  total_fiber_g,
+  total_polyols_g,
+  total_net_carbs_g,
   total_fats_g,
+  total_saturated_fat_g,
   recipe_ingredients (
     base_amount,
     unit,
@@ -255,12 +431,31 @@ export const RECIPE_SELECT_FULL = `
     calories,
     protein_g,
     carbs_g,
+    fiber_g,
+    polyols_g,
     fats_g,
+    saturated_fat_g,
     step_number,
     ingredient:ingredients (
       id,
       name,
-      category
+      category,
+      unit,
+      ingredient_unit_conversions (
+        unit_name,
+        grams_equivalent
+      )
+    )
+  ),
+  recipe_equipment (
+    quantity,
+    notes,
+    equipment (
+      id,
+      name,
+      name_plural,
+      category,
+      icon_name
     )
   )
 `

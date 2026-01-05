@@ -55,7 +55,11 @@ export function PasswordStrengthIndicator({
   const strengthText = getPasswordStrengthText(strength)
 
   return (
-    <div className={cn('space-y-3', className)} aria-live='polite'>
+    <div
+      className={cn('space-y-3', className)}
+      aria-live='polite'
+      data-testid='password-strength'
+    >
       {/* Progress bar */}
       <div className='space-y-1.5'>
         <div className='flex items-center justify-between text-sm'>
@@ -82,7 +86,11 @@ export function PasswordStrengthIndicator({
       {/* Requirements checklist */}
       <div className='space-y-2'>
         <p className='text-muted-foreground text-sm font-medium'>Wymagania:</p>
-        <ul className='space-y-1.5' role='list'>
+        <ul
+          className='space-y-1.5'
+          role='list'
+          data-testid='password-requirements'
+        >
           <RequirementItem
             met={requirements.minLength}
             text='Co najmniej 8 znaków'

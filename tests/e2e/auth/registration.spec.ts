@@ -24,11 +24,11 @@ test.describe('User Registration', () => {
     })
   })
 
-  test.skip('should show error for existing email', async ({
+  test.fixme('should show error for existing email', async ({
     page,
     testUser,
   }) => {
-    // TODO: Registration may succeed despite existing email - needs investigation
+    // FIXME: Registration may succeed despite existing email - Supabase behavior investigation needed
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()
@@ -44,8 +44,8 @@ test.describe('User Registration', () => {
     )
   })
 
-  test.skip('should validate password strength', async ({ page }) => {
-    // TODO: UI doesn't have data-testid="password-strength" implemented yet
+  test('should validate password strength', async ({ page }) => {
+    // NOTE: data-testid="password-strength" has been implemented
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()
@@ -103,8 +103,8 @@ test.describe('User Registration', () => {
     await expect(emailError).toBeVisible({ timeout: 5000 })
   })
 
-  test.skip('should show password requirements', async ({ page }) => {
-    // TODO: UI doesn't have data-testid="password-requirements" implemented yet
+  test('should show password requirements', async ({ page }) => {
+    // NOTE: data-testid="password-requirements" has been implemented
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()
@@ -123,8 +123,8 @@ test.describe('User Registration', () => {
     await expect(requirements).toContainText(/cyfr/i)
   })
 
-  test.skip('should toggle password visibility', async ({ page }) => {
-    // TODO: Toggle button click doesn't properly change input type - UI issue
+  test.fixme('should toggle password visibility', async ({ page }) => {
+    // FIXME: Toggle button click doesn't properly change input type - UI button handler issue
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()

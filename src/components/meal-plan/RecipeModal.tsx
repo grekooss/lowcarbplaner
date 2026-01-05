@@ -7,8 +7,9 @@
  */
 
 import { useState } from 'react'
-import { RecipeViewModal } from '@/components/shared/RecipeViewModal'
+import { LazyRecipeViewModal } from '@/components/shared/lazy-modals'
 import { useIngredientEditor } from '@/hooks/useIngredientEditor'
+import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
 import type { PlannedMealDTO, RecipeDTO } from '@/types/dto.types'
 
 interface RecipeModalProps {
@@ -43,6 +44,7 @@ export const RecipeModal = ({
   onToggleChecked,
 }: RecipeModalProps) => {
   const [error, setError] = useState<string | null>(null)
+  const { isAuthenticated } = useAuthCheck()
 
   // Create a stable key for ingredient_overrides to detect real changes
   const overridesKey = JSON.stringify(meal?.ingredient_overrides ?? null)
@@ -111,7 +113,7 @@ export const RecipeModal = ({
     : undefined
 
   return (
-    <RecipeViewModal
+    <LazyRecipeViewModal
       recipe={meal.recipe}
       isOpen={isOpen}
       onClose={handleClose}
@@ -120,6 +122,7 @@ export const RecipeModal = ({
       testId='recipe-modal'
       checkedIngredients={checkedIngredients}
       onToggleChecked={onToggleChecked}
+      isAuthenticated={isAuthenticated ?? false}
     />
   )
 }

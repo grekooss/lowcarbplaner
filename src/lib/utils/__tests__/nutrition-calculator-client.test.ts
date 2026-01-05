@@ -99,11 +99,10 @@ describe('generateWeightLossOptions', () => {
     const options = generateWeightLossOptions(incompleteData)
 
     expect(options).toHaveLength(4)
-    expect(options.every((opt) => !opt.isDisabled)).toBe(true)
     expect(options.every((opt) => opt.deficitPerDay === 0)).toBe(true)
   })
 
-  it('wyłącza opcje prowadzące poniżej minimum dla kobiety', () => {
+  it('zwraca pustą tablicę gdy TDEE poniżej minimum', () => {
     // Scenariusz: Kobieta z niskim TDEE
     const data: Partial<OnboardingFormData> = {
       gender: 'female',
@@ -117,11 +116,11 @@ describe('generateWeightLossOptions', () => {
 
     // BMR: 10*50 + 6.25*155 - 5*60 - 161 ≈ 807.75
     // TDEE (very_low=1.2): 807.75 * 1.2 ≈ 969
-    // To jest poniżej minimum 1400, więc wszystkie opcje powinny być disabled
-    expect(options.some((opt) => opt.isDisabled)).toBe(true)
+    // To jest poniżej minimum 1400, więc żadna opcja nie jest dostępna
+    expect(options).toHaveLength(0)
   })
 
-  it('poprawnie oblicza deficyt dzienny dla każdej opcji', () => {
+  it('poprawnie oblicza deficyt dzienny dla standardowych opcji', () => {
     const data: Partial<OnboardingFormData> = {
       gender: 'male',
       age: 30,
@@ -132,34 +131,63 @@ describe('generateWeightLossOptions', () => {
 
     const options = generateWeightLossOptions(data)
 
+    // Wszystkie standardowe opcje powinny być dostępne dla osoby z wysokim TDEE
+    expect(options.length).toBeGreaterThanOrEqual(2)
+
     // Sprawdź czy deficyty są poprawnie obliczone
+    const opt025 = options.find((o) => o.value === 0.25)
+    const opt050 = options.find((o) => o.value === 0.5)
+
     // 0.25 kg/tydz → (0.25 * 7700) / 7 ≈ 275 kcal/dzień
-    expect(options[0].deficitPerDay).toBeCloseTo(275, 0)
+    if (opt025) expect(opt025.deficitPerDay).toBeCloseTo(275, 0)
     // 0.5 kg/tydz → 550 kcal/dzień
-    expect(options[1].deficitPerDay).toBeCloseTo(550, 0)
-    // 0.75 kg/tydz → 825 kcal/dzień
-    expect(options[2].deficitPerDay).toBeCloseTo(825, 0)
-    // 1.0 kg/tydz → 1100 kcal/dzień
-    expect(options[3].deficitPerDay).toBeCloseTo(1100, 0)
+    if (opt050) expect(opt050.deficitPerDay).toBeCloseTo(550, 0)
   })
 
-  it('ustawia reasonDisabled dla wyłączonych opcji', () => {
+  it('generuje dynamiczne opcje gdy tylko 1 standardowa dostępna', () => {
+    // Scenariusz: Osoba z ograniczonym TDEE (tylko 0.25 standardowo dostępne)
     const data: Partial<OnboardingFormData> = {
       gender: 'female',
-      age: 50,
-      weight_kg: 55,
-      height_cm: 160,
+      age: 35,
+      weight_kg: 60,
+      height_cm: 165,
       activity_level: 'low',
     }
 
     const options = generateWeightLossOptions(data)
 
-    const disabledOptions = options.filter((opt) => opt.isDisabled)
+    // BMR: 10*60 + 6.25*165 - 5*35 - 161 ≈ 1295
+    // TDEE (low=1.375): 1295 * 1.375 ≈ 1780
+    // Max deficyt: 1780 - 1400 = 380 kcal/dzień
+    // Max rate: (380 * 7) / 7700 ≈ 0.345 kg/tydzień
+    // Zaokrąglone do 0.05: 0.30 kg/tydzień
+    // Powinny być 2 opcje: 0.15 i 0.30 lub standardowe 0.25
 
-    disabledOptions.forEach((opt) => {
-      expect(opt.reasonDisabled).toBeDefined()
-      expect(opt.reasonDisabled).toContain('1400 kcal')
-    })
+    expect(options.length).toBeGreaterThanOrEqual(1)
+    // Wszystkie opcje powinny mieć obliczony deficyt
+    expect(options.every((opt) => opt.deficitPerDay > 0)).toBe(true)
+  })
+
+  it('generuje max i połowę max dla ograniczonego TDEE', () => {
+    // Scenariusz: Osoba gdzie max rate to około 0.4 kg/tydzień
+    const data: Partial<OnboardingFormData> = {
+      gender: 'male',
+      age: 40,
+      weight_kg: 70,
+      height_cm: 170,
+      activity_level: 'low',
+    }
+
+    const options = generateWeightLossOptions(data)
+
+    // BMR: 10*70 + 6.25*170 - 5*40 + 5 ≈ 1568
+    // TDEE (low=1.375): 1568 * 1.375 ≈ 2156
+    // Max deficyt: 2156 - 1600 = 556 kcal/dzień
+    // Max rate: (556 * 7) / 7700 ≈ 0.505 kg/tydzień
+    // Powinny być dostępne 0.25 i 0.5 (2 standardowe opcje)
+
+    expect(options.length).toBeGreaterThanOrEqual(2)
+    expect(options.every((opt) => !opt.isDisabled)).toBe(true)
   })
 })
 

@@ -14,6 +14,7 @@
  */
 
 import { z } from 'zod'
+import { logCritical } from '@/lib/error-logger'
 
 /**
  * Schema for client-side environment variables (NEXT_PUBLIC_*)
@@ -27,6 +28,7 @@ const clientEnvSchema = z.object({
     .string()
     .min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required'),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+  NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
 })
 
 /**
@@ -40,6 +42,9 @@ const serverEnvSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  // Upstash Redis (optional - falls back to in-memory rate limiting)
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 })
 
 /**
@@ -64,13 +69,14 @@ function validateEnv(): Env {
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     })
 
     if (!clientResult.success) {
-      console.error(
-        '❌ Invalid client environment variables:',
-        clientResult.error.flatten().fieldErrors
-      )
+      logCritical('Invalid client environment variables', {
+        source: 'env.validateEnv.client',
+        metadata: { errors: clientResult.error.flatten().fieldErrors },
+      })
       throw new Error('Invalid client environment variables')
     }
 
@@ -87,17 +93,22 @@ function validateEnv(): Env {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     NODE_ENV: process.env.NODE_ENV,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   })
 
   if (!result.success) {
-    console.error(
-      '❌ Invalid environment variables:',
-      result.error.flatten().fieldErrors
-    )
+    // Log detailed errors for debugging (server-side only, not exposed to client)
+    logCritical('Invalid environment variables', {
+      source: 'env.validateEnv.server',
+      metadata: { errors: result.error.flatten().fieldErrors },
+    })
+    // Throw generic message to avoid exposing env var names in stack traces
     throw new Error(
-      `Invalid environment variables: ${JSON.stringify(result.error.flatten().fieldErrors)}`
+      'Invalid environment variables. Check server logs for details or verify .env.local file.'
     )
   }
 

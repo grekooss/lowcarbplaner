@@ -2,11 +2,11 @@
  * CurrentTargetsCard component
  *
  * Displays user's current daily nutrition targets (read-only)
- * Glassmorphism style
+ * Glassmorphism style with macro percentages on cards
  */
 
 import { MacroCard } from './MacroCard'
-import { MACRO_RATIO_LABELS } from '@/types/onboarding-view.types'
+import { parseMacroRatio } from '@/types/onboarding-view.types'
 import type { Enums } from '@/types/database.types'
 
 interface CurrentTargetsCardProps {
@@ -20,6 +20,9 @@ interface CurrentTargetsCardProps {
 }
 
 export const CurrentTargetsCard = ({ targets }: CurrentTargetsCardProps) => {
+  // Parse macro ratio to get percentages
+  const ratios = parseMacroRatio(targets.macro_ratio)
+
   return (
     <div className='rounded-[16px] border-2 border-[var(--glass-border)] bg-white/40 p-6 shadow-[var(--shadow-elevated)] backdrop-blur-[20px]'>
       <div className='mb-6'>
@@ -38,29 +41,26 @@ export const CurrentTargetsCard = ({ targets }: CurrentTargetsCardProps) => {
           variant='calories'
         />
         <MacroCard
-          label='Węglowodany'
+          label='Tłuszcze'
+          value={targets.target_fats_g}
+          unit='g'
+          variant='fat'
+          percentage={Math.round(ratios.fats * 100)}
+        />
+        <MacroCard
+          label='Węgl. netto'
           value={targets.target_carbs_g}
           unit='g'
           variant='carbs'
+          percentage={Math.round(ratios.carbs * 100)}
         />
         <MacroCard
           label='Białko'
           value={targets.target_protein_g}
           unit='g'
           variant='protein'
+          percentage={Math.round(ratios.protein * 100)}
         />
-        <MacroCard
-          label='Tłuszcze'
-          value={targets.target_fats_g}
-          unit='g'
-          variant='fat'
-        />
-      </div>
-      <div className='mt-4 rounded-lg bg-white/30 p-3'>
-        <p className='text-muted-foreground text-xs'>Proporcje makro</p>
-        <p className='text-foreground text-sm font-medium'>
-          {MACRO_RATIO_LABELS[targets.macro_ratio]}
-        </p>
       </div>
     </div>
   )

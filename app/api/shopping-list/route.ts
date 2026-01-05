@@ -31,6 +31,7 @@ import {
   getClientIp,
   rateLimitHeaders,
 } from '@/lib/utils/rate-limit'
+import { logErrorLevel } from '@/lib/error-logger'
 
 /**
  * GET /api/shopping-list
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
   try {
     // 0. Rate limiting check
     const clientIp = getClientIp(request)
-    const rateLimitResult = rateLimit.check(clientIp)
+    const rateLimitResult = await rateLimit.check(clientIp)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -135,7 +136,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (err) {
     // 7. Catch-all dla nieoczekiwanych błędów
-    console.error('Nieoczekiwany błąd w GET /api/shopping-list:', err)
+    logErrorLevel(err, { source: 'api.shopping-list.GET' })
     return NextResponse.json(
       {
         error: {

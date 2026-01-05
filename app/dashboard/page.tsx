@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'target_calories, target_protein_g, target_carbs_g, target_fats_g, disclaimer_accepted_at'
+      'target_calories, target_protein_g, target_carbs_g, target_fats_g, disclaimer_accepted_at, eating_start_time, eating_end_time, meal_plan_type'
     )
     .eq('id', user.id)
     .single()
@@ -78,11 +78,19 @@ export default async function DashboardPage() {
     target_fats_g: profile.target_fats_g || 140,
   }
 
+  // 6. Przygotowanie danych o godzinach posiłków
+  const mealScheduleConfig = {
+    eatingStartTime: profile.eating_start_time || '07:00',
+    eatingEndTime: profile.eating_end_time || '19:00',
+    mealPlanType: profile.meal_plan_type || '3_main',
+  }
+
   return (
     <DashboardClient
       initialMeals={initialMeals}
       targetMacros={targetMacros}
       initialDate={today}
+      mealScheduleConfig={mealScheduleConfig}
     />
   )
 }

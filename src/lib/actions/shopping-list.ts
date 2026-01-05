@@ -10,6 +10,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { logErrorLevel } from '@/lib/error-logger'
 import { generateShoppingList } from '@/services/shopping-list'
 import {
   shoppingListQuerySchema,
@@ -98,7 +99,7 @@ export async function getShoppingList(
       data: shoppingList,
     }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getShoppingList:', err)
+    logErrorLevel(err, { source: 'shopping-list.getShoppingList' })
     return {
       error: 'Błąd serwera podczas generowania listy zakupów',
       code: 'INTERNAL_SERVER_ERROR',

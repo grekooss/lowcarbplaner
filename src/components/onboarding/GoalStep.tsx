@@ -10,8 +10,6 @@
 
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
 import { GOAL_LABELS, GOAL_DESCRIPTIONS } from '@/types/onboarding-view.types'
 import type { Enums } from '@/types/database.types'
 import type { WeightLossOption } from '@/types/onboarding-view.types'
@@ -22,6 +20,8 @@ interface GoalStepProps {
   weightLossRate: number | null
   onWeightLossRateChange: (value: number) => void
   weightLossOptions: WeightLossOption[]
+  /** Hide header and description (for use in profile edit) */
+  hideHeader?: boolean
 }
 
 const GOALS: Enums<'goal_enum'>[] = ['weight_loss', 'weight_maintenance']
@@ -32,19 +32,20 @@ export function GoalStep({
   weightLossRate,
   onWeightLossRateChange,
   weightLossOptions,
+  hideHeader = false,
 }: GoalStepProps) {
-  const hasDisabledOptions = weightLossOptions.some((opt) => opt.isDisabled)
-
   return (
     <div className='space-y-4'>
-      <div className='space-y-1'>
-        <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
-          Jaki jest Twój cel?
-        </h2>
-        <p className='text-muted-foreground text-xs sm:text-sm'>
-          Wybierz cel, który chcesz osiągnąć.
-        </p>
-      </div>
+      {!hideHeader && (
+        <div className='space-y-1'>
+          <h2 className='text-foreground text-lg font-semibold sm:text-2xl'>
+            Jaki jest Twój cel?
+          </h2>
+          <p className='text-muted-foreground text-xs sm:text-sm'>
+            Wybierz cel, który chcesz osiągnąć.
+          </p>
+        </div>
+      )}
 
       <RadioGroup
         value={value || ''}
@@ -55,7 +56,7 @@ export function GoalStep({
           <Label
             key={goal}
             htmlFor={goal}
-            className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors hover:bg-white'
+            className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md transition-colors'
           >
             <RadioGroupItem value={goal} id={goal} />
             <div className='flex-1 font-normal'>
@@ -80,16 +81,6 @@ export function GoalStep({
             </p>
           </div>
 
-          {hasDisabledOptions && (
-            <Alert>
-              <AlertCircle className='h-4 w-4' />
-              <AlertDescription>
-                Niektóre opcje są niedostępne, ponieważ prowadziłyby do diety
-                poniżej bezpiecznego minimum kalorycznego.
-              </AlertDescription>
-            </Alert>
-          )}
-
           <RadioGroup
             value={weightLossRate?.toString() || ''}
             onValueChange={(val: string) =>
@@ -101,16 +92,11 @@ export function GoalStep({
               <Label
                 key={option.value}
                 htmlFor={`rate-${option.value}`}
-                className={`flex items-center space-x-3 rounded-md border border-transparent bg-white p-4 shadow-sm transition-colors ${
-                  option.isDisabled
-                    ? 'cursor-not-allowed opacity-50'
-                    : 'hover:border-primary cursor-pointer hover:bg-white'
-                }`}
+                className='hover:border-primary flex cursor-pointer items-center space-x-3 rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md transition-colors'
               >
                 <RadioGroupItem
                   value={option.value.toString()}
                   id={`rate-${option.value}`}
-                  disabled={option.isDisabled}
                 />
                 <div className='flex-1 font-normal'>
                   <div className='font-medium'>{option.label}</div>
@@ -120,11 +106,6 @@ export function GoalStep({
                   {option.deficitPerDay > 0 && (
                     <div className='text-muted-foreground mt-1 text-xs'>
                       Deficyt: ~{option.deficitPerDay} kcal/dzień
-                    </div>
-                  )}
-                  {option.isDisabled && option.reasonDisabled && (
-                    <div className='text-destructive mt-1 text-xs'>
-                      {option.reasonDisabled}
                     </div>
                   )}
                 </div>

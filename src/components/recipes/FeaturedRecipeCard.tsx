@@ -10,8 +10,9 @@ import Image from 'next/image'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
 import {
-  BarChart3,
+  ChefHat,
   Clock,
   ListOrdered,
   Timer,
@@ -23,15 +24,16 @@ import {
 
 interface FeaturedRecipeCardProps {
   recipe: RecipeDTO
-  onClick: (recipeId: number) => void
+  onClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void
 }
 
 export function FeaturedRecipeCard({
   recipe,
   onClick,
 }: FeaturedRecipeCardProps) {
+  const primaryMealType = recipe.meal_types[0]
   const handleClick = () => {
-    onClick(recipe.id)
+    onClick(recipe.id, primaryMealType)
   }
 
   const prepTime = 0
@@ -39,18 +41,36 @@ export function FeaturedRecipeCard({
   const totalSteps = Array.isArray(recipe.instructions)
     ? recipe.instructions.length
     : 0
-  const primaryMealType = recipe.meal_types[0]
+  const totalEquipment = Array.isArray(recipe.equipment)
+    ? recipe.equipment.length
+    : 0
   const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
     easy: 'Łatwy',
     medium: 'Średni',
     hard: 'Trudny',
   }
 
+  const getDifficultyColor = (difficulty: RecipeDTO['difficulty_level']) => {
+    switch (difficulty) {
+      case 'easy':
+        return 'bg-success'
+      case 'medium':
+        return 'bg-tertiary'
+      case 'hard':
+        return 'bg-primary'
+      default:
+        return 'bg-text-muted'
+    }
+  }
+
   const calories = recipe.total_calories
     ? Math.round(recipe.total_calories)
     : null
   const fats = recipe.total_fats_g ? Math.round(recipe.total_fats_g) : null
-  const carbs = recipe.total_carbs_g ? Math.round(recipe.total_carbs_g) : null
+  // Użyj Net Carbs zamiast Total Carbs dla diety keto/low-carb
+  const netCarbs = recipe.total_net_carbs_g
+    ? Math.round(recipe.total_net_carbs_g)
+    : null
   const protein = recipe.total_protein_g
     ? Math.round(recipe.total_protein_g)
     : null
@@ -77,13 +97,22 @@ export function FeaturedRecipeCard({
 
       {/* Content Section - 2/3 width on tablet, flex-1 on desktop */}
       <div className='flex flex-1 flex-col justify-center'>
-        {primaryMealType && (
-          <div className='mb-2 lg:mb-3'>
+        {/* Badges Row */}
+        <div className='mb-2 flex flex-wrap items-center gap-2 lg:mb-3'>
+          {primaryMealType && (
             <span className='rounded-sm border border-white bg-white px-2 py-0.5 text-xs font-bold tracking-wider text-gray-800 uppercase lg:px-2.5 lg:py-1'>
               {MEAL_TYPE_LABELS[primaryMealType]}
             </span>
+          )}
+
+          {/* Difficulty Badge */}
+          <div className='flex items-center gap-1.5 rounded-sm border border-white bg-white px-2 py-0.5 text-xs font-bold tracking-wider text-gray-800 uppercase lg:px-2.5 lg:py-1'>
+            <span
+              className={`h-3 w-1 rounded-full ${getDifficultyColor(recipe.difficulty_level)}`}
+            />
+            {difficultyLabel[recipe.difficulty_level]}
           </div>
-        )}
+        </div>
 
         <h3 className='mb-3 text-lg leading-tight font-bold text-gray-800 lg:mb-4 lg:text-2xl'>
           {recipe.name}
@@ -95,12 +124,24 @@ export function FeaturedRecipeCard({
             <Flame className='h-3.5 w-3.5' />
             {calories ?? '—'} kcal
           </span>
-          <div className='flex items-center gap-2' title='Węglowodany'>
+          <div className='flex items-center gap-2' title='Tłuszcze'>
+            <div className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
+              <Droplet className='h-4 w-4 text-white' />
+            </div>
+            <span className='flex items-baseline gap-0.5 text-gray-700'>
+              <span className='text-sm font-bold'>{fats ?? '—'}</span>
+              <span className='text-xs'>g</span>
+            </span>
+          </div>
+          <div
+            className='flex items-center gap-2'
+            title='Węglowodany netto (Net Carbs)'
+          >
             <div className='bg-tertiary flex h-6 w-6 items-center justify-center rounded-sm'>
               <Wheat className='h-4 w-4 text-white' />
             </div>
             <span className='flex items-baseline gap-0.5 text-gray-700'>
-              <span className='text-sm font-bold'>{carbs ?? '—'}</span>
+              <span className='text-sm font-bold'>{netCarbs ?? '—'}</span>
               <span className='text-xs'>g</span>
             </span>
           </div>
@@ -113,32 +154,10 @@ export function FeaturedRecipeCard({
               <span className='text-xs'>g</span>
             </span>
           </div>
-          <div className='flex items-center gap-2' title='Tłuszcze'>
-            <div className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
-              <Droplet className='h-4 w-4 text-white' />
-            </div>
-            <span className='flex items-baseline gap-0.5 text-gray-700'>
-              <span className='text-sm font-bold'>{fats ?? '—'}</span>
-              <span className='text-xs'>g</span>
-            </span>
-          </div>
         </div>
 
         <div className='mb-4 grid grid-cols-2 gap-x-4 gap-y-2 lg:mb-6 lg:max-w-md lg:gap-x-8 lg:gap-y-4'>
-          <div className='flex items-center gap-2 lg:gap-3'>
-            <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
-              <BarChart3 className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
-            </div>
-            <div>
-              <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
-                Trudność
-              </p>
-              <p className='text-xs font-bold text-gray-900 lg:text-sm'>
-                {difficultyLabel[recipe.difficulty_level]}
-              </p>
-            </div>
-          </div>
-
+          {/* Przygotowanie */}
           <div className='flex items-center gap-2 lg:gap-3'>
             <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
               <Clock className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
@@ -153,6 +172,22 @@ export function FeaturedRecipeCard({
             </div>
           </div>
 
+          {/* Kroki */}
+          <div className='flex items-center gap-2 lg:gap-3'>
+            <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
+              <ListOrdered className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
+            </div>
+            <div>
+              <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
+                Kroki
+              </p>
+              <p className='text-xs font-bold text-gray-900 lg:text-sm'>
+                {totalSteps > 0 ? `${totalSteps}` : '—'}
+              </p>
+            </div>
+          </div>
+
+          {/* Gotowanie */}
           <div className='flex items-center gap-2 lg:gap-3'>
             <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
               <Timer className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
@@ -167,16 +202,17 @@ export function FeaturedRecipeCard({
             </div>
           </div>
 
+          {/* Sprzęt */}
           <div className='flex items-center gap-2 lg:gap-3'>
             <div className='rounded-sm border border-white bg-white p-1.5 text-gray-600 lg:p-2'>
-              <ListOrdered className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
+              <ChefHat className='h-3.5 w-3.5 lg:h-4 lg:w-4' />
             </div>
             <div>
               <p className='text-[10px] font-bold text-gray-400 uppercase lg:text-xs'>
-                Kroki
+                Sprzęt
               </p>
               <p className='text-xs font-bold text-gray-900 lg:text-sm'>
-                {totalSteps > 0 ? `${totalSteps}` : '—'}
+                {totalEquipment > 0 ? `${totalEquipment}` : '—'}
               </p>
             </div>
           </div>
@@ -209,7 +245,24 @@ export function FeaturedRecipeCard({
 
         <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
           <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
-            Węglowodany
+            Tłuszcze
+          </p>
+          <p className='flex items-center justify-center gap-1.5'>
+            <span className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
+              <Droplet className='h-4 w-4 text-white' />
+            </span>
+            <span className='flex items-baseline gap-0.5'>
+              <span className='text-xl font-bold text-gray-800'>
+                {fats ?? '—'}
+              </span>
+              <span className='text-xs font-medium text-gray-500'>g</span>
+            </span>
+          </p>
+        </div>
+
+        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
+          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
+            Węgl. netto
           </p>
           <p className='flex items-center justify-center gap-1.5'>
             <span className='bg-tertiary flex h-6 w-6 items-center justify-center rounded-sm'>
@@ -217,7 +270,7 @@ export function FeaturedRecipeCard({
             </span>
             <span className='flex items-baseline gap-0.5'>
               <span className='text-xl font-bold text-gray-800'>
-                {carbs ?? '—'}
+                {netCarbs ?? '—'}
               </span>
               <span className='text-xs font-medium text-gray-500'>g</span>
             </span>
@@ -235,23 +288,6 @@ export function FeaturedRecipeCard({
             <span className='flex items-baseline gap-0.5'>
               <span className='text-xl font-bold text-gray-800'>
                 {protein ?? '—'}
-              </span>
-              <span className='text-xs font-medium text-gray-500'>g</span>
-            </span>
-          </p>
-        </div>
-
-        <div className='rounded-sm border border-white bg-white/60 px-2.5 py-2'>
-          <p className='mb-1 text-center text-xs font-bold text-gray-500 uppercase'>
-            Tłuszcze
-          </p>
-          <p className='flex items-center justify-center gap-1.5'>
-            <span className='bg-success flex h-6 w-6 items-center justify-center rounded-sm'>
-              <Droplet className='h-4 w-4 text-white' />
-            </span>
-            <span className='flex items-baseline gap-0.5'>
-              <span className='text-xl font-bold text-gray-800'>
-                {fats ?? '—'}
               </span>
               <span className='text-xs font-medium text-gray-500'>g</span>
             </span>

@@ -1,4 +1,12 @@
 import type { NextConfig } from 'next'
+import bundleAnalyzer from '@next/bundle-analyzer'
+
+// CSP is now managed by middleware.ts for nonce-based security
+// See middleware.ts for the full CSP configuration
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 const nextConfig: NextConfig = {
   // Enable compression for better performance
@@ -17,7 +25,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
 
-  // Security headers
+  // Security headers (CSP is managed by middleware.ts for nonce support)
   async headers() {
     return [
       {
@@ -28,16 +36,12 @@ const nextConfig: NextConfig = {
             value: 'on',
           },
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            value: 'DENY',
           },
           {
             key: 'X-XSS-Protection',
@@ -57,4 +61,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withBundleAnalyzer(nextConfig)

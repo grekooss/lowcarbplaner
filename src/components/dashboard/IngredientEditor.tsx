@@ -8,7 +8,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Save } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EditableIngredientRow } from './EditableIngredientRow'
 import { LiveMacroPreview } from './LiveMacroPreview'
@@ -67,7 +67,8 @@ export function IngredientEditor({
   const originalNutrition = {
     calories: recipe.total_calories,
     protein_g: recipe.total_protein_g,
-    carbs_g: recipe.total_carbs_g,
+    // Używamy net_carbs_g dla diety keto/low-carb
+    net_carbs_g: recipe.total_net_carbs_g,
     fats_g: recipe.total_fats_g,
   }
 
@@ -96,10 +97,7 @@ export function IngredientEditor({
                 Zapisywanie...
               </>
             ) : (
-              <>
-                <Save className='h-4 w-4' />
-                Zapisz zmiany
-              </>
+              'Zapisz zmiany'
             )}
           </Button>
         )}

@@ -7,6 +7,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updatePlannedMeal } from '@/lib/actions/planned-meals'
+import { logErrorLevel } from '@/lib/error-logger'
 import { toast } from 'sonner'
 import type { PlannedMealDTO } from '@/types/dto.types'
 
@@ -91,7 +92,7 @@ export function useMealToggle() {
             : 'Nie udało się zaktualizować posiłku. Spróbuj ponownie.',
       })
 
-      console.error('Błąd useMealToggle:', error)
+      logErrorLevel(error, { source: 'useMealToggle.onError' })
     },
 
     // Sukces - invalidate queries aby zsynchronizować z serwerem

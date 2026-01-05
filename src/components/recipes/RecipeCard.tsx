@@ -13,12 +13,17 @@ import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
+import type { Enums } from '@/types/database.types'
 
 interface RecipeCardProps {
   recipe: RecipeDTO
-  onClick: (recipeId: number) => void
+  onClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void
   /** Ukryj badge z typem posiłku (gdy filtr jest aktywny) */
   hideMealTypeBadge?: boolean
+  /** Aktywny filtr typu posiłku - używany gdy hideMealTypeBadge=true */
+  activeMealTypeFilter?: Enums<'meal_type_enum'>
+  /** Indeks karty w siatce - używany do optymalizacji LCP (priority dla pierwszych 3) */
+  index?: number
 }
 
 const difficultyLabel: Record<RecipeDTO['difficulty_level'], string> = {
@@ -44,16 +49,26 @@ export const RecipeCard = memo(function RecipeCard({
   recipe,
   onClick,
   hideMealTypeBadge = false,
+  activeMealTypeFilter,
+  index,
 }: RecipeCardProps) {
-  const handleClick = () => onClick(recipe.id)
+  // Gdy filtr jest aktywny, użyj typu z filtra (jeśli przepis go ma), w przeciwnym razie pierwszy z listy
+  const displayMealType =
+    activeMealTypeFilter && recipe.meal_types.includes(activeMealTypeFilter)
+      ? activeMealTypeFilter
+      : recipe.meal_types.length > 0
+        ? recipe.meal_types[0]
+        : undefined
+  const handleClick = () => onClick(recipe.id, displayMealType)
 
   const calories =
     recipe.total_calories !== null && recipe.total_calories !== undefined
       ? Math.round(recipe.total_calories)
       : null
-  const carbs =
-    recipe.total_carbs_g !== null && recipe.total_carbs_g !== undefined
-      ? Math.round(recipe.total_carbs_g)
+  // Użyj Net Carbs zamiast Total Carbs dla diety keto/low-carb
+  const netCarbs =
+    recipe.total_net_carbs_g !== null && recipe.total_net_carbs_g !== undefined
+      ? Math.round(recipe.total_net_carbs_g)
       : null
   const protein =
     recipe.total_protein_g !== null && recipe.total_protein_g !== undefined
@@ -87,6 +102,7 @@ export const RecipeCard = memo(function RecipeCard({
             fill
             className='object-cover grayscale-[10%]'
             sizes='(max-width: 768px) 100vw, 350px'
+            priority={index !== undefined && index < 3}
           />
         ) : (
           <RecipeImagePlaceholder recipeName={recipe.name} />
@@ -129,11 +145,14 @@ export const RecipeCard = memo(function RecipeCard({
 
       {/* Macros Row */}
       <div className='mt-auto flex flex-wrap items-center justify-center gap-4 text-sm text-black'>
-        {/* Carbs */}
-        <div className='flex items-center gap-1.5' title='Węglowodany'>
+        {/* Net Carbs */}
+        <div
+          className='flex items-center gap-1.5'
+          title='Węglowodany netto (Net Carbs)'
+        >
           <Wheat className='text-tertiary h-5 w-5' />
           <span className='flex items-baseline gap-0.5 text-gray-700'>
-            <span className='font-bold'>{carbs ?? '—'}</span>
+            <span className='font-bold'>{netCarbs ?? '—'}</span>
             <span>g</span>
           </span>
         </div>

@@ -64,11 +64,10 @@ function AnimatedProgressBar({
 
   return (
     <div
-      className='border-border-light bg-bg-tertiary w-full overflow-hidden rounded-full border'
-      style={{ height }}
+      className={`border-border-light bg-bg-tertiary w-full overflow-hidden rounded-full border ${height === 8 ? 'progress-h-8' : 'progress-h-12'}`}
     >
       {isMounted && (
-        <ResponsiveContainer width='100%' height='100%'>
+        <ResponsiveContainer width='100%' height={height} minHeight={height}>
           <BarChart
             data={data}
             layout='vertical'
@@ -145,7 +144,8 @@ export function MacroProgressSection({
         return {
           calories: acc.calories + nutrition.calories,
           protein_g: acc.protein_g + nutrition.protein_g,
-          carbs_g: acc.carbs_g + nutrition.carbs_g,
+          // Używamy net_carbs_g zamiast carbs_g dla diety keto/low-carb
+          carbs_g: acc.carbs_g + nutrition.net_carbs_g,
           fats_g: acc.fats_g + nutrition.fats_g,
         }
       },
@@ -164,8 +164,18 @@ export function MacroProgressSection({
 
   const macroRows = [
     {
+      key: 'fat' as const,
+      label: 'Tłuszcze',
+      consumed: macros.consumed.fats_g,
+      target: macros.target.fats_g,
+      unit: 'g',
+      bgColor: 'bg-success',
+      icon: Droplet,
+      iconColor: 'text-white',
+    },
+    {
       key: 'carbs' as const,
-      label: 'Węglowodany',
+      label: 'Węgl. netto',
       consumed: macros.consumed.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
@@ -183,23 +193,23 @@ export function MacroProgressSection({
       icon: Beef,
       iconColor: 'text-white',
     },
+  ]
+
+  // Dane makroskładników dla wariantu non-today (z wszystkich posiłków)
+  const plannedMacroRows = [
     {
       key: 'fat' as const,
       label: 'Tłuszcze',
-      consumed: macros.consumed.fats_g,
+      value: plannedTotals.fats_g,
       target: macros.target.fats_g,
       unit: 'g',
       bgColor: 'bg-success',
       icon: Droplet,
       iconColor: 'text-white',
     },
-  ]
-
-  // Dane makroskładników dla wariantu non-today (z wszystkich posiłków)
-  const plannedMacroRows = [
     {
       key: 'carbs' as const,
-      label: 'Węglowodany',
+      label: 'Węgl. netto',
       value: plannedTotals.carbs_g,
       target: macros.target.carbs_g,
       unit: 'g',
@@ -215,16 +225,6 @@ export function MacroProgressSection({
       unit: 'g',
       bgColor: 'bg-info',
       icon: Beef,
-      iconColor: 'text-white',
-    },
-    {
-      key: 'fat' as const,
-      label: 'Tłuszcze',
-      value: plannedTotals.fats_g,
-      target: macros.target.fats_g,
-      unit: 'g',
-      bgColor: 'bg-success',
-      icon: Droplet,
       iconColor: 'text-white',
     },
   ]
@@ -330,7 +330,7 @@ export function MacroProgressSection({
 
         <div className='relative flex h-56 items-center justify-center'>
           {isMounted && (
-            <ResponsiveContainer width='100%' height='100%'>
+            <ResponsiveContainer width='100%' height={224} minHeight={224}>
               <PieChart>
                 <Pie
                   data={chartData}

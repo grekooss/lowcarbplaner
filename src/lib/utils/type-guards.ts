@@ -8,6 +8,59 @@
  */
 
 /**
+ * Type representing a planned meal row from Supabase with full recipe data.
+ * Used for type-safe validation of database query results.
+ */
+export interface PlannedMealRow {
+  id: number
+  meal_date: string
+  meal_type: unknown
+  is_eaten: boolean
+  ingredient_overrides: unknown
+  created_at: string
+  recipe: {
+    id: number
+    name: string
+    instructions: unknown
+    meal_types: unknown
+    tags: string[] | null
+    image_url: string | null
+    difficulty_level: unknown
+    total_calories: number | null
+    total_protein_g: number | null
+    total_carbs_g: number | null
+    total_fiber_g: number | null
+    /** Poliole całkowite (alkohole cukrowe) */
+    total_polyols_g: number | null
+    total_net_carbs_g: number | null
+    total_fats_g: number | null
+    recipe_ingredients?: {
+      base_amount: number
+      unit: string
+      is_scalable: boolean
+      calories: number | null
+      protein_g: number | null
+      carbs_g: number | null
+      fiber_g: number | null
+      /** Poliole (alkohole cukrowe) */
+      polyols_g: number | null
+      fats_g: number | null
+      step_number: number | null
+      ingredient: {
+        id: number
+        name: string
+        category: unknown
+        unit: string
+        ingredient_unit_conversions?: {
+          unit_name: string
+          grams_equivalent: number
+        }[]
+      }
+    }[]
+  }
+}
+
+/**
  * Validates that meal data from database has expected structure
  *
  * Used after Supabase queries to ensure data is complete before transformation.
@@ -25,17 +78,34 @@
  * // TypeScript now knows data has id and recipe
  * ```
  */
-export function isValidMealData(
-  data: unknown
-): data is { id: number; recipe: Record<string, unknown> } {
-  return (
-    data != null &&
-    typeof data === 'object' &&
-    'id' in data &&
-    'recipe' in data &&
-    (data as { recipe: unknown }).recipe != null &&
-    typeof (data as { recipe: unknown }).recipe === 'object'
-  )
+export function isValidMealData(data: unknown): data is PlannedMealRow {
+  if (data == null || typeof data !== 'object') {
+    return false
+  }
+
+  const obj = data as Record<string, unknown>
+
+  // Check required top-level fields
+  if (
+    typeof obj.id !== 'number' ||
+    typeof obj.meal_date !== 'string' ||
+    typeof obj.is_eaten !== 'boolean' ||
+    typeof obj.created_at !== 'string'
+  ) {
+    return false
+  }
+
+  // Check recipe exists and has required structure
+  if (obj.recipe == null || typeof obj.recipe !== 'object') {
+    return false
+  }
+
+  const recipe = obj.recipe as Record<string, unknown>
+  if (typeof recipe.id !== 'number' || typeof recipe.name !== 'string') {
+    return false
+  }
+
+  return true
 }
 
 /**

@@ -10,6 +10,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { logErrorLevel } from '@/lib/error-logger'
 
 interface RecipeDetailErrorProps {
   error: Error & { digest?: string }
@@ -21,8 +22,7 @@ export default function RecipeDetailError({
   reset,
 }: RecipeDetailErrorProps) {
   useEffect(() => {
-    // Log błędu do error reporting service
-    console.error('Recipe detail page error:', error)
+    logErrorLevel(error, { source: 'page.recipes.[id].error' })
   }, [error])
 
   return (

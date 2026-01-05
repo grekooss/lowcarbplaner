@@ -11,12 +11,14 @@ import {
   ACTIVITY_LEVEL_LABELS,
   GOAL_LABELS,
   MEAL_PLAN_TYPE_LABELS,
-  MACRO_RATIO_LABELS,
   parseMacroRatio,
+  calculateSelectedMealsFromTimeWindow,
+  getSelectedMealsDescription,
   type OnboardingFormData,
   type CalculatedTargets,
 } from '@/types/onboarding-view.types'
 import { Separator } from '@/components/ui/separator'
+import { MacroCard } from '@/components/profile/MacroCard'
 
 interface SummaryStepProps {
   formData: OnboardingFormData
@@ -24,6 +26,10 @@ interface SummaryStepProps {
 }
 
 export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
+  const ratio = formData.macro_ratio
+    ? parseMacroRatio(formData.macro_ratio)
+    : { fats: 0.6, protein: 0.25, carbs: 0.15 }
+
   return (
     <div className='space-y-4'>
       <div className='space-y-1'>
@@ -37,7 +43,7 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
 
       <div className='space-y-3'>
         {/* Personal Data */}
-        <div className='rounded-md bg-white p-4 shadow-sm'>
+        <div className='rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md'>
           <h3 className='mb-2 text-base font-bold'>Twoje dane</h3>
           <div className='space-y-2'>
             <div className='flex justify-between'>
@@ -104,64 +110,72 @@ export function SummaryStep({ formData, calculatedTargets }: SummaryStepProps) {
             </div>
             <Separator />
             <div className='flex justify-between'>
-              <span className='text-muted-foreground'>Proporcje makro:</span>
+              <span className='text-muted-foreground'>Okno czasowe:</span>
               <span className='font-medium'>
-                {formData.macro_ratio
-                  ? MACRO_RATIO_LABELS[formData.macro_ratio]
+                {formData.eating_start_time && formData.eating_end_time
+                  ? `${formData.eating_start_time} - ${formData.eating_end_time}`
                   : '-'}
               </span>
             </div>
+            {formData.meal_plan_type === '2_main' &&
+              formData.eating_start_time &&
+              formData.eating_end_time && (
+                <>
+                  <Separator />
+                  <div className='flex justify-between'>
+                    <span className='text-muted-foreground'>
+                      Dobrane posiłki:
+                    </span>
+                    <span className='text-primary font-medium'>
+                      {getSelectedMealsDescription(
+                        calculateSelectedMealsFromTimeWindow(
+                          formData.eating_start_time,
+                          formData.eating_end_time
+                        )
+                      )}
+                    </span>
+                  </div>
+                </>
+              )}
           </div>
         </div>
 
         {/* Nutrition Targets */}
         {calculatedTargets && (
-          <div className='rounded-md bg-white p-4 shadow-sm'>
-            <h3 className='mb-2 text-base font-bold'>Twoje cele żywieniowe</h3>
-            <div className='space-y-2'>
-              <div className='flex items-center justify-between'>
-                <span className='text-muted-foreground'>Kalorie dziennie:</span>
-                <span className='text-primary text-2xl font-bold'>
-                  {calculatedTargets.target_calories} kcal
-                </span>
-              </div>
-              <Separator />
-              <div className='space-y-1'>
-                <div className='text-sm font-medium'>Makroskładniki:</div>
-                {(() => {
-                  const ratio = formData.macro_ratio
-                    ? parseMacroRatio(formData.macro_ratio)
-                    : { fats: 0.6, protein: 0.25, carbs: 0.15 }
-                  return (
-                    <div className='space-y-0.5 text-sm'>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>
-                          Węglowodany ({Math.round(ratio.carbs * 100)}%):
-                        </span>
-                        <span className='font-medium'>
-                          {calculatedTargets.target_carbs_g}g
-                        </span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>
-                          Białko ({Math.round(ratio.protein * 100)}%):
-                        </span>
-                        <span className='font-medium'>
-                          {calculatedTargets.target_protein_g}g
-                        </span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>
-                          Tłuszcze ({Math.round(ratio.fats * 100)}%):
-                        </span>
-                        <span className='font-medium'>
-                          {calculatedTargets.target_fats_g}g
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
+          <div className='rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md'>
+            <h3 className='mb-3 text-base font-bold'>Twoje cele żywieniowe</h3>
+            <div className='grid grid-cols-4 gap-2'>
+              <MacroCard
+                label='Kalorie'
+                value={calculatedTargets.target_calories}
+                unit='kcal'
+                variant='calories'
+                size='compact'
+              />
+              <MacroCard
+                label='Tłuszcze'
+                value={calculatedTargets.target_fats_g}
+                unit='g'
+                variant='fat'
+                size='compact'
+                percentage={Math.round(ratio.fats * 100)}
+              />
+              <MacroCard
+                label='Węgl. netto'
+                value={calculatedTargets.target_carbs_g}
+                unit='g'
+                variant='carbs'
+                size='compact'
+                percentage={Math.round(ratio.carbs * 100)}
+              />
+              <MacroCard
+                label='Białko'
+                value={calculatedTargets.target_protein_g}
+                unit='g'
+                variant='protein'
+                size='compact'
+                percentage={Math.round(ratio.protein * 100)}
+              />
             </div>
           </div>
         )}

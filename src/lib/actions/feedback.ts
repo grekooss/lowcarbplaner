@@ -10,6 +10,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { logErrorLevel } from '@/lib/error-logger'
 import type {
   CreateFeedbackCommand,
   FeedbackResponseDTO,
@@ -106,7 +107,11 @@ export async function createFeedback(
       .single()
 
     if (insertError) {
-      console.error('Błąd podczas tworzenia feedbacku:', insertError)
+      logErrorLevel(insertError, {
+        source: 'feedback.createFeedback',
+        userId: user.id,
+        metadata: { errorCode: insertError.code },
+      })
       return {
         error: `Błąd bazy danych: ${insertError.message}`,
         code: 'DATABASE_ERROR',
@@ -124,7 +129,7 @@ export async function createFeedback(
 
     return { data: response }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w createFeedback:', err)
+    logErrorLevel(err, { source: 'feedback.createFeedback' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',

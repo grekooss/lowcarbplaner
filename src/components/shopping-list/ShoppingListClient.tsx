@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react'
 import { ShoppingListAccordion } from './ShoppingListAccordion'
 import { EmptyState } from './EmptyState'
+import { logWarning } from '@/lib/error-logger'
 import { cleanupPurchasedState } from '@/types/shopping-list-view.types'
 import type { ShoppingListResponseDTO } from '@/types/dto.types'
 import type { PurchasedItemsState } from '@/types/shopping-list-view.types'
@@ -36,7 +37,9 @@ export const ShoppingListClient = ({
         setPurchasedItems(cleaned)
       }
     } catch (error) {
-      console.error('Failed to load purchased items from localStorage:', error)
+      logWarning(error, {
+        source: 'ShoppingListClient.loadFromLocalStorage',
+      })
       setPurchasedItems({})
     }
     setIsHydrated(true)
@@ -48,7 +51,9 @@ export const ShoppingListClient = ({
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(purchasedItems))
     } catch (error) {
-      console.error('Failed to save purchased items to localStorage:', error)
+      logWarning(error, {
+        source: 'ShoppingListClient.saveToLocalStorage',
+      })
     }
   }, [purchasedItems, isHydrated])
 

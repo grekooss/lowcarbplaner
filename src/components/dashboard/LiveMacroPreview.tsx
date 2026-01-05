@@ -12,13 +12,15 @@ interface LiveMacroPreviewProps {
   original: {
     calories: number | null
     protein_g: number | null
-    carbs_g: number | null
+    /** Węglowodany netto (Net Carbs) - kluczowe dla keto */
+    net_carbs_g: number | null
     fats_g: number | null
   }
   adjusted: {
     calories: number
     protein_g: number
-    carbs_g: number
+    /** Węglowodany netto (Net Carbs) - kluczowe dla keto */
+    net_carbs_g: number
     fats_g: number
   }
 }
@@ -44,10 +46,18 @@ export function LiveMacroPreview({
       color: 'text-[#f5ac4b]',
     },
     {
-      label: 'Węglowodany',
+      label: 'Tłuszcze',
+      icon: Droplet,
+      value: adjusted.fats_g,
+      original: original.fats_g,
+      unit: 'g',
+      color: 'text-[#81b29a]',
+    },
+    {
+      label: 'Węgl. netto',
       icon: Wheat,
-      value: adjusted.carbs_g,
-      original: original.carbs_g,
+      value: adjusted.net_carbs_g,
+      original: original.net_carbs_g,
       unit: 'g',
       color: 'text-[#8fbc8f]',
     },
@@ -58,14 +68,6 @@ export function LiveMacroPreview({
       original: original.protein_g,
       unit: 'g',
       color: 'text-[#e07a5f]',
-    },
-    {
-      label: 'Tłuszcze',
-      icon: Droplet,
-      value: adjusted.fats_g,
-      original: original.fats_g,
-      unit: 'g',
-      color: 'text-[#81b29a]',
     },
   ]
 

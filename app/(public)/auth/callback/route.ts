@@ -12,6 +12,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { Database } from '@/types/database.types'
+import { logErrorLevel, logWarning } from '@/lib/error-logger'
 
 /**
  * Helper to copy cookies from one response to another with all options preserved
@@ -112,7 +113,10 @@ export async function GET(request: NextRequest) {
       })
 
       if (verifyError) {
-        console.error('Email verification error:', verifyError)
+        logWarning(verifyError, {
+          source: 'auth.callback.verifyOtp',
+          metadata: { type },
+        })
 
         // For recovery, redirect to reset password page with error
         if (type === 'recovery') {
@@ -170,7 +174,7 @@ export async function GET(request: NextRequest) {
         await supabase.auth.exchangeCodeForSession(code)
 
       if (exchangeError) {
-        console.error('OAuth callback error:', exchangeError)
+        logWarning(exchangeError, { source: 'auth.callback.exchangeCode' })
         return NextResponse.redirect(
           new URL('/auth?error=oauth_failed', origin)
         )
@@ -214,7 +218,7 @@ export async function GET(request: NextRequest) {
     // No valid parameters
     return NextResponse.redirect(new URL('/auth', origin))
   } catch (error) {
-    console.error('Unexpected error in OAuth callback:', error)
+    logErrorLevel(error, { source: 'auth.callback.GET' })
     return NextResponse.redirect(new URL('/auth?error=unexpected', origin))
   }
 }

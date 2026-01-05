@@ -209,8 +209,8 @@ export function RecipeDetailHero({
           size='compact'
         />
         <MacroCard
-          label='Węglowodany'
-          value={recipe.total_carbs_g}
+          label='Węgl. netto'
+          value={recipe.total_net_carbs_g}
           unit='g'
           variant='carbs'
           size='compact'

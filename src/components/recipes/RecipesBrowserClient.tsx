@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import { ViewToggle, type ViewMode } from './ViewToggle'
 import { SortSelect, type SortOption, type SortDirection } from './SortSelect'
 import { LoadMoreButton } from './LoadMoreButton'
 import { AuthPromptModal } from './AuthPromptModal'
-import { RecipeViewModal } from '@/components/shared/RecipeViewModal'
+import { LazyRecipeViewModal } from '@/components/shared/lazy-modals'
 import { useRecipesFilter } from '@/lib/hooks/useRecipesFilter'
 import { useRecipeViewModal } from '@/hooks/useRecipeViewModal'
 import { useAuthPrompt } from '@/lib/hooks/useAuthPrompt'
@@ -28,6 +28,7 @@ import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
 import { useRecipesQuery } from '@/lib/react-query/queries/useRecipesQuery'
 import { useRecipeQuery } from '@/lib/react-query/queries/useRecipeQuery'
 import type { RecipesResponse } from '@/types/recipes-view.types'
+import type { Enums } from '@/types/database.types'
 
 interface RecipesBrowserClientProps {
   initialData: RecipesResponse
@@ -57,7 +58,7 @@ export function RecipesBrowserClient({
   const router = useRouter()
 
   // Stan lokalny dla widoku i sortowania
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortBy, setSortBy] = useState<SortOption>('calories')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
@@ -65,9 +66,11 @@ export function RecipesBrowserClient({
   const [recipeModal, setRecipeModal] = useState<{
     isOpen: boolean
     recipeId: number | null
+    selectedMealType: Enums<'meal_type_enum'> | null
   }>({
     isOpen: false,
     recipeId: null,
+    selectedMealType: null,
   })
 
   // Hooks dla state management
@@ -127,7 +130,10 @@ export function RecipesBrowserClient({
           ((a.total_protein_g || 0) - (b.total_protein_g || 0)) * multiplier
         )
       case 'carbs':
-        return ((a.total_carbs_g || 0) - (b.total_carbs_g || 0)) * multiplier
+        // Sortowanie po net carbs (węglowodany netto) dla diety keto/low-carb
+        return (
+          ((a.total_net_carbs_g || 0) - (b.total_net_carbs_g || 0)) * multiplier
+        )
       case 'fats':
         return ((a.total_fats_g || 0) - (b.total_fats_g || 0)) * multiplier
       case 'name':
@@ -162,27 +168,31 @@ export function RecipesBrowserClient({
     return sortedRecipes.filter((r) => r.id !== featuredRecipe.id)
   }, [sortedRecipes, featuredRecipe])
 
-  // Handle recipe click - otwórz modal z przepisem
-  const handleRecipeClick = (recipeId: number) => {
-    if (authLoading) return // Nie pozwól na klik podczas ładowania
+  // Handle recipe click - otwórz modal z przepisem (memoized to prevent re-renders)
+  const handleRecipeClick = useCallback(
+    (recipeId: number, mealType?: Enums<'meal_type_enum'>) => {
+      if (authLoading) return // Nie pozwól na klik podczas ładowania
 
-    // Otwórz modal z przepisem
-    setRecipeModal({
-      isOpen: true,
-      recipeId,
-    })
-  }
+      // Otwórz modal z przepisem
+      setRecipeModal({
+        isOpen: true,
+        recipeId,
+        selectedMealType: mealType ?? null,
+      })
+    },
+    [authLoading]
+  )
 
-  // Zamknij modal przepisu
-  const handleRecipeModalClose = () => {
-    setRecipeModal({ isOpen: false, recipeId: null })
-  }
+  // Zamknij modal przepisu (memoized)
+  const handleRecipeModalClose = useCallback(() => {
+    setRecipeModal({ isOpen: false, recipeId: null, selectedMealType: null })
+  }, [])
 
-  // Handle Add to Meal Plan
+  // Placeholder - funkcjonalność dodawania do planu będzie zaimplementowana w przyszłości
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleAddToMealPlan = (_recipeId: number) => {
-    // TODO: Implementacja dodawania do planu posiłków
-  }
+  const handleAddToMealPlan = useCallback((_recipeId: number) => {
+    // TODO: otwórz modal wyboru dnia i typu posiłku
+  }, [])
 
   // Initial loading - show spinner for entire page
   if (isLoading) {
@@ -269,6 +279,11 @@ export function RecipesBrowserClient({
                   recipes={recipesForGrid}
                   onRecipeClick={handleRecipeClick}
                   hideMealTypeBadge={filters.meal_types.length > 0}
+                  activeMealTypeFilter={
+                    filters.meal_types.length === 1
+                      ? (filters.meal_types[0] as Enums<'meal_type_enum'>)
+                      : undefined
+                  }
                 />
               </div>
 
@@ -284,6 +299,12 @@ export function RecipesBrowserClient({
                           onAddToMealPlan={handleAddToMealPlan}
                           isAuthenticated={isAuthenticated ?? undefined}
                           hideMealTypeBadge={filters.meal_types.length > 0}
+                          activeMealTypeFilter={
+                            filters.meal_types.length === 1
+                              ? (filters
+                                  .meal_types[0] as Enums<'meal_type_enum'>)
+                              : undefined
+                          }
                         />
                         {(index + 1) % 4 === 0 && (
                           <div className='mt-3'>
@@ -316,12 +337,14 @@ export function RecipesBrowserClient({
 
       {/* Recipe Detail Modal */}
       {selectedRecipe && !isRecipeLoading && (
-        <RecipeViewModal
+        <LazyRecipeViewModal
           recipe={selectedRecipe}
           isOpen={recipeModal.isOpen}
           onClose={handleRecipeModalClose}
           ingredientEditor={ingredientEditor}
           testId='recipes-browser-modal'
+          selectedMealType={recipeModal.selectedMealType}
+          isAuthenticated={isAuthenticated ?? false}
         />
       )}
     </>

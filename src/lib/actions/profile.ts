@@ -14,8 +14,8 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { calculateNutritionTargets } from '@/services/nutrition-calculator'
 import { formatLocalDate } from '@/lib/utils/date-formatting'
+import { logErrorLevel, logWarning } from '@/lib/error-logger'
 import type {
-  CreateProfileCommand,
   CreateProfileResponseDTO,
   ProfileDTO,
   UpdateProfileCommand,
@@ -26,12 +26,15 @@ import {
   updateProfileSchema,
   type CreateProfileInput,
   type UpdateProfileInput,
+  type CreateProfileValidated,
 } from '@/lib/validation/profile'
 import {
   recordProfileCreated,
   recordProfileUpdated,
   type ProfileSnapshot,
 } from '@/lib/actions/user-history'
+import { calculateSelectedMealsFromTimeWindow } from '@/types/onboarding-view.types'
+import { withRetryResult } from '@/lib/utils/retry'
 
 /**
  * Standardowy typ wyniku Server Action (Discriminated Union)
@@ -104,7 +107,7 @@ export async function createProfile(
       }
     }
 
-    const command: CreateProfileCommand = validated.data
+    const command: CreateProfileValidated = validated.data
 
     // 3. Obliczenie celów żywieniowych (BMR, TDEE, makro)
     let nutritionTargets
@@ -133,7 +136,16 @@ export async function createProfile(
       }
     }
 
-    // 5. Przygotowanie danych do zapisu (bez created_at - zachowaj oryginalny)
+    // 5. Oblicz selected_meals na podstawie okna czasowego (dla 2_main)
+    const selectedMeals =
+      command.meal_plan_type === '2_main'
+        ? calculateSelectedMealsFromTimeWindow(
+            command.eating_start_time,
+            command.eating_end_time
+          )
+        : null
+
+    // 6. Przygotowanie danych do zapisu (bez created_at - zachowaj oryginalny)
     const profileData = {
       id: user.id,
       email: user.email!,
@@ -145,6 +157,9 @@ export async function createProfile(
       goal: command.goal,
       weight_loss_rate_kg_week: command.weight_loss_rate_kg_week ?? null,
       meal_plan_type: command.meal_plan_type,
+      eating_start_time: command.eating_start_time,
+      eating_end_time: command.eating_end_time,
+      selected_meals: selectedMeals,
       macro_ratio: command.macro_ratio,
       disclaimer_accepted_at: command.disclaimer_accepted_at,
       target_calories: nutritionTargets.target_calories,
@@ -164,7 +179,11 @@ export async function createProfile(
       .single()
 
     if (upsertError) {
-      console.error('Błąd podczas zapisywania profilu:', upsertError)
+      logErrorLevel(upsertError, {
+        source: 'profile.createProfile',
+        userId: user.id,
+        metadata: { errorCode: upsertError.code },
+      })
       return {
         error: `Błąd bazy danych: ${upsertError.message}`,
         code: 'DATABASE_ERROR',
@@ -172,26 +191,71 @@ export async function createProfile(
     }
 
     // 7. Zapisz zdarzenie profile_created do historii
-    const profileSnapshot: ProfileSnapshot = {
-      weight_kg: createdProfile.weight_kg,
-      height_cm: createdProfile.height_cm,
-      age: createdProfile.age,
-      gender: createdProfile.gender,
-      activity_level: createdProfile.activity_level,
-      goal: createdProfile.goal,
-      weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
-      target_calories: createdProfile.target_calories,
-      target_protein_g: createdProfile.target_protein_g,
-      target_carbs_g: createdProfile.target_carbs_g,
-      target_fats_g: createdProfile.target_fats_g,
+    // Walidacja wymaganych pól przed zapisem do historii
+    if (
+      !createdProfile.gender ||
+      !createdProfile.age ||
+      !createdProfile.weight_kg ||
+      !createdProfile.height_cm ||
+      !createdProfile.activity_level ||
+      !createdProfile.goal ||
+      !createdProfile.target_calories ||
+      !createdProfile.target_protein_g ||
+      !createdProfile.target_carbs_g ||
+      !createdProfile.target_fats_g
+    ) {
+      logWarning('Brakujące dane profilu - pominięto zapis do historii', {
+        source: 'profile.createProfile.history',
+        userId: user.id,
+      })
+    } else {
+      const profileSnapshot: ProfileSnapshot = {
+        weight_kg: createdProfile.weight_kg,
+        height_cm: createdProfile.height_cm,
+        age: createdProfile.age,
+        gender: createdProfile.gender,
+        activity_level: createdProfile.activity_level,
+        goal: createdProfile.goal,
+        weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
+        target_calories: createdProfile.target_calories,
+        target_protein_g: createdProfile.target_protein_g,
+        target_carbs_g: createdProfile.target_carbs_g,
+        target_fats_g: createdProfile.target_fats_g,
+      }
+
+      // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+      recordProfileCreated(profileSnapshot).catch((err) => {
+        logWarning(err, {
+          source: 'profile.createProfile.recordHistory',
+          userId: user.id,
+          metadata: { event: 'profile_created' },
+        })
+      })
     }
 
-    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
-    recordProfileCreated(profileSnapshot).catch((err) => {
-      console.warn('Błąd zapisu historii profile_created:', err)
-    })
+    // 9. Transformacja do DTO - walidacja wymaganych pól
+    if (
+      !createdProfile.gender ||
+      createdProfile.age === null ||
+      createdProfile.weight_kg === null ||
+      createdProfile.height_cm === null ||
+      !createdProfile.activity_level ||
+      !createdProfile.goal ||
+      !createdProfile.meal_plan_type ||
+      !createdProfile.eating_start_time ||
+      !createdProfile.eating_end_time ||
+      !createdProfile.macro_ratio ||
+      createdProfile.target_calories === null ||
+      createdProfile.target_carbs_g === null ||
+      createdProfile.target_protein_g === null ||
+      createdProfile.target_fats_g === null
+    ) {
+      return {
+        error: 'Niekompletne dane profilu po zapisie',
+        code: 'DATA_INTEGRITY_ERROR',
+      }
+    }
 
-    // 8. Transformacja do DTO
     const response: CreateProfileResponseDTO = {
       id: createdProfile.id,
       email: createdProfile.email,
@@ -203,6 +267,9 @@ export async function createProfile(
       goal: createdProfile.goal,
       weight_loss_rate_kg_week: createdProfile.weight_loss_rate_kg_week,
       meal_plan_type: createdProfile.meal_plan_type,
+      eating_start_time: createdProfile.eating_start_time,
+      eating_end_time: createdProfile.eating_end_time,
+      selected_meals: createdProfile.selected_meals,
       macro_ratio: createdProfile.macro_ratio,
       disclaimer_accepted_at:
         createdProfile.disclaimer_accepted_at || new Date().toISOString(),
@@ -216,7 +283,7 @@ export async function createProfile(
 
     return { data: response }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w createProfile:', err)
+    logErrorLevel(err, { source: 'profile.createProfile' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -275,7 +342,11 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
           code: 'PROFILE_NOT_FOUND',
         }
       }
-      console.error('Błąd podczas pobierania profilu:', fetchError)
+      logErrorLevel(fetchError, {
+        source: 'profile.getMyProfile',
+        userId: user.id,
+        metadata: { errorCode: fetchError.code },
+      })
       return {
         error: `Błąd bazy danych: ${fetchError.message}`,
         code: 'DATABASE_ERROR',
@@ -293,6 +364,9 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       goal: profile.goal,
       weight_loss_rate_kg_week: profile.weight_loss_rate_kg_week,
       meal_plan_type: profile.meal_plan_type,
+      eating_start_time: profile.eating_start_time,
+      eating_end_time: profile.eating_end_time,
+      selected_meals: profile.selected_meals,
       macro_ratio: profile.macro_ratio,
       disclaimer_accepted_at:
         profile.disclaimer_accepted_at || new Date().toISOString(),
@@ -300,11 +374,12 @@ export async function getMyProfile(): Promise<ActionResult<ProfileDTO>> {
       target_carbs_g: profile.target_carbs_g,
       target_protein_g: profile.target_protein_g,
       target_fats_g: profile.target_fats_g,
+      excluded_equipment_ids: profile.excluded_equipment_ids,
     }
 
     return { data: profileDTO }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w getMyProfile:', err)
+    logErrorLevel(err, { source: 'profile.getMyProfile' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -387,7 +462,11 @@ export async function updateMyProfile(
           code: 'PROFILE_NOT_FOUND',
         }
       }
-      console.error('Błąd podczas pobierania profilu:', fetchError)
+      logErrorLevel(fetchError, {
+        source: 'profile.updateMyProfile',
+        userId: user.id,
+        metadata: { errorCode: fetchError.code },
+      })
       return {
         error: `Błąd bazy danych: ${fetchError.message}`,
         code: 'DATABASE_ERROR',
@@ -395,18 +474,62 @@ export async function updateMyProfile(
     }
 
     // 4. Merge danych (aktualne + nowe)
+    const mergedMealPlanType =
+      command.meal_plan_type ?? currentProfile.meal_plan_type
+    const mergedEatingStartTime =
+      command.eating_start_time ?? currentProfile.eating_start_time
+    const mergedEatingEndTime =
+      command.eating_end_time ?? currentProfile.eating_end_time
+
+    // Oblicz selected_meals na podstawie okna czasowego (dla 2_main)
+    const selectedMeals =
+      mergedMealPlanType === '2_main'
+        ? calculateSelectedMealsFromTimeWindow(
+            mergedEatingStartTime,
+            mergedEatingEndTime
+          )
+        : null
+
+    // Walidacja wymaganych pól przed merge
+    const mergedGender = command.gender ?? currentProfile.gender
+    const mergedAge = command.age ?? currentProfile.age
+    const mergedWeightKg = command.weight_kg ?? currentProfile.weight_kg
+    const mergedHeightCm = command.height_cm ?? currentProfile.height_cm
+    const mergedActivityLevel =
+      command.activity_level ?? currentProfile.activity_level
+    const mergedGoal = command.goal ?? currentProfile.goal
+    const mergedMacroRatio = command.macro_ratio ?? currentProfile.macro_ratio
+
+    if (
+      !mergedGender ||
+      mergedAge === null ||
+      mergedWeightKg === null ||
+      mergedHeightCm === null ||
+      !mergedActivityLevel ||
+      !mergedGoal ||
+      !mergedMacroRatio
+    ) {
+      return {
+        error: 'Niekompletne dane profilu - brakujące wymagane pola',
+        code: 'DATA_INTEGRITY_ERROR',
+      }
+    }
+
     const mergedData = {
-      gender: command.gender ?? currentProfile.gender,
-      age: command.age ?? currentProfile.age,
-      weight_kg: command.weight_kg ?? currentProfile.weight_kg,
-      height_cm: command.height_cm ?? currentProfile.height_cm,
-      activity_level: command.activity_level ?? currentProfile.activity_level,
-      goal: command.goal ?? currentProfile.goal,
+      gender: mergedGender,
+      age: mergedAge,
+      weight_kg: mergedWeightKg,
+      height_cm: mergedHeightCm,
+      activity_level: mergedActivityLevel,
+      goal: mergedGoal,
       weight_loss_rate_kg_week:
         command.weight_loss_rate_kg_week ??
         currentProfile.weight_loss_rate_kg_week,
-      meal_plan_type: command.meal_plan_type ?? currentProfile.meal_plan_type,
-      macro_ratio: command.macro_ratio ?? currentProfile.macro_ratio,
+      meal_plan_type: mergedMealPlanType,
+      eating_start_time: mergedEatingStartTime,
+      eating_end_time: mergedEatingEndTime,
+      selected_meals: selectedMeals,
+      macro_ratio: mergedMacroRatio,
     }
 
     // 5. Przeliczenie celów żywieniowych
@@ -445,7 +568,11 @@ export async function updateMyProfile(
       .single()
 
     if (updateError) {
-      console.error('Błąd podczas aktualizacji profilu:', updateError)
+      logErrorLevel(updateError, {
+        source: 'profile.updateMyProfile',
+        userId: user.id,
+        metadata: { errorCode: updateError.code },
+      })
       return {
         error: `Błąd bazy danych: ${updateError.message}`,
         code: 'DATABASE_ERROR',
@@ -453,37 +580,89 @@ export async function updateMyProfile(
     }
 
     // 8. Zapisz zdarzenie profile_updated do historii
-    const profileSnapshotUpdate: ProfileSnapshot = {
-      weight_kg: updatedProfile.weight_kg,
-      height_cm: updatedProfile.height_cm,
-      age: updatedProfile.age,
-      gender: updatedProfile.gender,
-      activity_level: updatedProfile.activity_level,
-      goal: updatedProfile.goal,
-      weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
-      target_calories: updatedProfile.target_calories,
-      target_protein_g: updatedProfile.target_protein_g,
-      target_carbs_g: updatedProfile.target_carbs_g,
-      target_fats_g: updatedProfile.target_fats_g,
+    // Walidacja wymaganych pól przed zapisem do historii
+    if (
+      !updatedProfile.gender ||
+      updatedProfile.age === null ||
+      updatedProfile.weight_kg === null ||
+      updatedProfile.height_cm === null ||
+      !updatedProfile.activity_level ||
+      !updatedProfile.goal ||
+      updatedProfile.target_calories === null ||
+      updatedProfile.target_protein_g === null ||
+      updatedProfile.target_carbs_g === null ||
+      updatedProfile.target_fats_g === null
+    ) {
+      logWarning('Brakujące dane profilu - pominięto zapis do historii', {
+        source: 'profile.updateMyProfile.history',
+        userId: user.id,
+      })
+    } else {
+      const profileSnapshotUpdate: ProfileSnapshot = {
+        weight_kg: updatedProfile.weight_kg,
+        height_cm: updatedProfile.height_cm,
+        age: updatedProfile.age,
+        gender: updatedProfile.gender,
+        activity_level: updatedProfile.activity_level,
+        goal: updatedProfile.goal,
+        weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
+        target_calories: updatedProfile.target_calories,
+        target_protein_g: updatedProfile.target_protein_g,
+        target_carbs_g: updatedProfile.target_carbs_g,
+        target_fats_g: updatedProfile.target_fats_g,
+      }
+
+      // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
+      recordProfileUpdated(profileSnapshotUpdate).catch((err) => {
+        logWarning(err, {
+          source: 'profile.updateMyProfile.recordHistory',
+          userId: user.id,
+          metadata: { event: 'profile_updated' },
+        })
+      })
     }
 
-    // Zapisz do historii (nie blokujemy na błędzie - historia jest poboczna)
-    recordProfileUpdated(profileSnapshotUpdate).catch((err) => {
-      console.warn('Błąd zapisu historii profile_updated:', err)
-    })
+    // 9. Usunięcie zaplanowanych posiłków (regeneracja planu)
+    // Strategia: zawsze usuwamy przyszłe posiłki + niezjedzone dzisiejsze posiłki
+    // Zachowujemy TYLKO zjedzone posiłki z dzisiaj (ich makra są już zapisane w historii)
+    //
+    // UWAGA: Te operacje są wykonywane z retry, ponieważ ich niepowodzenie
+    // może spowodować konflikt przy następnej regeneracji planu (duplicate key).
+    // Mimo że aktualizacja profilu już się zakończyła, posiłki muszą być usunięte.
+    const today = formatLocalDate(new Date())
 
-    // 9. Usunięcie wszystkich zaplanowanych posiłków (regeneracja planu)
-    const { error: deleteMealsError } = await supabase
-      .from('planned_meals')
-      .delete()
-      .eq('user_id', user.id)
-
-    if (deleteMealsError) {
-      console.warn(
-        'Błąd podczas usuwania starych posiłków (nie krytyczny):',
-        deleteMealsError
-      )
-    }
+    // Usuń przyszłe i dzisiejsze niezjedzone posiłki równolegle z retry
+    await Promise.all([
+      // Usuń wszystkie przyszłe posiłki (od jutra)
+      withRetryResult(
+        async () =>
+          supabase
+            .from('planned_meals')
+            .delete()
+            .eq('user_id', user.id)
+            .gt('meal_date', today),
+        {
+          source: 'profile.updateMyProfile.deleteFutureMeals',
+          userId: user.id,
+          metadata: { today },
+        }
+      ),
+      // Usuń dzisiejsze NIEZJEDZONE posiłki (zjedzone zachowujemy)
+      withRetryResult(
+        async () =>
+          supabase
+            .from('planned_meals')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('meal_date', today)
+            .eq('is_eaten', false),
+        {
+          source: 'profile.updateMyProfile.deleteTodayUneaten',
+          userId: user.id,
+          metadata: { today },
+        }
+      ),
+    ])
 
     // 10. Transformacja do DTO
     const profileDTO: ProfileDTO = {
@@ -496,6 +675,9 @@ export async function updateMyProfile(
       goal: updatedProfile.goal,
       weight_loss_rate_kg_week: updatedProfile.weight_loss_rate_kg_week,
       meal_plan_type: updatedProfile.meal_plan_type,
+      eating_start_time: updatedProfile.eating_start_time,
+      eating_end_time: updatedProfile.eating_end_time,
+      selected_meals: updatedProfile.selected_meals,
       macro_ratio: updatedProfile.macro_ratio,
       disclaimer_accepted_at:
         updatedProfile.disclaimer_accepted_at || new Date().toISOString(),
@@ -503,11 +685,12 @@ export async function updateMyProfile(
       target_carbs_g: updatedProfile.target_carbs_g,
       target_protein_g: updatedProfile.target_protein_g,
       target_fats_g: updatedProfile.target_fats_g,
+      excluded_equipment_ids: updatedProfile.excluded_equipment_ids,
     }
 
     return { data: profileDTO }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w updateMyProfile:', err)
+    logErrorLevel(err, { source: 'profile.updateMyProfile' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',
@@ -563,7 +746,7 @@ export async function generateMealPlan(): Promise<
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'id, target_calories, target_carbs_g, target_protein_g, target_fats_g'
+        'id, target_calories, target_carbs_g, target_protein_g, target_fats_g, meal_plan_type, selected_meals, excluded_equipment_ids'
       )
       .eq('id', userId)
       .single()
@@ -575,7 +758,11 @@ export async function generateMealPlan(): Promise<
           code: 'PROFILE_NOT_FOUND',
         }
       }
-      console.error('Błąd podczas pobierania profilu:', profileError)
+      logErrorLevel(profileError, {
+        source: 'profile.generateMealPlan',
+        userId: user.id,
+        metadata: { errorCode: profileError.code },
+      })
       return {
         error: `Błąd bazy danych: ${profileError.message}`,
         code: 'DATABASE_ERROR',
@@ -589,31 +776,65 @@ export async function generateMealPlan(): Promise<
     try {
       await cleanupOldMealPlans(userId)
     } catch (cleanupError) {
-      console.warn(
-        'Błąd czyszczenia starych planów (nie krytyczny):',
-        cleanupError
-      )
+      logWarning(cleanupError, {
+        source: 'profile.generateMealPlan.cleanup',
+        userId,
+        metadata: { operation: 'cleanupOldMealPlans' },
+      })
     }
 
     const { findMissingDays } = await import('@/services/meal-plan-generator')
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const todayString = formatLocalDate(today)
+
+    // Sprawdź czy dzisiaj są posiłki oznaczone jako zjedzone
+    // Jeśli tak, generujemy plan od jutra (zachowujemy dzisiejszy dzień)
+    const { data: todayEatenMeals } = await supabase
+      .from('planned_meals')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('meal_date', todayString)
+      .eq('is_eaten', true)
+      .limit(1)
+
+    const hasTodayEatenMeals = todayEatenMeals && todayEatenMeals.length > 0
 
     // Wygeneruj listę dat dla następnych 7 dni
+    // Jeśli dzisiaj są zjedzone posiłki, zaczynamy od jutra (i=1), w przeciwnym razie od dzisiaj (i=0)
+    const startOffset = hasTodayEatenMeals ? 1 : 0
     const dates: string[] = []
-    for (let i = 0; i < 7; i++) {
+    for (let i = startOffset; i < 7 + startOffset; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
       dates.push(formatLocalDate(date))
     }
 
-    // 4. Znajdź dni bez kompletnego planu
+    // 4. Walidacja wymaganych pól profilu przed generowaniem planu
+    if (
+      profile.target_calories === null ||
+      profile.target_protein_g === null ||
+      profile.target_carbs_g === null ||
+      profile.target_fats_g === null
+    ) {
+      return {
+        error: 'Niekompletne dane profilu - brakujące cele żywieniowe',
+        code: 'PROFILE_INCOMPLETE',
+      }
+    }
+
+    // 5. Znajdź dni bez kompletnego planu
     let missingDays: string[]
     let plannedMeals
 
     try {
-      missingDays = await findMissingDays(userId, dates)
+      missingDays = await findMissingDays(
+        userId,
+        dates,
+        profile.meal_plan_type,
+        profile.selected_meals
+      )
 
       // Jeśli wszystkie dni mają kompletny plan, zwróć konflikt
       if (missingDays.length === 0) {
@@ -624,21 +845,24 @@ export async function generateMealPlan(): Promise<
         }
       }
 
-      // Generuj plan tylko dla brakujących dni
-      const { generateDayPlan } = await import('@/services/meal-plan-generator')
-      plannedMeals = []
+      // Generuj plan tylko dla brakujących dni (z optymalizacją N+1 queries)
+      const { generateMealsForDates } =
+        await import('@/services/meal-plan-generator')
 
-      for (const date of missingDays) {
-        const dayPlan = await generateDayPlan(userId, date, {
-          target_calories: profile.target_calories,
-          target_protein_g: profile.target_protein_g,
-          target_carbs_g: profile.target_carbs_g,
-          target_fats_g: profile.target_fats_g,
-        })
-        plannedMeals.push(...dayPlan)
-      }
+      plannedMeals = await generateMealsForDates(userId, missingDays, {
+        target_calories: profile.target_calories,
+        target_protein_g: profile.target_protein_g,
+        target_carbs_g: profile.target_carbs_g,
+        target_fats_g: profile.target_fats_g,
+        meal_plan_type: profile.meal_plan_type,
+        selected_meals: profile.selected_meals,
+        excluded_equipment_ids: profile.excluded_equipment_ids,
+      })
     } catch (generatorError) {
-      console.error('Błąd generatora planu:', generatorError)
+      logErrorLevel(generatorError, {
+        source: 'profile.generateMealPlan.generator',
+        userId: user.id,
+      })
       return {
         error:
           generatorError instanceof Error
@@ -648,20 +872,46 @@ export async function generateMealPlan(): Promise<
       }
     }
 
-    // 5. Batch insert do planned_meals
+    // 5. Usuń istniejące (niekompletne) posiłki dla dni, które będziemy regenerować
+    // Jest to konieczne gdy użytkownik zmienił meal_plan_type - mogą istnieć posiłki
+    // z poprzedniej konfiguracji, które powodują konflikt unique constraint
+    if (missingDays.length > 0) {
+      const { error: deleteIncompleteError } = await supabase
+        .from('planned_meals')
+        .delete()
+        .eq('user_id', userId)
+        .in('meal_date', missingDays)
+
+      if (deleteIncompleteError) {
+        logWarning(deleteIncompleteError, {
+          source: 'profile.generateMealPlan.deleteIncomplete',
+          userId,
+          metadata: { missingDays: missingDays.length },
+        })
+      }
+    }
+
+    // 6. Batch insert do planned_meals
     const { error: insertError } = await supabase
       .from('planned_meals')
       .insert(plannedMeals)
 
     if (insertError) {
-      console.error('Błąd podczas zapisu planu posiłków:', insertError)
+      logErrorLevel(insertError, {
+        source: 'profile.generateMealPlan.insert',
+        userId: user.id,
+        metadata: {
+          errorCode: insertError.code,
+          mealsCount: plannedMeals.length,
+        },
+      })
       return {
         error: `Błąd bazy danych: ${insertError.message}`,
         code: 'DATABASE_ERROR',
       }
     }
 
-    // 6. Zwrot statusu sukcesu
+    // 7. Zwrot statusu sukcesu
     const generatedDays = missingDays.length
     return {
       data: {
@@ -671,7 +921,7 @@ export async function generateMealPlan(): Promise<
       },
     }
   } catch (err) {
-    console.error('Nieoczekiwany błąd w generateMealPlan:', err)
+    logErrorLevel(err, { source: 'profile.generateMealPlan' })
     return {
       error: 'Wewnętrzny błąd serwera',
       code: 'INTERNAL_ERROR',

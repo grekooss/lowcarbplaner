@@ -57,7 +57,7 @@ export function DisclaimerStep({ value, onChange }: DisclaimerStepProps) {
 
       <Label
         htmlFor='disclaimer'
-        className='flex cursor-pointer items-start space-x-3 rounded-md bg-white p-4 shadow-sm transition-colors hover:bg-gray-50'
+        className='hover:border-primary flex cursor-pointer items-start space-x-3 rounded-lg border-2 border-white bg-white/40 p-4 shadow-sm backdrop-blur-md transition-colors'
       >
         <Checkbox
           id='disclaimer'

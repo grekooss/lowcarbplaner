@@ -5,6 +5,8 @@
  * Obsługuje zarówno publiczne buckety jak i signed URLs dla prywatnych bucketów.
  */
 
+import { logErrorLevel } from '@/lib/error-logger'
+
 /**
  * Konfiguracja Storage
  */
@@ -42,7 +44,10 @@ export function getPublicStorageUrl(
 ): string | null {
   if (!filePath || !bucketName) return null
   if (!STORAGE_CONFIG.SUPABASE_URL) {
-    console.error('NEXT_PUBLIC_SUPABASE_URL is not set')
+    logErrorLevel('NEXT_PUBLIC_SUPABASE_URL is not set', {
+      source: 'supabase-storage.getPublicStorageUrl',
+      metadata: { bucketName, filePath },
+    })
     return null
   }
 

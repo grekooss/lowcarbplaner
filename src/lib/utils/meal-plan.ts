@@ -11,6 +11,8 @@ import { DAY_NAMES, MONTH_NAMES } from '@/types/meal-plan-view.types'
 
 /**
  * Transformuje listę posiłków na model tygodniowego planu
+ * Obsługuje wszystkie typy posiłków: breakfast, snack_morning, lunch, snack_afternoon, dinner
+ *
  * @param meals - Lista zaplanowanych posiłków
  * @param startDate - Data początkowa (YYYY-MM-DD)
  * @returns Model tygodniowego planu z 7 dniami
@@ -42,7 +44,11 @@ export function transformToWeekPlan(
       monthName: MONTH_NAMES[currentDate.getMonth()] || '',
       isToday: currentDate.getTime() === today.getTime(),
       breakfast: dayMeals.find((m) => m.meal_type === 'breakfast') || null,
+      snack_morning:
+        dayMeals.find((m) => m.meal_type === 'snack_morning') || null,
       lunch: dayMeals.find((m) => m.meal_type === 'lunch') || null,
+      snack_afternoon:
+        dayMeals.find((m) => m.meal_type === 'snack_afternoon') || null,
       dinner: dayMeals.find((m) => m.meal_type === 'dinner') || null,
     })
   }

@@ -8,7 +8,7 @@
  * - Reakcja Query invalidation
  */
 
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
 import {
   updatePlannedMeal,
   getReplacementRecipes,
