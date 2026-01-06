@@ -2,11 +2,13 @@
  * Equipment List Component
  *
  * Wyświetla listę naczyń/sprzętu kuchennego wymaganego do przepisu.
- * Używa ikon z lucide-react dopasowanych do kategorii sprzętu.
+ * W pełnym widoku używa checkboxów do zaznaczania (jak składniki).
+ * W widoku kompaktowym używa kolorowych tagów z ikonami.
  */
 
 'use client'
 
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import {
   Flame,
@@ -16,6 +18,7 @@ import {
   Scissors,
   Scale,
   CircleDot,
+  Check,
 } from 'lucide-react'
 import type { EquipmentDTO } from '@/types/dto.types'
 import type { Enums } from '@/types/database.types'
@@ -24,6 +27,10 @@ interface EquipmentListProps {
   equipment: EquipmentDTO[]
   compact?: boolean
   className?: string
+  /** Zewnętrzny stan zaznaczonych elementów */
+  checkedEquipment?: Set<number>
+  /** Callback do zmiany stanu zaznaczenia */
+  onToggleChecked?: (equipmentId: number) => void
 }
 
 /**
@@ -78,9 +85,38 @@ export function EquipmentList({
   equipment,
   compact = false,
   className,
+  checkedEquipment,
+  onToggleChecked,
 }: EquipmentListProps) {
+  // Lokalny stan zaznaczenia (używany gdy nie przekazano zewnętrznego)
+  const [localChecked, setLocalChecked] = useState<Set<number>>(new Set())
+
   if (!equipment || equipment.length === 0) {
     return null
+  }
+
+  const isChecked = (id: number) => {
+    if (checkedEquipment) {
+      return checkedEquipment.has(id)
+    }
+    return localChecked.has(id)
+  }
+
+  const toggleChecked = (id: number) => {
+    if (onToggleChecked) {
+      onToggleChecked(id)
+      return
+    }
+    // Lokalny stan
+    setLocalChecked((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
   }
 
   return (
@@ -111,32 +147,61 @@ export function EquipmentList({
           })}
         </div>
       ) : (
-        // Widok pełny - lista z detalami
+        // Widok pełny - lista z checkboxami (jak składniki)
         <ul className='space-y-2'>
           {equipment.map((item) => {
-            const Icon = CATEGORY_ICONS[item.category]
-            const colorClass = CATEGORY_COLORS[item.category]
+            const checked = isChecked(item.id)
 
             return (
               <li
                 key={item.id}
-                className='flex items-center gap-3 rounded-lg border border-white bg-white/70 px-3 py-2.5 shadow-sm'
+                className={cn(
+                  'group flex cursor-pointer items-center gap-4 rounded-lg border border-white bg-white/70 px-3 py-3 shadow-sm transition-all duration-200',
+                  checked ? 'bg-red-50/50' : 'hover:bg-white/90'
+                )}
+                onClick={() => toggleChecked(item.id)}
+                role='button'
+                tabIndex={0}
+                aria-pressed={checked}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleChecked(item.id)
+                  }
+                }}
               >
+                {/* Checkbox */}
                 <div
                   className={cn(
-                    'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
-                    colorClass
+                    'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-2 shadow-md transition-all duration-200',
+                    checked
+                      ? 'border-red-500 bg-red-500'
+                      : 'border-white bg-white group-hover:border-red-600'
                   )}
                 >
-                  <Icon className='h-4 w-4' />
+                  {checked && (
+                    <Check className='h-4 w-4 text-white' strokeWidth={3} />
+                  )}
                 </div>
+
+                {/* Nazwa i notatki */}
                 <div className='min-w-0 flex-1'>
-                  <p className='text-sm font-medium text-gray-800'>
+                  <p
+                    className={cn(
+                      'text-base font-medium transition-all duration-200',
+                      checked ? 'text-gray-400 line-through' : 'text-gray-800'
+                    )}
+                  >
                     {item.quantity > 1 ? `${item.quantity}× ` : ''}
                     {item.name}
                   </p>
                   {item.notes && (
-                    <p className='truncate text-xs text-gray-500'>
+                    <p
+                      className={cn(
+                        'truncate text-sm text-gray-500 transition-all duration-200',
+                        checked ? 'opacity-50' : ''
+                      )}
+                    >
                       {item.notes}
                     </p>
                   )}

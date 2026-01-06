@@ -8,6 +8,7 @@
 
 import Image from 'next/image'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { RatingDisplay } from '@/components/recipes/RatingDisplay'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
 import type { Enums } from '@/types/database.types'
@@ -24,7 +25,11 @@ import {
 
 interface FeaturedRecipeCardProps {
   recipe: RecipeDTO
-  onClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void
+  onClick: (
+    recipeSlug: string,
+    recipeId: number,
+    mealType?: Enums<'meal_type_enum'>
+  ) => void
 }
 
 export function FeaturedRecipeCard({
@@ -33,7 +38,7 @@ export function FeaturedRecipeCard({
 }: FeaturedRecipeCardProps) {
   const primaryMealType = recipe.meal_types[0]
   const handleClick = () => {
-    onClick(recipe.id, primaryMealType)
+    onClick(recipe.slug, recipe.id, primaryMealType)
   }
 
   const prepTime = 0
@@ -114,9 +119,18 @@ export function FeaturedRecipeCard({
           </div>
         </div>
 
-        <h3 className='mb-3 text-lg leading-tight font-bold text-gray-800 lg:mb-4 lg:text-2xl'>
+        <h3 className='mb-2 text-lg leading-tight font-bold text-gray-800 lg:mb-3 lg:text-2xl'>
           {recipe.name}
         </h3>
+
+        {/* Rating */}
+        <div className='mb-3 lg:mb-4'>
+          <RatingDisplay
+            rating={recipe.average_rating}
+            reviewsCount={recipe.reviews_count}
+            size='sm'
+          />
+        </div>
 
         {/* Inline Nutrition - visible on tablet, hidden on desktop */}
         <div className='mb-4 flex flex-wrap items-center gap-4 lg:hidden'>

@@ -221,6 +221,8 @@ export type IngredientDTO = {
  */
 export type RecipeDTO = {
   id: number
+  /** SEO-friendly URL slug (e.g., "salatka-grecka-z-feta") */
+  slug: string
   name: string
   instructions: RecipeInstructions
   meal_types: Enums<'meal_type_enum'>[]
@@ -425,6 +427,8 @@ export type SwappedMealDTO = {
  */
 export type ReplacementRecipeDTO = {
   id: number
+  /** SEO-friendly URL slug */
+  slug: string
   name: string
   image_url: string | null
   meal_types: Enums<'meal_type_enum'>[]

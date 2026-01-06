@@ -11,13 +11,18 @@ import { memo } from 'react'
 import Image from 'next/image'
 import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { RatingDisplay } from '@/components/recipes/RatingDisplay'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
 import type { Enums } from '@/types/database.types'
 
 interface RecipeCardProps {
   recipe: RecipeDTO
-  onClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void
+  onClick: (
+    recipeSlug: string,
+    recipeId: number,
+    mealType?: Enums<'meal_type_enum'>
+  ) => void
   /** Ukryj badge z typem posiłku (gdy filtr jest aktywny) */
   hideMealTypeBadge?: boolean
   /** Aktywny filtr typu posiłku - używany gdy hideMealTypeBadge=true */
@@ -59,7 +64,7 @@ export const RecipeCard = memo(function RecipeCard({
       : recipe.meal_types.length > 0
         ? recipe.meal_types[0]
         : undefined
-  const handleClick = () => onClick(recipe.id, displayMealType)
+  const handleClick = () => onClick(recipe.slug, recipe.id, displayMealType)
 
   const calories =
     recipe.total_calories !== null && recipe.total_calories !== undefined
@@ -139,12 +144,30 @@ export const RecipeCard = memo(function RecipeCard({
       </div>
 
       {/* Title */}
-      <h4 className='mb-4 line-clamp-2 text-base leading-tight font-bold text-gray-800 sm:text-lg'>
+      <h4 className='mb-2 line-clamp-2 text-base leading-tight font-bold text-gray-800 sm:text-lg'>
         {recipe.name}
       </h4>
 
+      {/* Rating */}
+      <div className='mb-3'>
+        <RatingDisplay
+          rating={recipe.average_rating}
+          reviewsCount={recipe.reviews_count}
+          size='xs'
+        />
+      </div>
+
       {/* Macros Row */}
       <div className='mt-auto flex flex-wrap items-center justify-center gap-4 text-sm text-black'>
+        {/* Fat */}
+        <div className='flex items-center gap-1.5' title='Tłuszcze'>
+          <Droplet className='text-success h-5 w-5' />
+          <span className='flex items-baseline gap-0.5 text-gray-700'>
+            <span className='font-bold'>{fats ?? '—'}</span>
+            <span>g</span>
+          </span>
+        </div>
+
         {/* Net Carbs */}
         <div
           className='flex items-center gap-1.5'
@@ -162,15 +185,6 @@ export const RecipeCard = memo(function RecipeCard({
           <Beef className='text-info h-5 w-5' />
           <span className='flex items-baseline gap-0.5 text-gray-700'>
             <span className='font-bold'>{protein ?? '—'}</span>
-            <span>g</span>
-          </span>
-        </div>
-
-        {/* Fat */}
-        <div className='flex items-center gap-1.5' title='Tłuszcze'>
-          <Droplet className='text-success h-5 w-5' />
-          <span className='flex items-baseline gap-0.5 text-gray-700'>
-            <span className='font-bold'>{fats ?? '—'}</span>
             <span>g</span>
           </span>
         </div>

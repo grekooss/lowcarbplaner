@@ -1,13 +1,11 @@
 /**
- * Strona szczegółów przepisu
+ * Redirect ze starego URL /recipes/[id] do nowego SEO-friendly /przepisy/[slug]
  *
- * Server Component - SSR dla szczegółów przepisu.
- * Dynamic route: /recipes/[id]
+ * Ten route istnieje tylko dla zachowania kompatybilności wstecznej.
+ * Przekierowuje trwale (301) na nowy URL z slug.
  */
 
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { RecipeDetailPage } from '@/components/recipes/detail/RecipeDetailPage'
+import { redirect } from 'next/navigation'
 import { getRecipeById } from '@/lib/actions/recipes'
 
 interface RecipeDetailPageProps {
@@ -17,50 +15,12 @@ interface RecipeDetailPageProps {
 }
 
 /**
- * Generuje dynamiczne metadata dla każdego przepisu (SEO)
- */
-export async function generateMetadata({
-  params: paramsPromise,
-}: RecipeDetailPageProps): Promise<Metadata> {
-  const params = await paramsPromise
-  const recipeId = Number(params.id)
-
-  // Walidacja ID
-  if (isNaN(recipeId) || recipeId <= 0) {
-    return {
-      title: 'Przepis nie znaleziony | LowCarbPlaner',
-    }
-  }
-
-  // Pobierz dane przepisu
-  const result = await getRecipeById(recipeId)
-
-  if (result.error || !result.data) {
-    return {
-      title: 'Przepis nie znaleziony | LowCarbPlaner',
-    }
-  }
-
-  const recipe = result.data
-
-  return {
-    title: `${recipe.name} | LowCarbPlaner`,
-    description: `Przepis: ${recipe.name}. Kalorie: ${recipe.total_calories || '—'} kcal. Białko: ${recipe.total_protein_g || '—'}g, Węglowodany: ${recipe.total_carbs_g || '—'}g, Tłuszcze: ${recipe.total_fats_g || '—'}g.`,
-    openGraph: {
-      title: recipe.name,
-      description: `Przepis niskowęglowodanowy: ${recipe.name}`,
-      type: 'article',
-      images: recipe.image_url ? [{ url: recipe.image_url }] : [],
-    },
-  }
-}
-
-/**
- * Server Component - strona szczegółów przepisu
+ * Przekierowanie ze starego URL do nowego SEO-friendly URL
  *
- * Pobiera pełne dane przepisu (SSR) i przekazuje do Client Component.
+ * - /recipes/123 → /przepisy/jajecznica-z-boczkiem
+ * - Używa trwałego przekierowania (301) dla SEO
  */
-export default async function RecipeDetailRoute({
+export default async function RecipeRedirectPage({
   params: paramsPromise,
 }: RecipeDetailPageProps) {
   const params = await paramsPromise
@@ -68,29 +28,18 @@ export default async function RecipeDetailRoute({
 
   // Walidacja ID
   if (isNaN(recipeId) || recipeId <= 0) {
-    notFound()
+    // Przekieruj na listę przepisów jeśli ID nieprawidłowe
+    redirect('/przepisy')
   }
 
-  // Pobierz dane przepisu (SSR)
+  // Pobierz dane przepisu aby uzyskać slug
   const result = await getRecipeById(recipeId)
 
-  // Obsługa błędów
-  if (result.error) {
-    // Jeśli przepis nie znaleziony - 404
-    if (result.error.includes('nie został znaleziony')) {
-      notFound()
-    }
-
-    // Inny błąd - throw error (error boundary złapie)
-    throw new Error(result.error)
+  // Jeśli przepis nie istnieje, przekieruj na listę
+  if (result.error || !result.data) {
+    redirect('/przepisy')
   }
 
-  // Sprawdź czy dane istnieją
-  if (!result.data) {
-    notFound()
-  }
-
-  const recipe = result.data
-
-  return <RecipeDetailPage recipe={recipe} />
+  // Przekieruj na nowy URL z slug (301 - trwałe przekierowanie)
+  redirect(`/przepisy/${result.data.slug}`)
 }

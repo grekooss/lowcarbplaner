@@ -168,19 +168,27 @@ export function RecipesBrowserClient({
     return sortedRecipes.filter((r) => r.id !== featuredRecipe.id)
   }, [sortedRecipes, featuredRecipe])
 
-  // Handle recipe click - otwórz modal z przepisem (memoized to prevent re-renders)
+  // Handle recipe click - nawiguj do strony przepisu z SEO-friendly URL
   const handleRecipeClick = useCallback(
-    (recipeId: number, mealType?: Enums<'meal_type_enum'>) => {
+    (
+      recipeSlug: string,
+      recipeId: number,
+      mealType?: Enums<'meal_type_enum'>
+    ) => {
       if (authLoading) return // Nie pozwól na klik podczas ładowania
 
-      // Otwórz modal z przepisem
+      // Nawiguj do strony przepisu z SEO-friendly URL
+      // Zachowujemy recipeId i mealType w state dla ewentualnego użycia w modalu
       setRecipeModal({
         isOpen: true,
         recipeId,
         selectedMealType: mealType ?? null,
       })
+
+      // Nawiguj do nowego URL (intercepting route obsłuży modal)
+      router.push(`/przepisy/${recipeSlug}`)
     },
-    [authLoading]
+    [authLoading, router]
   )
 
   // Zamknij modal przepisu (memoized)

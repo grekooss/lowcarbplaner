@@ -16,7 +16,11 @@ import type { Enums } from '@/types/database.types'
 
 interface RecipesGridProps {
   recipes: RecipeDTO[]
-  onRecipeClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void
+  onRecipeClick: (
+    recipeSlug: string,
+    recipeId: number,
+    mealType?: Enums<'meal_type_enum'>
+  ) => void
   /** Ukryj badge z typem posiłku (gdy filtr jest aktywny) */
   hideMealTypeBadge?: boolean
   /** Aktywny filtr typu posiłku - używany gdy hideMealTypeBadge=true */
@@ -30,7 +34,11 @@ interface RecipesGridProps {
  */
 function buildGridItems(
   recipes: RecipeDTO[],
-  onRecipeClick: (recipeId: number, mealType?: Enums<'meal_type_enum'>) => void,
+  onRecipeClick: (
+    recipeSlug: string,
+    recipeId: number,
+    mealType?: Enums<'meal_type_enum'>
+  ) => void,
   hideMealTypeBadge: boolean,
   activeMealTypeFilter?: Enums<'meal_type_enum'>
 ) {

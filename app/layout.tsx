@@ -20,10 +20,82 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lowcarbplaner.pl'
+
 export const metadata: Metadata = {
-  title: 'LowCarbPlaner - Planowanie diety niskowęglowodanowej',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'LowCarbPlaner - Planowanie diety niskowęglowodanowej',
+    template: '%s | LowCarbPlaner',
+  },
   description:
-    'Automatyczne planowanie posiłków i śledzenie makroskładników dla diety low-carb',
+    'Automatyczne planowanie posiłków i śledzenie makroskładników dla diety low-carb i keto. Odkryj setki przepisów niskowęglowodanowych, oblicz swoje zapotrzebowanie kaloryczne i zaplanuj jadłospis na cały tydzień.',
+  keywords: [
+    'dieta niskowęglowodanowa',
+    'dieta keto',
+    'low-carb',
+    'przepisy keto',
+    'planowanie posiłków',
+    'makroskładniki',
+    'kalorie',
+    'dieta odchudzająca',
+    'przepisy niskowęglowodanowe',
+    'jadłospis keto',
+    'kalkulacja kalorii',
+    'BMR',
+    'TDEE',
+  ],
+  authors: [{ name: 'LowCarbPlaner' }],
+  creator: 'LowCarbPlaner',
+  publisher: 'LowCarbPlaner',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'pl_PL',
+    url: siteUrl,
+    siteName: 'LowCarbPlaner',
+    title: 'LowCarbPlaner - Planowanie diety niskowęglowodanowej',
+    description:
+      'Automatyczne planowanie posiłków i śledzenie makroskładników dla diety low-carb i keto. Odkryj setki przepisów niskowęglowodanowych.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'LowCarbPlaner - Planowanie diety niskowęglowodanowej',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'LowCarbPlaner - Planowanie diety niskowęglowodanowej',
+    description:
+      'Automatyczne planowanie posiłków i śledzenie makroskładników dla diety low-carb i keto.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    // Dodaj po weryfikacji w Google Search Console:
+    // google: 'your-google-verification-code',
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+  category: 'food',
 }
 
 export default async function RootLayout({

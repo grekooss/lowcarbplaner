@@ -36,6 +36,7 @@ import {
   AlertTriangle,
   RefreshCw,
 } from 'lucide-react'
+import { useUserRatingQuery } from '@/lib/react-query/queries/useUserRatingQuery'
 import type { RecipeDTO } from '@/types/dto.types'
 import type { Enums } from '@/types/database.types'
 
@@ -142,6 +143,12 @@ export function RecipeViewModal({
   const [isStepMode, setIsStepMode] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [errorBoundaryKey, setErrorBoundaryKey] = useState(0)
+
+  // Pobierz ocenę użytkownika dla tego przepisu
+  const { data: userRating } = useUserRatingQuery({
+    recipeId: recipe.id,
+    enabled: isOpen && isAuthenticated,
+  })
 
   // Local checked ingredients state (fallback if no external state provided)
   const [localCheckedIngredients, setLocalCheckedIngredients] = useState<
@@ -331,6 +338,21 @@ export function RecipeViewModal({
                   </div>
                   {/* Macros */}
                   <div className='flex items-center gap-3 text-sm'>
+                    <div className='flex items-center gap-1.5' title='Tłuszcze'>
+                      <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-400'>
+                        <Droplet className='h-3 w-3 text-white' />
+                      </div>
+                      <span className='text-[11px] text-gray-700'>
+                        <span className='font-bold'>
+                          {Math.round(
+                            adjustedNutrition?.fats_g ??
+                              recipe.total_fats_g ??
+                              0
+                          )}
+                        </span>{' '}
+                        g
+                      </span>
+                    </div>
                     <div
                       className='flex items-center gap-1.5'
                       title='Węglowodany netto (Net Carbs)'
@@ -358,21 +380,6 @@ export function RecipeViewModal({
                           {Math.round(
                             adjustedNutrition?.protein_g ??
                               recipe.total_protein_g ??
-                              0
-                          )}
-                        </span>{' '}
-                        g
-                      </span>
-                    </div>
-                    <div className='flex items-center gap-1.5' title='Tłuszcze'>
-                      <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-400'>
-                        <Droplet className='h-3 w-3 text-white' />
-                      </div>
-                      <span className='text-[11px] text-gray-700'>
-                        <span className='font-bold'>
-                          {Math.round(
-                            adjustedNutrition?.fats_g ??
-                              recipe.total_fats_g ??
                               0
                           )}
                         </span>{' '}
@@ -472,6 +479,7 @@ export function RecipeViewModal({
                 checkedIngredients={checkedIngredients}
                 onToggleChecked={toggleIngredient}
                 selectedMealType={selectedMealType}
+                userRating={userRating ?? null}
                 isAuthenticated={isAuthenticated}
               />
             )}

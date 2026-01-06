@@ -1,14 +1,11 @@
 /**
- * Intercepting Route - Modal z szczegółami przepisu
+ * Intercepting Route - Redirect ze starego URL do nowego
  *
  * Ten route przechwytuje nawigację z /recipes do /recipes/[id]
- * i wyświetla modal zamiast pełnej strony.
- *
- * Wzorzec: (.)[id] oznacza przechwycenie na tym samym poziomie
+ * i przekierowuje na nowy SEO-friendly URL /przepisy/[slug]
  */
 
-import { notFound } from 'next/navigation'
-import { RecipeModal } from '@/components/recipes/RecipeModal'
+import { redirect } from 'next/navigation'
 import { getRecipeById } from '@/lib/actions/recipes'
 
 interface PageProps {
@@ -16,38 +13,27 @@ interface PageProps {
 }
 
 /**
- * Intercepting route page - Modal z przepisem
+ * Intercepting route - przekierowanie na nowy URL
  *
- * Używa bezpośrednio Server Action zamiast fetch do API,
- * co działa poprawnie zarówno lokalnie jak i w produkcji.
+ * Stare linki /recipes/[id] są przekierowywane na /przepisy/[slug]
  */
-export default async function RecipeModalPage({ params }: PageProps) {
+export default async function RecipeModalRedirectPage({ params }: PageProps) {
   const { id } = await params
   const recipeId = Number(id)
 
   // Walidacja ID
   if (isNaN(recipeId) || recipeId <= 0) {
-    notFound()
+    redirect('/recipes')
   }
 
-  // Pobierz dane przepisu (SSR)
+  // Pobierz dane przepisu aby uzyskać slug
   const result = await getRecipeById(recipeId)
 
-  // Obsługa błędów
-  if (result.error) {
-    // Jeśli przepis nie znaleziony - 404
-    if (result.error.includes('nie został znaleziony')) {
-      notFound()
-    }
-
-    // Inny błąd - throw error (error boundary złapie)
-    throw new Error(result.error)
+  // Jeśli przepis nie istnieje, wróć do listy
+  if (result.error || !result.data) {
+    redirect('/recipes')
   }
 
-  // Sprawdź czy dane istnieją
-  if (!result.data) {
-    notFound()
-  }
-
-  return <RecipeModal recipe={result.data} />
+  // Przekieruj na nowy URL z slug
+  redirect(`/przepisy/${result.data.slug}`)
 }

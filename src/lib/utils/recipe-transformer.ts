@@ -68,6 +68,8 @@ export interface RawRecipeEquipment {
  */
 export interface RawRecipe {
   id: number
+  /** SEO-friendly URL slug */
+  slug: string
   name: string
   instructions: unknown
   meal_types: unknown
@@ -379,6 +381,7 @@ export function transformRecipeToDTO(
 
   return {
     id: recipe.id,
+    slug: recipe.slug,
     name: recipe.name,
     instructions: normalizeInstructions(recipe.instructions),
     meal_types: recipe.meal_types as RecipeDTO['meal_types'],
@@ -408,6 +411,7 @@ export function transformRecipeToDTO(
  */
 export const RECIPE_SELECT_FULL = `
   id,
+  slug,
   name,
   instructions,
   meal_types,

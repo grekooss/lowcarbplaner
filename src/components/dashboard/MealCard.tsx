@@ -137,7 +137,7 @@ export const MealCard = memo(function MealCard({
           {/* Stepper Node */}
           {enableEatenCheckbox && (
             <div
-              className='group flex cursor-pointer flex-col items-center gap-1'
+              className='group flex h-7 cursor-pointer items-center sm:h-10'
               onClick={(e) => {
                 e.stopPropagation()
                 handleToggle()
@@ -145,7 +145,7 @@ export const MealCard = memo(function MealCard({
             >
               <div
                 className={cn(
-                  'flex h-7 w-7 items-center justify-center rounded-full border-2 shadow-sm transition-all duration-300 sm:h-10 sm:w-10',
+                  'flex h-6 w-6 items-center justify-center rounded-full border-2 shadow-sm transition-all duration-300 sm:h-8 sm:w-8',
                   meal.is_eaten
                     ? 'border-primary bg-primary'
                     : 'group-hover:border-primary/40 border-white bg-white',
@@ -154,7 +154,7 @@ export const MealCard = memo(function MealCard({
               >
                 {meal.is_eaten && (
                   <Check
-                    className='h-3.5 w-3.5 text-white sm:h-5 sm:w-5'
+                    className='h-3 w-3 text-white sm:h-4 sm:w-4'
                     strokeWidth={3}
                   />
                 )}
@@ -252,6 +252,17 @@ export const MealCard = memo(function MealCard({
                 </h3>
 
                 <div className='flex flex-wrap items-center justify-center gap-4 text-sm text-black md:justify-start'>
+                  {/* Fat */}
+                  <div className='flex items-center gap-1.5' title='Tłuszcze'>
+                    <Droplet className='text-success h-5 w-5' />
+                    <span className='flex items-baseline gap-0.5 text-gray-700'>
+                      <span className='font-bold'>
+                        {formatNumber(fats, 'g')}
+                      </span>
+                      <span>g</span>
+                    </span>
+                  </div>
+
                   {/* Net Carbs */}
                   <div
                     className='flex items-center gap-1.5'
@@ -272,17 +283,6 @@ export const MealCard = memo(function MealCard({
                     <span className='flex items-baseline gap-0.5 text-gray-700'>
                       <span className='font-bold'>
                         {formatNumber(protein, 'g')}
-                      </span>
-                      <span>g</span>
-                    </span>
-                  </div>
-
-                  {/* Fat */}
-                  <div className='flex items-center gap-1.5' title='Tłuszcze'>
-                    <Droplet className='text-success h-5 w-5' />
-                    <span className='flex items-baseline gap-0.5 text-gray-700'>
-                      <span className='font-bold'>
-                        {formatNumber(fats, 'g')}
                       </span>
                       <span>g</span>
                     </span>

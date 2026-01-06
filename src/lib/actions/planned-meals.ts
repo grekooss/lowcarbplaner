@@ -714,7 +714,7 @@ export async function getReplacementRecipes(
     const { data: replacements, error: searchError } = await supabase
       .from('recipes')
       .select(
-        'id, name, image_url, meal_types, difficulty_level, total_calories, total_protein_g, total_carbs_g, total_fiber_g, total_polyols_g, total_net_carbs_g, total_fats_g, total_saturated_fat_g'
+        'id, slug, name, image_url, meal_types, difficulty_level, total_calories, total_protein_g, total_carbs_g, total_fiber_g, total_polyols_g, total_net_carbs_g, total_fats_g, total_saturated_fat_g'
       )
       .contains('meal_types', [meal.meal_type])
       .neq('id', meal.recipe.id)
@@ -744,6 +744,7 @@ export async function getReplacementRecipes(
 
       return {
         id: recipe.id,
+        slug: recipe.slug,
         name: recipe.name,
         image_url: recipe.image_url,
         meal_types: recipe.meal_types as ReplacementRecipeDTO['meal_types'],

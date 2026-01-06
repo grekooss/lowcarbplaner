@@ -1,4 +1,4 @@
-import { ShoppingBasket, ArrowRight } from 'lucide-react'
+import { ShoppingCart, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -11,7 +11,7 @@ export const EmptyState = () => {
   return (
     <div className='flex flex-col items-center justify-center rounded-md border-2 border-white bg-white/40 px-6 py-16 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl sm:rounded-2xl'>
       <div className='bg-bg-tertiary mb-6 flex h-20 w-20 items-center justify-center rounded-2xl'>
-        <ShoppingBasket className='text-text-muted h-10 w-10' />
+        <ShoppingCart className='text-text-muted h-10 w-10' />
       </div>
       <h3 className='text-text-main mb-2 text-xl font-bold'>
         Brak produktów na liście

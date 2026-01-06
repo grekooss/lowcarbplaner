@@ -15,6 +15,7 @@ interface UseRecipeViewModalOptions {
 // Minimal recipe object for when no recipe is provided
 const emptyRecipe: RecipeDTO = {
   id: 0,
+  slug: '',
   name: '',
   instructions: [],
   meal_types: [],

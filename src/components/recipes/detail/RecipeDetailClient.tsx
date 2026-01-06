@@ -277,6 +277,19 @@ export function RecipeDetailClient({
           </div>
           {/* Makro */}
           <div className='flex items-center gap-3 text-sm'>
+            <div className='flex items-center gap-1.5' title='Tłuszcze'>
+              <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-400'>
+                <Droplet className='h-3 w-3 text-white' />
+              </div>
+              <span className='text-[11px] text-gray-700'>
+                <span className='font-bold'>
+                  {Math.round(
+                    adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
+                  )}
+                </span>{' '}
+                g
+              </span>
+            </div>
             <div
               className='flex items-center gap-1.5'
               title='Węglowodany netto (Net Carbs)'
@@ -303,19 +316,6 @@ export function RecipeDetailClient({
                 <span className='font-bold'>
                   {Math.round(
                     adjustedNutrition?.protein_g ?? recipe.total_protein_g ?? 0
-                  )}
-                </span>{' '}
-                g
-              </span>
-            </div>
-            <div className='flex items-center gap-1.5' title='Tłuszcze'>
-              <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-400'>
-                <Droplet className='h-3 w-3 text-white' />
-              </div>
-              <span className='text-[11px] text-gray-700'>
-                <span className='font-bold'>
-                  {Math.round(
-                    adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
                   )}
                 </span>{' '}
                 g
@@ -440,6 +440,19 @@ export function RecipeDetailClient({
 
               {/* Macro Badges - mobile compact (bez kalorii - są przy badge posiłku) */}
               <div className='mt-2 flex items-center gap-2 text-sm font-medium'>
+                <div className='flex items-center gap-1.5' title='Tłuszcze'>
+                  <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-500'>
+                    <Droplet className='h-3 w-3 text-white' />
+                  </div>
+                  <span className='text-[11px] text-gray-700'>
+                    <span className='font-bold'>
+                      {Math.round(
+                        adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
+                      )}
+                    </span>{' '}
+                    <span>g</span>
+                  </span>
+                </div>
                 <div
                   className='flex items-center gap-1.5'
                   title='Węglowodany netto (Net Carbs)'
@@ -468,19 +481,6 @@ export function RecipeDetailClient({
                         adjustedNutrition?.protein_g ??
                           recipe.total_protein_g ??
                           0
-                      )}
-                    </span>{' '}
-                    <span>g</span>
-                  </span>
-                </div>
-                <div className='flex items-center gap-1.5' title='Tłuszcze'>
-                  <div className='flex h-5 w-5 items-center justify-center rounded-sm bg-green-500'>
-                    <Droplet className='h-3 w-3 text-white' />
-                  </div>
-                  <span className='text-[11px] text-gray-700'>
-                    <span className='font-bold'>
-                      {Math.round(
-                        adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
                       )}
                     </span>{' '}
                     <span>g</span>
@@ -592,6 +592,26 @@ export function RecipeDetailClient({
               </div>
             </div>
 
+            {/* Fat - biały panel */}
+            <div className='flex flex-col items-center rounded-sm border-2 border-white bg-white px-3 py-2 shadow-sm'>
+              <span className='text-[10px] font-bold tracking-wide text-gray-400 uppercase'>
+                Tłuszcze
+              </span>
+              <div className='flex items-center gap-1.5'>
+                <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-green-400'>
+                  <Droplet className='h-4 w-4 text-white' />
+                </div>
+                <span className='flex items-baseline gap-0.5'>
+                  <span className='text-lg font-bold text-gray-800'>
+                    {Math.round(
+                      adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
+                    )}
+                  </span>
+                  <span className='text-xs text-gray-500'>g</span>
+                </span>
+              </div>
+            </div>
+
             {/* Net Carbs - biały panel */}
             <div className='flex flex-col items-center rounded-sm border-2 border-white bg-white px-3 py-2 shadow-sm'>
               <span className='text-[10px] font-bold tracking-wide text-gray-400 uppercase'>
@@ -629,26 +649,6 @@ export function RecipeDetailClient({
                       adjustedNutrition?.protein_g ??
                         recipe.total_protein_g ??
                         0
-                    )}
-                  </span>
-                  <span className='text-xs text-gray-500'>g</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Fat - biały panel */}
-            <div className='flex flex-col items-center rounded-sm border-2 border-white bg-white px-3 py-2 shadow-sm'>
-              <span className='text-[10px] font-bold tracking-wide text-gray-400 uppercase'>
-                Tłuszcze
-              </span>
-              <div className='flex items-center gap-1.5'>
-                <div className='flex h-6 w-6 items-center justify-center rounded-sm bg-green-400'>
-                  <Droplet className='h-4 w-4 text-white' />
-                </div>
-                <span className='flex items-baseline gap-0.5'>
-                  <span className='text-lg font-bold text-gray-800'>
-                    {Math.round(
-                      adjustedNutrition?.fats_g ?? recipe.total_fats_g ?? 0
                     )}
                   </span>
                   <span className='text-xs text-gray-500'>g</span>

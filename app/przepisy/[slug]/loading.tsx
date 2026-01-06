@@ -1,11 +1,12 @@
 /**
- * Loading UI dla strony Plan Posiłków
+ * Loading UI dla strony przepisu
+ *
  * Przezroczysty overlay ze spinnerem - nie zasłania całkowicie treści.
  */
 
 import { Loader2 } from 'lucide-react'
 
-export default function MealPlanLoading() {
+export default function RecipeLoading() {
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm'>
       <div className='rounded-2xl border-2 border-white bg-white/80 p-6 shadow-lg backdrop-blur-xl'>

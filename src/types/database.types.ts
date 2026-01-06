@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -125,19 +125,16 @@ export type Database = {
           carbs_per_100_units: number
           category: Database['public']['Enums']['ingredient_category_enum']
           created_at: string
-          /** Opis składnika, np. "tylko miąższ, bez pestki i skórki" */
           description: string | null
           fats_per_100_units: number
           fiber_per_100_units: number
           id: number
           image_url: string | null
           is_divisible: boolean
-          /** Czy składnik jest odpowiedni dla diety niskowęglowodanowej (net carbs <= 10g/100g) */
           is_low_carb_friendly: boolean
           name: string
           polyols_per_100_units: number
           protein_per_100_units: number
-          /** Tłuszcze nasycone na 100 jednostek */
           saturated_fat_per_100_units: number
           unit: string
         }
@@ -146,19 +143,16 @@ export type Database = {
           carbs_per_100_units: number
           category: Database['public']['Enums']['ingredient_category_enum']
           created_at?: string
-          /** Opis składnika, np. "tylko miąższ, bez pestki i skórki" */
           description?: string | null
           fats_per_100_units: number
           fiber_per_100_units?: number
           id?: number
           image_url?: string | null
           is_divisible?: boolean
-          /** Czy składnik jest odpowiedni dla diety niskowęglowodanowej (net carbs <= 10g/100g) */
           is_low_carb_friendly?: boolean
           name: string
           polyols_per_100_units?: number
           protein_per_100_units: number
-          /** Tłuszcze nasycone na 100 jednostek */
           saturated_fat_per_100_units?: number
           unit?: string
         }
@@ -167,19 +161,16 @@ export type Database = {
           carbs_per_100_units?: number
           category?: Database['public']['Enums']['ingredient_category_enum']
           created_at?: string
-          /** Opis składnika, np. "tylko miąższ, bez pestki i skórki" */
           description?: string | null
           fats_per_100_units?: number
           fiber_per_100_units?: number
           id?: number
           image_url?: string | null
           is_divisible?: boolean
-          /** Czy składnik jest odpowiedni dla diety niskowęglowodanowej (net carbs <= 10g/100g) */
           is_low_carb_friendly?: boolean
           name?: string
           polyols_per_100_units?: number
           protein_per_100_units?: number
-          /** Tłuszcze nasycone na 100 jednostek */
           saturated_fat_per_100_units?: number
           unit?: string
         }
@@ -366,7 +357,6 @@ export type Database = {
           polyols_g: number | null
           protein_g: number | null
           recipe_id: number
-          /** Tłuszcze nasycone dla base_amount */
           saturated_fat_g: number | null
           step_number: number | null
           unit: string
@@ -382,7 +372,6 @@ export type Database = {
           polyols_g?: number | null
           protein_g?: number | null
           recipe_id: number
-          /** Tłuszcze nasycone dla base_amount */
           saturated_fat_g?: number | null
           step_number?: number | null
           unit?: string
@@ -398,7 +387,6 @@ export type Database = {
           polyols_g?: number | null
           protein_g?: number | null
           recipe_id?: number
-          /** Tłuszcze nasycone dla base_amount */
           saturated_fat_g?: number | null
           step_number?: number | null
           unit?: string
@@ -433,17 +421,15 @@ export type Database = {
           name: string
           prep_time_min: number | null
           reviews_count: number
+          slug: string
           tags: string[] | null
           total_calories: number | null
           total_carbs_g: number | null
           total_fats_g: number | null
           total_fiber_g: number | null
-          /** Węglowodany netto = total_carbs_g - total_fiber_g - total_polyols_g */
           total_net_carbs_g: number | null
-          /** Poliole (alkohole cukrowe) - erytrytol, ksylitol, maltitol itp. */
           total_polyols_g: number | null
           total_protein_g: number | null
-          /** Całkowite tłuszcze nasycone w przepisie */
           total_saturated_fat_g: number | null
           updated_at: string
         }
@@ -459,17 +445,15 @@ export type Database = {
           name: string
           prep_time_min?: number | null
           reviews_count?: number
+          slug: string
           tags?: string[] | null
           total_calories?: number | null
           total_carbs_g?: number | null
           total_fats_g?: number | null
           total_fiber_g?: number | null
-          /** Węglowodany netto = total_carbs_g - total_fiber_g - total_polyols_g */
           total_net_carbs_g?: number | null
-          /** Poliole (alkohole cukrowe) - erytrytol, ksylitol, maltitol itp. */
           total_polyols_g?: number | null
           total_protein_g?: number | null
-          /** Całkowite tłuszcze nasycone w przepisie */
           total_saturated_fat_g?: number | null
           updated_at?: string
         }
@@ -485,17 +469,15 @@ export type Database = {
           name?: string
           prep_time_min?: number | null
           reviews_count?: number
+          slug?: string
           tags?: string[] | null
           total_calories?: number | null
           total_carbs_g?: number | null
           total_fats_g?: number | null
           total_fiber_g?: number | null
-          /** Węglowodany netto = total_carbs_g - total_fiber_g - total_polyols_g */
           total_net_carbs_g?: number | null
-          /** Poliole (alkohole cukrowe) - erytrytol, ksylitol, maltitol itp. */
           total_polyols_g?: number | null
           total_protein_g?: number | null
-          /** Całkowite tłuszcze nasycone w przepisie */
           total_saturated_fat_g?: number | null
           updated_at?: string
         }
@@ -587,6 +569,8 @@ export type Database = {
     }
     Functions: {
       check_email_exists: { Args: { check_email: string }; Returns: boolean }
+      generate_slug: { Args: { input_text: string }; Returns: string }
+      unaccent: { Args: { '': string }; Returns: string }
     }
     Enums: {
       activity_level_enum:
@@ -630,9 +614,9 @@ export type Database = {
         | '60_35_5'
         | '60_25_15'
         | '50_30_20'
+        | '40_40_20'
         | '60_30_10'
         | '45_30_25'
-        | '35_40_25'
       meal_plan_type_enum:
         | '3_main_2_snacks'
         | '3_main_1_snack'
@@ -814,9 +798,9 @@ export const Constants = {
         '60_35_5',
         '60_25_15',
         '50_30_20',
+        '40_40_20',
         '60_30_10',
         '45_30_25',
-        '35_40_25',
       ],
       meal_plan_type_enum: [
         '3_main_2_snacks',

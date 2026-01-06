@@ -2,15 +2,16 @@
  * Interaktywny komponent oceny gwiazdkami
  *
  * Pozwala użytkownikom oceniać przepisy od 1 do 5 gwiazdek.
- * Obsługuje hover preview i zapisywanie oceny przez Server Action.
+ * Obsługuje hover preview i zapisywanie oceny przez TanStack Query mutation.
+ * Automatycznie synchronizuje stan z serwerem.
  */
 
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect } from 'react'
 import { Star, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { rateRecipe } from '@/lib/actions/recipe-ratings'
+import { useRateRecipeMutation } from '@/lib/react-query/queries/useUserRatingQuery'
 
 interface StarRatingProps {
   /** ID przepisu do oceny */
@@ -55,12 +56,18 @@ export function StarRating({
 }: StarRatingProps) {
   // Stan dla hover preview
   const [hoverRating, setHoverRating] = useState<number | null>(null)
-  // Stan dla animacji zapisu
-  const [isPending, startTransition] = useTransition()
   // Lokalny stan oceny (optimistic update)
   const [localRating, setLocalRating] = useState<number | null>(userRating)
   // Błąd zapisu
   const [error, setError] = useState<string | null>(null)
+
+  // Mutation hook dla zapisywania oceny
+  const { mutate: rateRecipe, isPending } = useRateRecipeMutation()
+
+  // Synchronizuj localRating gdy userRating się zmieni (np. po pobraniu z serwera)
+  useEffect(() => {
+    setLocalRating(userRating)
+  }, [userRating])
 
   // Aktualna ocena do wyświetlenia (hover > local > user > average)
   const displayRating = hoverRating ?? localRating ?? averageRating ?? 0
@@ -74,16 +81,18 @@ export function StarRating({
     setError(null)
     setLocalRating(rating) // Optimistic update
 
-    startTransition(async () => {
-      const result = await rateRecipe(recipeId, rating)
-
-      if (result.error) {
-        setError(result.error)
-        setLocalRating(userRating) // Rollback
-      } else {
-        onRatingChange?.(rating)
+    rateRecipe(
+      { recipeId, rating },
+      {
+        onSuccess: () => {
+          onRatingChange?.(rating)
+        },
+        onError: (err) => {
+          setError(err.message)
+          setLocalRating(userRating) // Rollback
+        },
       }
-    })
+    )
   }
 
   const handleMouseEnter = (rating: number) => {

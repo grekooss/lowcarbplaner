@@ -87,6 +87,7 @@ export async function getRecipes(
       .select(
         `
         id,
+        slug,
         name,
         instructions,
         meal_types,
@@ -236,6 +237,7 @@ export async function getRecipeById(
       .select(
         `
         id,
+        slug,
         name,
         instructions,
         meal_types,
@@ -309,6 +311,124 @@ export async function getRecipeById(
     return { data: recipe }
   } catch (err) {
     logErrorLevel(err, { source: 'recipes.getRecipeById' })
+    return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
+  }
+}
+
+/**
+ * GET /przepisy/{slug} - Pobiera przepis po SEO-friendly slug
+ *
+ * @param slug - SEO-friendly slug przepisu (np. "salatka-grecka-z-feta")
+ * @returns RecipeDTO z pełnymi szczegółami (składniki, instrukcje)
+ *
+ * @example
+ * ```typescript
+ * const result = await getRecipeBySlug('jajecznica-z-boczkiem')
+ * if (result.error) {
+ *   console.error(result.error)
+ * } else {
+ *   console.log(result.data.name) // "Jajecznica z boczkiem"
+ * }
+ * ```
+ */
+export async function getRecipeBySlug(
+  slug: string
+): Promise<ActionResult<RecipeDTO>> {
+  try {
+    // 1. Walidacja slug
+    if (!slug || typeof slug !== 'string' || slug.trim() === '') {
+      return { error: 'Nieprawidłowy slug przepisu', code: 'VALIDATION_ERROR' }
+    }
+
+    // Sanitize slug - tylko dozwolone znaki
+    const sanitizedSlug = slug.toLowerCase().trim()
+    if (!/^[a-z0-9-]+$/.test(sanitizedSlug)) {
+      return { error: 'Nieprawidłowy format slug', code: 'VALIDATION_ERROR' }
+    }
+
+    // 2. Utworzenie Supabase Admin client (content schema to publiczne dane)
+    const supabase = createAdminClient()
+
+    // 3. Zapytanie z pełnymi szczegółami po slug
+    const { data, error } = await supabase
+      .from('recipes')
+      .select(
+        `
+        id,
+        slug,
+        name,
+        instructions,
+        meal_types,
+        tags,
+        image_url,
+        difficulty_level,
+        average_rating,
+        reviews_count,
+        prep_time_min,
+        cook_time_min,
+        total_calories,
+        total_protein_g,
+        total_carbs_g,
+        total_fiber_g,
+        total_net_carbs_g,
+        total_fats_g,
+        recipe_ingredients (
+          base_amount,
+          unit,
+          is_scalable,
+          calories,
+          protein_g,
+          carbs_g,
+          fiber_g,
+          fats_g,
+          step_number,
+          ingredient:ingredients (
+            id,
+            name,
+            category,
+            unit,
+            ingredient_unit_conversions (
+              unit_name,
+              grams_equivalent
+            )
+          )
+        ),
+        recipe_equipment (
+          quantity,
+          notes,
+          equipment (
+            id,
+            name,
+            name_plural,
+            category,
+            icon_name
+          )
+        )
+      `
+      )
+      .eq('slug', sanitizedSlug)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return { error: 'Przepis nie został znaleziony', code: 'NOT_FOUND' }
+      }
+      logErrorLevel(error, {
+        source: 'recipes.getRecipeBySlug',
+        metadata: { slug: sanitizedSlug, errorCode: error.code },
+      })
+      return {
+        error: `Błąd bazy danych: ${error.message}`,
+        code: 'DATABASE_ERROR',
+      }
+    }
+
+    // 4. Transformacja do DTO (z przetwarzaniem URL obrazów)
+    const recipe = transformRecipeToDTO(data, { processImageUrl: true })
+
+    return { data: recipe }
+  } catch (err) {
+    logErrorLevel(err, { source: 'recipes.getRecipeBySlug' })
     return { error: 'Wewnętrzny błąd serwera', code: 'INTERNAL_ERROR' }
   }
 }

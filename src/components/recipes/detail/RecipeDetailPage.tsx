@@ -9,6 +9,8 @@
 
 import { RecipeDetailClient } from './RecipeDetailClient'
 import { useIngredientViewer } from '@/hooks/useIngredientViewer'
+import { useUserRatingQuery } from '@/lib/react-query/queries/useUserRatingQuery'
+import { useAuthCheck } from '@/lib/hooks/useAuthCheck'
 import type { RecipeDTO } from '@/types/dto.types'
 
 interface RecipeDetailPageProps {
@@ -28,6 +30,13 @@ export function RecipeDetailPage({ recipe }: RecipeDetailPageProps) {
     decrementAmount,
   } = useIngredientViewer({ recipe })
 
+  // Sprawdź auth i pobierz ocenę użytkownika
+  const { isAuthenticated } = useAuthCheck()
+  const { data: userRating } = useUserRatingQuery({
+    recipeId: recipe.id,
+    enabled: isAuthenticated ?? false,
+  })
+
   return (
     <RecipeDetailClient
       recipe={recipe}
@@ -41,6 +50,8 @@ export function RecipeDetailPage({ recipe }: RecipeDetailPageProps) {
       adjustedNutrition={adjustedNutrition}
       hasChanges={false}
       isSaving={false}
+      userRating={userRating ?? null}
+      isAuthenticated={isAuthenticated ?? false}
     />
   )
 }
