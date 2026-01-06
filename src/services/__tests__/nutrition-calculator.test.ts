@@ -218,15 +218,15 @@ describe('calculateMacros', () => {
     expect(macros.fats_g).toBe(140)
   })
 
-  it('oblicza poprawne gramy dla proporcji 35_40_25 (wysokobiałkowe)', () => {
-    const macros = calculateMacros(targetCalories, '35_40_25')
+  it('oblicza poprawne gramy dla proporcji 40_40_20 (wysokobiałkowe)', () => {
+    const macros = calculateMacros(targetCalories, '40_40_20')
 
-    // Węgle: 1800 × 0.25 / 4 = 112.5 → 113g
-    expect(macros.carbs_g).toBe(113)
+    // Węgle: 1800 × 0.20 / 4 = 90g
+    expect(macros.carbs_g).toBe(90)
     // Białko: 1800 × 0.40 / 4 = 180g
     expect(macros.protein_g).toBe(180)
-    // Tłuszcze: 1800 × 0.35 / 9 = 70g
-    expect(macros.fats_g).toBe(70)
+    // Tłuszcze: 1800 × 0.40 / 9 = 80g
+    expect(macros.fats_g).toBe(80)
   })
 
   it('kalorie z makro sumują się do docelowych kalorii (z tolerancją zaokrągleń)', () => {
@@ -237,7 +237,7 @@ describe('calculateMacros', () => {
       '60_25_15',
       '50_30_20',
       '45_30_25',
-      '35_40_25',
+      '40_40_20',
     ] as const
 
     for (const ratio of ratios) {

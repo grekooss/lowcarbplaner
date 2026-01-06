@@ -57,7 +57,7 @@ const MACRO_RATIO_VALUES: Record<
   '60_25_15': { fats: 0.6, protein: 0.25, carbs: 0.15 },
   '50_30_20': { fats: 0.5, protein: 0.3, carbs: 0.2 },
   '45_30_25': { fats: 0.45, protein: 0.3, carbs: 0.25 },
-  '35_40_25': { fats: 0.35, protein: 0.4, carbs: 0.25 },
+  '40_40_20': { fats: 0.4, protein: 0.4, carbs: 0.2 },
 }
 
 /**

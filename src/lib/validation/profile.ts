@@ -77,7 +77,7 @@ export const createProfileSchema = z
       '60_25_15',
       '50_30_20',
       '45_30_25',
-      '35_40_25',
+      '40_40_20',
     ] as const),
     disclaimer_accepted_at: z
       .string()

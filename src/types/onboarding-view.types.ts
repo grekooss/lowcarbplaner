@@ -215,7 +215,7 @@ export const MACRO_RATIO_LABELS: Record<Enums<'macro_ratio_enum'>, string> = {
   '60_25_15': '60% tłuszcze / 15% węglowodany / 25% białko',
   '50_30_20': '50% tłuszcze / 20% węglowodany / 30% białko',
   '45_30_25': '45% tłuszcze / 25% węglowodany / 30% białko',
-  '35_40_25': '35% tłuszcze / 25% węglowodany / 40% białko',
+  '40_40_20': '40% tłuszcze / 20% węglowodany / 40% białko',
 }
 
 /**
@@ -231,7 +231,7 @@ export const MACRO_RATIO_DESCRIPTIONS: Record<
   '60_25_15': 'Standardowe keto - zalecane dla początkujących',
   '50_30_20': 'Umiarkowane low-carb - elastyczne podejście',
   '45_30_25': 'Liberalne low-carb - łatwe do utrzymania długoterminowo',
-  '35_40_25': 'Wysokobiałkowe low-carb - dla aktywnych sportowo',
+  '40_40_20': 'Wysokobiałkowe low-carb - dla aktywnych sportowo',
 }
 
 /**

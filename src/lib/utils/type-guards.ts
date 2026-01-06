@@ -19,6 +19,7 @@ export interface PlannedMealRow {
   ingredient_overrides: unknown
   created_at: string
   recipe: {
+    slug: string
     id: number
     name: string
     instructions: unknown
