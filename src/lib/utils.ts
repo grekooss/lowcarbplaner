@@ -20,3 +20,7 @@ export function generateTimeOptions(): string[] {
   }
   return options
 }
+
+// Re-export formatLocalDate jako formatDateToLocalString dla kompatybilności wstecznej
+// Główna funkcja znajduje się w @/lib/utils/date-formatting
+export { formatLocalDate as formatDateToLocalString } from '@/lib/utils/date-formatting'

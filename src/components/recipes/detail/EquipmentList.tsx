@@ -155,10 +155,7 @@ export function EquipmentList({
             return (
               <li
                 key={item.id}
-                className={cn(
-                  'group flex cursor-pointer items-center gap-4 rounded-lg border border-white bg-white/70 px-3 py-3 shadow-sm transition-all duration-200',
-                  checked ? 'bg-red-50/50' : 'hover:bg-white/90'
-                )}
+                className='group flex cursor-pointer items-center gap-4 rounded-lg border border-white bg-white/70 px-3 py-3 shadow-sm transition-all duration-200 hover:bg-white/90'
                 onClick={() => toggleChecked(item.id)}
                 role='button'
                 tabIndex={0}
@@ -186,22 +183,12 @@ export function EquipmentList({
 
                 {/* Nazwa i notatki */}
                 <div className='min-w-0 flex-1'>
-                  <p
-                    className={cn(
-                      'text-base font-medium transition-all duration-200',
-                      checked ? 'text-gray-400 line-through' : 'text-gray-800'
-                    )}
-                  >
+                  <p className='text-base font-medium text-gray-800'>
                     {item.quantity > 1 ? `${item.quantity}× ` : ''}
                     {item.name}
                   </p>
                   {item.notes && (
-                    <p
-                      className={cn(
-                        'truncate text-sm text-gray-500 transition-all duration-200',
-                        checked ? 'opacity-50' : ''
-                      )}
-                    >
+                    <p className='truncate text-sm text-gray-500'>
                       {item.notes}
                     </p>
                   )}

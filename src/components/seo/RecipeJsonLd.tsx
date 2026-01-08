@@ -111,7 +111,7 @@ export function RecipeJsonLd({ recipe }: RecipeJsonLdProps) {
     '@context': 'https://schema.org',
     '@type': 'Recipe',
     name: recipe.name,
-    url: `${siteUrl}/przepisy/${recipe.slug}`,
+    url: `${siteUrl}/recipes/${recipe.slug}`,
     ...(recipe.image_url && { image: [recipe.image_url] }),
     description: `Przepis niskowęglowodanowy: ${recipe.name}. ${
       recipe.total_calories

@@ -19,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/recipes', '/przepisy/', '/auth'],
+        allow: ['/', '/recipes', '/recipes/', '/auth'],
         disallow: [
           '/dashboard',
           '/profile',
@@ -33,7 +33,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'Googlebot',
-        allow: ['/', '/recipes', '/przepisy/'],
+        allow: ['/', '/recipes', '/recipes/'],
         disallow: [
           '/dashboard',
           '/profile',

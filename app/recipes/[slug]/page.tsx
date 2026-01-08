@@ -1,8 +1,12 @@
 /**
  * Strona szczegółów przepisu z SEO-friendly URL
  *
- * Server Component - SSR dla szczegółów przepisu.
- * Dynamic route: /przepisy/[slug]
+ * Wyświetla modal z przepisem na tle listy przepisów.
+ * Dynamic route: /recipes/[slug]
+ *
+ * Obsługuje zarówno:
+ * - SEO-friendly slug: /recipes/jajecznica-z-boczkiem
+ * - Numeryczne ID (legacy): /recipes/123 → redirect do /recipes/[slug]
  *
  * SEO features:
  * - Canonical URL with slug
@@ -11,15 +15,47 @@
  */
 
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { RecipeDetailPage } from '@/components/recipes/detail/RecipeDetailPage'
+import { notFound, redirect } from 'next/navigation'
+import { RecipeModalPage } from '@/components/recipes/RecipeModalPage'
 import { RecipeJsonLd } from '@/components/seo/RecipeJsonLd'
-import { getRecipeBySlug } from '@/lib/actions/recipes'
+import { getRecipeBySlug, getRecipeById } from '@/lib/actions/recipes'
 
 interface RecipePageProps {
   params: Promise<{
     slug: string
   }>
+}
+
+/**
+ * Sprawdza czy parametr to numeryczne ID
+ */
+function isNumericId(value: string): boolean {
+  return /^\d+$/.test(value)
+}
+
+/**
+ * Pobiera przepis - obsługuje zarówno slug jak i numeryczne ID
+ */
+async function getRecipe(slugOrId: string) {
+  // Jeśli to numeryczne ID - pobierz po ID i przekieruj
+  if (isNumericId(slugOrId)) {
+    const recipeId = Number(slugOrId)
+    if (recipeId > 0) {
+      const result = await getRecipeById(recipeId)
+      if (result.data?.slug) {
+        // Zwróć dane z informacją o przekierowaniu
+        return { data: result.data, shouldRedirect: true }
+      }
+    }
+    return {
+      error: 'Przepis nie został znaleziony',
+      code: 'NOT_FOUND' as const,
+    }
+  }
+
+  // W przeciwnym razie szukaj po slug
+  const result = await getRecipeBySlug(slugOrId)
+  return { ...result, shouldRedirect: false }
 }
 
 /**
@@ -29,10 +65,10 @@ export async function generateMetadata({
   params: paramsPromise,
 }: RecipePageProps): Promise<Metadata> {
   const params = await paramsPromise
-  const slug = params.slug
+  const slugOrId = params.slug
 
   // Pobierz dane przepisu
-  const result = await getRecipeBySlug(slug)
+  const result = await getRecipe(slugOrId)
 
   if (result.error || !result.data) {
     return {
@@ -74,7 +110,7 @@ export async function generateMetadata({
       title: `${recipe.name} - Przepis Keto`,
       description,
       type: 'article',
-      url: `${siteUrl}/przepisy/${recipe.slug}`,
+      url: `${siteUrl}/recipes/${recipe.slug}`,
       images: recipe.image_url
         ? [
             {
@@ -95,7 +131,7 @@ export async function generateMetadata({
       images: recipe.image_url ? [recipe.image_url] : [],
     },
     alternates: {
-      canonical: `${siteUrl}/przepisy/${recipe.slug}`,
+      canonical: `${siteUrl}/recipes/${recipe.slug}`,
     },
     robots: {
       index: true,
@@ -113,16 +149,23 @@ export async function generateMetadata({
 /**
  * Server Component - strona szczegółów przepisu
  *
- * Pobiera pełne dane przepisu (SSR) i przekazuje do Client Component.
+ * Wyświetla modal z przepisem na tle listy przepisów.
+ * Zachowuje SEO (metadata, JSON-LD) przy bezpośrednim wejściu na URL.
+ * Obsługuje przekierowanie z numerycznego ID do SEO-friendly slug.
  */
 export default async function RecipePage({
   params: paramsPromise,
 }: RecipePageProps) {
   const params = await paramsPromise
-  const slug = params.slug
+  const slugOrId = params.slug
 
-  // Pobierz dane przepisu (SSR)
-  const result = await getRecipeBySlug(slug)
+  // Pobierz dane przepisu (SSR) - obsługuje zarówno slug jak i numeryczne ID
+  const result = await getRecipe(slugOrId)
+
+  // Jeśli to było numeryczne ID - przekieruj na URL ze slug (301)
+  if (result.shouldRedirect && result.data?.slug) {
+    redirect(`/recipes/${result.data.slug}`)
+  }
 
   // Obsługa błędów
   if (result.error) {
@@ -147,8 +190,8 @@ export default async function RecipePage({
       {/* JSON-LD Structured Data for Google Rich Results */}
       <RecipeJsonLd recipe={recipe} />
 
-      {/* Recipe Detail Page */}
-      <RecipeDetailPage recipe={recipe} />
+      {/* Recipe Modal Page - wyświetla modal na tle listy przepisów */}
+      <RecipeModalPage recipe={recipe} />
     </>
   )
 }

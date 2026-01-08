@@ -4,9 +4,8 @@
 
 'use client'
 
-import Image from 'next/image'
 import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
-import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 import { RatingDisplay } from '@/components/recipes/RatingDisplay'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
@@ -95,17 +94,14 @@ export function RecipeListItem({
     >
       {/* Image */}
       <div className='relative h-32 w-full flex-shrink-0 overflow-hidden rounded-md bg-white/60 md:w-32'>
-        {recipe.image_url ? (
-          <Image
-            src={recipe.image_url}
-            alt={recipe.name}
-            fill
-            className='object-cover grayscale-[10%]'
-            sizes='(max-width: 768px) 100vw, 128px'
-          />
-        ) : (
-          <RecipeImagePlaceholder recipeName={recipe.name} />
-        )}
+        <RecipeImage
+          src={recipe.image_url}
+          recipeName={recipe.name}
+          alt={recipe.name}
+          fill
+          className='object-cover grayscale-[10%]'
+          sizes='(max-width: 768px) 100vw, 128px'
+        />
       </div>
 
       {/* Content */}

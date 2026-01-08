@@ -60,11 +60,18 @@ export function useRecipesFilter(
   /**
    * Aktualizuje meal_types i resetuje offset do 0
    * (nowe filtry = nowe zapytanie od początku)
+   *
+   * Obsługuje mapowanie 'snack' → ['snack_morning', 'snack_afternoon']
    */
   const updateMealTypes = useCallback((mealTypes: string[]) => {
+    // Mapowanie 'snack' na obie wartości (poranna i popołudniowa)
+    const expandedMealTypes = mealTypes.flatMap((type) =>
+      type === 'snack' ? ['snack_morning', 'snack_afternoon'] : [type]
+    )
+
     setFilters((prev) => ({
       ...prev,
-      meal_types: mealTypes,
+      meal_types: expandedMealTypes,
       offset: 0, // Reset offset przy zmianie filtrów
     }))
   }, [])

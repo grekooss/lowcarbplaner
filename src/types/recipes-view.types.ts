@@ -84,14 +84,15 @@ export const INGREDIENT_CATEGORY_LABELS: Record<
 
 /**
  * Mapowanie meal_types na polskie nazwy
+ * Uwaga: snack_morning i snack_afternoon wyświetlane są jako "Przekąska" dla uproszczenia UI
  */
 export const MEAL_TYPE_LABELS: Record<Enums<'meal_type_enum'>, string> = {
   breakfast: 'Śniadanie',
   lunch: 'Obiad',
   dinner: 'Kolacja',
   snack: 'Przekąska',
-  snack_morning: 'Przekąska poranna',
-  snack_afternoon: 'Przekąska popołudniowa',
+  snack_morning: 'Przekąska',
+  snack_afternoon: 'Przekąska',
 }
 
 // ============================================================================

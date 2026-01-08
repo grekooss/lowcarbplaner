@@ -19,6 +19,7 @@ import {
   TrendingDown,
   Utensils,
 } from 'lucide-react'
+import { AnimatedMacroCards } from '@/components/landing/AnimatedMacroCards'
 
 export const metadata: Metadata = {
   title: 'LowCarbPlaner - Planowanie diety niskowęglowodanowej i keto',
@@ -70,12 +71,6 @@ const features = [
   },
 ]
 
-const nutritionFacts = [
-  { label: 'Węglowodany', value: '15%', description: 'maksymalnie dziennie' },
-  { label: 'Białko', value: '35%', description: 'optymalna ilość' },
-  { label: 'Tłuszcze', value: '50%', description: 'zdrowe źródła energii' },
-]
-
 export default async function LandingPage() {
   // Sprawdź czy użytkownik jest zalogowany
   const supabase = await createServerClient()
@@ -88,17 +83,18 @@ export default async function LandingPage() {
     redirect('/dashboard')
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lowcarbplaner.pl'
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lowcarbplaner.com'
 
   return (
     <main className='min-h-screen'>
       {/* Hero Section */}
-      <section className='from-primary/10 to-secondary/10 relative overflow-hidden bg-gradient-to-br via-white px-4 py-16 sm:py-24'>
+      <section className='relative overflow-hidden px-4 py-6 sm:py-18'>
         <div className='mx-auto max-w-6xl text-center'>
-          <h1 className='mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl'>
+          <h1 className='mb-6 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl'>
             Planuj dietę{' '}
-            <span className='text-primary'>niskowęglowodanową</span>
-            <br />
+            <span className='text-primary break-words'>niskowęglowodanową</span>
+            <br className='hidden sm:block' />
+            <span className='sm:hidden'> </span>
             bez wysiłku
           </h1>
           <p className='mx-auto mb-8 max-w-2xl text-lg text-gray-600 sm:text-xl'>
@@ -123,30 +119,30 @@ export default async function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className='bg-white px-4 py-16 sm:py-24'>
+      <section className='px-4 py-6 sm:py-18'>
         <div className='mx-auto max-w-6xl'>
-          <div className='mb-12 text-center'>
-            <h2 className='mb-4 text-3xl font-bold text-gray-900 sm:text-4xl'>
+          <div className='mb-6 text-center sm:mb-12'>
+            <h2 className='text-text-main mb-2 text-2xl font-bold sm:mb-4 sm:text-4xl'>
               Wszystko do planowania diety keto
             </h2>
-            <p className='mx-auto max-w-2xl text-gray-600'>
+            <p className='text-text-secondary mx-auto max-w-2xl text-sm sm:text-base'>
               Kompleksowe narzędzie do planowania posiłków niskowęglowodanowych.
               Oszczędź czas i jedz zdrowo każdego dnia.
             </p>
           </div>
-          <div className='grid gap-8 sm:grid-cols-2 lg:grid-cols-3'>
+          <div className='grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3'>
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className='rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md'
+                className='rounded-md border-2 border-white bg-white/40 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.02)] backdrop-blur-xl transition-transform duration-300 hover:scale-[1.01] sm:rounded-2xl'
               >
-                <div className='bg-primary/10 mb-4 inline-flex rounded-lg p-3'>
-                  <feature.icon className='text-primary h-6 w-6' />
+                <div className='bg-primary mb-4 inline-flex rounded-md p-2.5'>
+                  <feature.icon className='h-5 w-5 text-white' />
                 </div>
-                <h3 className='mb-2 text-lg font-semibold text-gray-900'>
+                <h3 className='text-text-main mb-2 text-lg font-semibold'>
                   {feature.title}
                 </h3>
-                <p className='text-gray-600'>{feature.description}</p>
+                <p className='text-text-secondary'>{feature.description}</p>
               </article>
             ))}
           </div>
@@ -154,41 +150,26 @@ export default async function LandingPage() {
       </section>
 
       {/* Nutrition Section */}
-      <section className='bg-gray-50 px-4 py-16 sm:py-24'>
+      <section className='px-4 py-6 sm:py-18'>
         <div className='mx-auto max-w-6xl'>
-          <div className='mb-12 text-center'>
-            <h2 className='mb-4 text-3xl font-bold text-gray-900 sm:text-4xl'>
-              Optymalne proporcje makroskładników
+          <div className='mb-6 text-center sm:mb-12'>
+            <h2 className='text-text-main mb-2 text-2xl font-bold sm:mb-4 sm:text-4xl'>
+              Wybierz proporcje makroskładników
             </h2>
-            <p className='mx-auto max-w-2xl text-gray-600'>
-              Dieta niskowęglowodanowa opiera się na ograniczeniu węglowodanów i
-              zwiększeniu spożycia zdrowych tłuszczów.
+            <p className='text-text-secondary mx-auto max-w-2xl text-sm sm:text-base'>
+              Od restrykcyjnego keto po liberalne low-carb. Dostosuj dietę do
+              swoich celów i stylu życia.
             </p>
           </div>
-          <div className='grid gap-6 sm:grid-cols-3'>
-            {nutritionFacts.map((fact) => (
-              <div
-                key={fact.label}
-                className='rounded-xl bg-white p-8 text-center shadow-sm'
-              >
-                <div className='text-primary mb-2 text-4xl font-bold'>
-                  {fact.value}
-                </div>
-                <div className='mb-1 text-lg font-semibold text-gray-900'>
-                  {fact.label}
-                </div>
-                <div className='text-sm text-gray-500'>{fact.description}</div>
-              </div>
-            ))}
-          </div>
+          <AnimatedMacroCards />
         </div>
       </section>
 
       {/* How it works Section */}
-      <section className='bg-white px-4 py-16 sm:py-24'>
+      <section className='px-4 py-6 sm:py-18'>
         <div className='mx-auto max-w-6xl'>
-          <div className='mb-12 text-center'>
-            <h2 className='mb-4 text-3xl font-bold text-gray-900 sm:text-4xl'>
+          <div className='mb-6 text-center sm:mb-12'>
+            <h2 className='text-text-main mb-2 text-2xl font-bold sm:mb-4 sm:text-4xl'>
               Jak to działa?
             </h2>
           </div>
@@ -219,89 +200,130 @@ export default async function LandingPage() {
                 <div className='bg-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold text-white'>
                   {item.step}
                 </div>
-                <h3 className='mb-2 font-semibold text-gray-900'>
+                <h3 className='text-text-main mb-2 font-semibold'>
                   {item.title}
                 </h3>
-                <p className='text-sm text-gray-600'>{item.description}</p>
+                <p className='text-text-secondary text-sm'>
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className='bg-primary px-4 py-16 sm:py-24'>
-        <div className='mx-auto max-w-4xl text-center'>
-          <h2 className='mb-4 text-3xl font-bold text-white sm:text-4xl'>
-            Zacznij planować swoją dietę już dziś
-          </h2>
-          <p className='mb-8 text-lg text-white/90'>
-            Dołącz do tysięcy osób, które schudły dzięki diecie
-            niskowęglowodanowej. Rejestracja jest całkowicie bezpłatna.
-          </p>
-          <div className='flex flex-col items-center justify-center gap-4 sm:flex-row'>
-            <Button
-              asChild
-              size='lg'
-              variant='secondary'
-              className='min-w-[200px]'
-            >
-              <Link href='/auth'>Załóż darmowe konto</Link>
-            </Button>
-            <Button
-              asChild
-              size='lg'
-              variant='outline'
-              className='hover:text-primary min-w-[200px] border-white bg-transparent text-white hover:bg-white'
-            >
-              <Link href='/recipes'>Zobacz przepisy</Link>
-            </Button>
+      {/* CTA Section - Glassmorphism Red */}
+      <section className='px-4 py-6 sm:py-18'>
+        <div className='mx-auto max-w-4xl'>
+          <div className='rounded-2xl bg-gradient-to-br from-red-500/30 via-red-600/40 to-red-700/60 p-8 shadow-2xl shadow-red-500/20 backdrop-blur-xl sm:p-12'>
+            <div className='text-center'>
+              <h2 className='mb-4 text-3xl font-bold text-white drop-shadow-sm sm:text-4xl'>
+                Zacznij planować swoją dietę już dziś
+              </h2>
+              <p className='mb-8 text-lg text-white drop-shadow-sm'>
+                Dołącz do tysięcy osób, które schudły dzięki diecie
+                niskowęglowodanowej. Rejestracja jest całkowicie bezpłatna.
+              </p>
+              <div className='flex flex-col items-center justify-center gap-4 sm:flex-row'>
+                <Button asChild size='lg' className='min-w-[200px]'>
+                  <Link href='/auth'>Załóż darmowe konto</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant='outline'
+                  size='lg'
+                  className='min-w-[200px]'
+                >
+                  <Link href='/recipes'>Zobacz przepisy</Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* SEO Content Section */}
-      <section className='bg-gray-50 px-4 py-16'>
+      <section className='px-4 py-6 sm:py-18'>
         <div className='mx-auto max-w-4xl'>
-          <article className='prose prose-gray max-w-none'>
-            <h2>Czym jest dieta niskowęglowodanowa?</h2>
-            <p>
-              Dieta niskowęglowodanowa (low-carb) to sposób odżywiania, który
-              ogranicza spożycie węglowodanów na rzecz białka i zdrowych
-              tłuszczów. Dieta keto (ketogeniczna) jest najbardziej restrykcyjną
-              formą diety low-carb, gdzie węglowodany stanowią zaledwie 5-10%
-              dziennego spożycia kalorii.
+          <div className='rounded-2xl border-2 border-white bg-white/40 p-6 shadow-lg backdrop-blur-xl sm:p-10'>
+            <h2 className='text-text-main mb-6 text-2xl font-bold sm:text-3xl'>
+              Czym jest dieta niskowęglowodanowa?
+            </h2>
+            <p className='text-text-secondary mb-8 leading-relaxed'>
+              Dieta niskowęglowodanowa (
+              <strong className='text-primary'>low-carb</strong>) to sposób
+              odżywiania, który ogranicza spożycie węglowodanów na rzecz białka
+              i zdrowych tłuszczów. Dieta{' '}
+              <strong className='text-primary'>keto</strong> (ketogeniczna) jest
+              najbardziej restrykcyjną formą diety low-carb, gdzie węglowodany
+              stanowią zaledwie <strong>5-10%</strong> dziennego spożycia
+              kalorii.
             </p>
 
-            <h3>Korzyści diety low-carb i keto</h3>
-            <ul>
-              <li>
-                Szybsza utrata wagi dzięki spalaniu tłuszczu jako źródła energii
+            <h3 className='text-text-main mb-4 text-xl font-semibold'>
+              Korzyści diety <span className='text-primary'>low-carb</span> i{' '}
+              <span className='text-primary'>keto</span>
+            </h3>
+            <ul className='text-text-secondary mb-8 space-y-3'>
+              <li className='flex items-start gap-3'>
+                <span className='bg-primary mt-1.5 h-2 w-2 flex-shrink-0 rounded-full' />
+                <span>
+                  Szybsza <strong>utrata wagi</strong> dzięki spalaniu tłuszczu
+                  jako źródła energii
+                </span>
               </li>
-              <li>Stabilny poziom cukru we krwi</li>
-              <li>Mniejsze uczucie głodu między posiłkami</li>
-              <li>Lepsza koncentracja i energia</li>
-              <li>Zmniejszenie stanów zapalnych w organizmie</li>
+              <li className='flex items-start gap-3'>
+                <span className='bg-primary mt-1.5 h-2 w-2 flex-shrink-0 rounded-full' />
+                <span>
+                  Stabilny <strong>poziom cukru</strong> we krwi
+                </span>
+              </li>
+              <li className='flex items-start gap-3'>
+                <span className='bg-primary mt-1.5 h-2 w-2 flex-shrink-0 rounded-full' />
+                <span>
+                  Mniejsze <strong>uczucie głodu</strong> między posiłkami
+                </span>
+              </li>
+              <li className='flex items-start gap-3'>
+                <span className='bg-primary mt-1.5 h-2 w-2 flex-shrink-0 rounded-full' />
+                <span>
+                  Lepsza <strong>koncentracja i energia</strong>
+                </span>
+              </li>
+              <li className='flex items-start gap-3'>
+                <span className='bg-primary mt-1.5 h-2 w-2 flex-shrink-0 rounded-full' />
+                <span>
+                  Zmniejszenie <strong>stanów zapalnych</strong> w organizmie
+                </span>
+              </li>
             </ul>
 
-            <h3>Jak LowCarbPlaner pomoże Ci w diecie?</h3>
-            <p>
+            <h3 className='text-text-main mb-4 text-xl font-semibold'>
+              Jak <span className='text-primary'>LowCarbPlaner</span> pomoże Ci
+              w diecie?
+            </h3>
+            <p className='text-text-secondary mb-8 leading-relaxed'>
               Nasza aplikacja automatycznie oblicza Twoje zapotrzebowanie
-              kaloryczne (BMR i TDEE) na podstawie płci, wieku, wzrostu, wagi i
-              poziomu aktywności fizycznej. Następnie generuje spersonalizowany
-              plan posiłków z przepisami, które idealnie wpasowują się w Twoje
-              cele makroskładnikowe.
+              kaloryczne (<strong>BMR</strong> i <strong>TDEE</strong>) na
+              podstawie płci, wieku, wzrostu, wagi i poziomu aktywności
+              fizycznej. Następnie generuje spersonalizowany plan posiłków z
+              przepisami, które idealnie wpasowują się w Twoje cele
+              makroskładnikowe.
             </p>
 
-            <h3>Przepisy keto i low-carb</h3>
-            <p>
+            <h3 className='text-text-main mb-4 text-xl font-semibold'>
+              Przepisy <span className='text-primary'>keto</span> i{' '}
+              <span className='text-primary'>low-carb</span>
+            </h3>
+            <p className='text-text-secondary leading-relaxed'>
               W naszej bazie znajdziesz setki sprawdzonych przepisów
-              niskowęglowodanowych na śniadanie, obiad, kolację i przekąski.
-              Każdy przepis zawiera dokładne informacje o wartościach
-              odżywczych: kaloriach, białku, tłuszczach, węglowodanach i
-              błonniku.
+              niskowęglowodanowych na <strong>śniadanie</strong>,{' '}
+              <strong>obiad</strong>, <strong>kolację</strong> i{' '}
+              <strong>przekąski</strong>. Każdy przepis zawiera dokładne
+              informacje o wartościach odżywczych: kaloriach, białku,
+              tłuszczach, węglowodanach i błonniku.
             </p>
-          </article>
+          </div>
         </div>
       </section>
 

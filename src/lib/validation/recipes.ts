@@ -44,20 +44,29 @@ export const recipeQueryParamsSchema = z.object({
     .transform((val) => {
       if (!val) return undefined
       const types = val.split(',').map((type) => type.trim())
-      // Walidacja: wszystkie wartości muszą być z enuma
-      const validTypes = ['breakfast', 'lunch', 'dinner'] as const
+      // Walidacja: wszystkie wartości muszą być z enuma meal_type_enum
+      const validTypes = [
+        'breakfast',
+        'lunch',
+        'dinner',
+        'snack',
+        'snack_morning',
+        'snack_afternoon',
+      ] as const
+
+      type MealType = (typeof validTypes)[number]
 
       const invalidTypes = types.filter(
-        (type) => !validTypes.includes(type as 'breakfast' | 'lunch' | 'dinner')
+        (type) => !validTypes.includes(type as MealType)
       )
 
       if (invalidTypes.length > 0) {
         throw new Error(
-          `Nieprawidłowe typy posiłków: ${invalidTypes.join(', ')}. Dozwolone: breakfast, lunch, dinner`
+          `Nieprawidłowe typy posiłków: ${invalidTypes.join(', ')}. Dozwolone: ${validTypes.join(', ')}`
         )
       }
 
-      return types as Array<'breakfast' | 'lunch' | 'dinner'>
+      return types as MealType[]
     }),
 })
 

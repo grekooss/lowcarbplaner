@@ -290,7 +290,7 @@ VALUES
   -- ===============================
   -- PRZYPRAWY I ZIOŁA (SPICES_HERBS) - LOW CARB ✓
   -- ===============================
-  (997, 'Sól morska', 'spices_herbs', 'g', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, true, null, null, true),
+  (997, 'Sól', 'spices_herbs', 'g', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, true, null, null, true),
   (998, 'Pieprz czarny (mielony)', 'spices_herbs', 'g', 251.00, 63.90, 10.40, 3.30, 25.30, 0.00, 0.98, true, null, null, true),
   (999, 'Papryka słodka (mielona)', 'spices_herbs', 'g', 282.00, 53.90, 14.10, 12.90, 34.90, 0.00, 2.14, true, null, null, true),
   (1000, 'Kurkuma (mielona)', 'spices_herbs', 'g', 312.00, 67.10, 9.70, 3.30, 22.70, 0.00, 1.84, true, null, null, true),
@@ -807,6 +807,7 @@ VALUES
   (1747, 'Anyż gwiazdkowaty', 'spices_herbs', 'g', 337.00, 50.00, 18.00, 16.00, 15.00, 0.00, 0.60, true, null, 'Badian', true),
   (1748, 'Kolendra ziarna', 'spices_herbs', 'g', 298.00, 55.00, 12.00, 18.00, 42.00, 0.00, 1.00, true, null, 'Kolendra w ziarnach', true),
   (1749, 'Kminek', 'spices_herbs', 'g', 375.00, 44.00, 18.00, 22.00, 11.00, 0.00, 1.60, true, null, 'Kminek rzymski', true),
+  (1750, 'Płatki chili', 'spices_herbs', 'g', 314.00, 56.60, 12.00, 17.30, 27.20, 0.00, 3.30, true, null, 'Suszone płatki chili (red pepper flakes)', true),
 
   -- ===============================
   -- NAPOJE I KAWA - beverages

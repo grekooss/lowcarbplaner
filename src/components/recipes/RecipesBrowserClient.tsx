@@ -186,7 +186,7 @@ export function RecipesBrowserClient({
       })
 
       // Nawiguj do nowego URL (intercepting route obsłuży modal)
-      router.push(`/przepisy/${recipeSlug}`)
+      router.push(`/recipes/${recipeSlug}`)
     },
     [authLoading, router]
   )

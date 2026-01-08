@@ -1651,7 +1651,7 @@ function generateDates(
   for (let i = 0; i < numDays; i++) {
     const date = new Date(startDate)
     date.setDate(date.getDate() + i)
-    dates.push(date.toISOString().split('T')[0]!) // YYYY-MM-DD
+    dates.push(formatLocalDate(date))
   }
 
   return dates

@@ -8,6 +8,7 @@
 import { useMemo } from 'react'
 import type { CalendarDayViewModel } from '@/types/viewmodels'
 import { DAY_NAMES, MONTH_NAMES } from '@/types/viewmodels'
+import { formatLocalDate } from '@/lib/utils/date-formatting'
 
 /**
  * Generuje 7 dni kalendarza (od dzis + 6 nastepnych dni)
@@ -19,7 +20,9 @@ export function useCalendarDays(selectedDate: Date): CalendarDayViewModel[] {
   // Normalizujemy Date do stringa YYYY-MM-DD dla stabilnej zależności useMemo
   // Zapobiega to niepotrzebnym przeliczeniom gdy referencja Date się zmienia
   // ale data pozostaje ta sama
-  const selectedDateStr = selectedDate.toISOString().split('T')[0] as string
+  // UWAGA: Używamy formatLocalDate zamiast toISOString() które konwertuje do UTC
+  // i może przesunąć datę o jeden dzień wstecz dla stref czasowych na wschód od UTC
+  const selectedDateStr = formatLocalDate(selectedDate)
 
   return useMemo(() => {
     // Zacznij od dzisiaj

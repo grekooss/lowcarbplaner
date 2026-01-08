@@ -43,6 +43,8 @@ interface EditableIngredientRowProps {
   onExclude?: (ingredientId: number) => void
   /** Compact mode for mobile view */
   compact?: boolean
+  /** Expected amount after scaling (for determining if manually changed) */
+  expectedAmount?: number
 }
 
 export function EditableIngredientRow({
@@ -56,6 +58,7 @@ export function EditableIngredientRow({
   onToggleChecked,
   onExclude,
   compact = false,
+  expectedAmount,
 }: EditableIngredientRowProps) {
   const [localValue, setLocalValue] = useState(currentAmount.toString())
   const [error, setError] = useState<string | null>(null)
@@ -153,7 +156,9 @@ export function EditableIngredientRow({
     }
   }
 
-  const isChanged = Math.abs(currentAmount - ingredient.amount) > 0.01
+  // Compare against expectedAmount (scaled) if provided, otherwise original ingredient.amount
+  const compareAmount = expectedAmount ?? ingredient.amount
+  const isChanged = Math.abs(currentAmount - compareAmount) > 0.01
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()

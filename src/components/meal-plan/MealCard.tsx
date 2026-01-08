@@ -1,8 +1,8 @@
 'use client'
 
 import { memo, useState } from 'react'
-import Image from 'next/image'
-import { UtensilsCrossed, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -66,19 +66,14 @@ export const MealCard = memo(function MealCard({
       >
         {/* Image */}
         <div className='relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-white/60'>
-          {meal.recipe.image_url ? (
-            <Image
-              src={meal.recipe.image_url}
-              alt={meal.recipe.name}
-              fill
-              className='object-cover grayscale-[10%]'
-              sizes='56px'
-            />
-          ) : (
-            <div className='text-text-muted flex h-full w-full items-center justify-center'>
-              <UtensilsCrossed className='h-6 w-6' />
-            </div>
-          )}
+          <RecipeImage
+            src={meal.recipe.image_url}
+            recipeName={meal.recipe.name}
+            alt={meal.recipe.name}
+            fill
+            className='object-cover grayscale-[10%]'
+            sizes='56px'
+          />
           {/* Swap button on image - center on mobile, hover-reveal on desktop */}
           {/* Ukryj przycisk swap dla zjedzonych posiłków */}
           {showSwapButton && !meal.is_eaten && (

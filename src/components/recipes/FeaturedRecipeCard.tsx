@@ -6,8 +6,7 @@
 
 'use client'
 
-import Image from 'next/image'
-import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 import { RatingDisplay } from '@/components/recipes/RatingDisplay'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
@@ -41,8 +40,8 @@ export function FeaturedRecipeCard({
     onClick(recipe.slug, recipe.id, primaryMealType)
   }
 
-  const prepTime = 0
-  const cookTime = 0
+  const prepTime = recipe.prep_time_minutes ?? 0
+  const cookTime = recipe.cook_time_minutes ?? 0
   const totalSteps = Array.isArray(recipe.instructions)
     ? recipe.instructions.length
     : 0
@@ -85,18 +84,15 @@ export function FeaturedRecipeCard({
       {/* Image Section - 1/3 width on tablet landscape, fixed width on desktop */}
       <div className='w-1/3 flex-shrink-0 lg:w-64'>
         <div className='relative h-full min-h-[200px] w-full overflow-hidden rounded-md bg-white/60 lg:min-h-[280px]'>
-          {recipe.image_url ? (
-            <Image
-              src={recipe.image_url}
-              alt={recipe.name}
-              fill
-              className='object-cover grayscale-[10%]'
-              priority
-              sizes='(max-width: 1024px) 33vw, 256px'
-            />
-          ) : (
-            <RecipeImagePlaceholder recipeName={recipe.name} />
-          )}
+          <RecipeImage
+            src={recipe.image_url}
+            recipeName={recipe.name}
+            alt={recipe.name}
+            fill
+            className='object-cover grayscale-[10%]'
+            priority
+            sizes='(max-width: 1024px) 33vw, 256px'
+          />
         </div>
       </div>
 

@@ -78,9 +78,10 @@ export function MealsList({
 
   return (
     <section className='relative'>
-      {/* Vertical Line - only show when we have stepper checkboxes */}
+      {/* Vertical Line - centered on checkbox circles */}
+      {/* Mobile: checkbox 24px (center at 12px), Desktop: checkbox 32px (center at 16px) */}
       {isCurrentDate && orderedMeals.length > 1 && (
-        <div className='absolute top-4 -bottom-6 left-[72px] z-0 w-0.5 bg-white sm:top-6 sm:left-[88px]' />
+        <div className='absolute top-5 -bottom-6 left-[11px] z-0 w-0.5 bg-white sm:top-6 sm:left-[15px]' />
       )}
 
       <div className='space-y-6'>

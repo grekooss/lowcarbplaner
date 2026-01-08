@@ -3,7 +3,7 @@
  *
  * Generuje sitemap.xml z:
  * - Stronami statycznymi (recipes, auth)
- * - Dynamicznymi stronami przepisów (/przepisy/[slug])
+ * - Dynamicznymi stronami przepisów (/recipes/[slug])
  *
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
  */
@@ -71,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamiczne strony przepisów
   const recipeSlugs = await getAllRecipeSlugs()
   const recipePages: MetadataRoute.Sitemap = recipeSlugs.map((slug) => ({
-    url: `${siteUrl}/przepisy/${slug}`,
+    url: `${siteUrl}/recipes/${slug}`,
     lastModified: currentDate,
     changeFrequency: 'weekly' as const,
     priority: 0.8,

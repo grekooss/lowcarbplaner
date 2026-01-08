@@ -26,12 +26,18 @@ import {
   Save,
   Loader2,
   ChevronRight,
+  Users,
+  Sparkles,
+  Minus,
+  Plus,
 } from 'lucide-react'
 import { InstructionsList } from './InstructionsList'
 import { EquipmentList } from './EquipmentList'
 import { StarRating } from './StarRating'
+import { RecipeComponentItem } from './RecipeComponentItem'
 import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
 import { EditableIngredientRow } from '@/components/dashboard/EditableIngredientRow'
+import { EditableRecipeComponentRow } from '@/components/dashboard/EditableRecipeComponentRow'
 import {
   MEAL_TYPE_LABELS,
   formatIngredientAmount,
@@ -56,6 +62,20 @@ interface RecipeDetailClientProps {
     error?: string
   }
   decrementAmount?: (ingredientId: number) => {
+    success: boolean
+    error?: string
+  }
+  // Component (recipe-as-ingredient) editing props
+  getComponentAmount?: (recipeId: number) => number
+  updateComponentAmount?: (
+    recipeId: number,
+    newAmount: number
+  ) => { success: boolean; error?: string }
+  incrementComponentAmount?: (recipeId: number) => {
+    success: boolean
+    error?: string
+  }
+  decrementComponentAmount?: (recipeId: number) => {
     success: boolean
     error?: string
   }
@@ -89,12 +109,20 @@ interface RecipeDetailClientProps {
   // External checkbox state (visual only, managed by parent)
   checkedIngredients?: Set<number>
   onToggleChecked?: (ingredientId: number) => void
+  // External component checkbox state
+  checkedComponents?: Set<number>
+  onToggleComponentChecked?: (recipeId: number) => void
   // Selected meal type from the card that was clicked (for recipes with multiple meal types)
   selectedMealType?: Enums<'meal_type_enum'> | null
   // Rating props
   userRating?: number | null
   isAuthenticated?: boolean
   onRatingChange?: (newRating: number) => void
+  // Servings multiplier props
+  servingsCount?: number
+  onServingsChange?: (count: number) => void
+  // Expected amount for detecting manual changes vs scaling
+  getExpectedIngredientAmount?: (ingredientId: number) => number
 }
 
 /**
@@ -109,6 +137,11 @@ export function RecipeDetailClient({
   updateIngredientAmount,
   incrementAmount,
   decrementAmount,
+  // Component editing props
+  getComponentAmount,
+  updateComponentAmount,
+  incrementComponentAmount,
+  decrementComponentAmount,
   adjustedNutrition,
   hasChanges = false,
   isSaving = false,
@@ -124,15 +157,25 @@ export function RecipeDetailClient({
   onToggleIngredientExcluded,
   checkedIngredients,
   onToggleChecked,
+  checkedComponents,
+  onToggleComponentChecked,
   selectedMealType,
   userRating = null,
   isAuthenticated = false,
   onRatingChange,
+  servingsCount,
+  onServingsChange,
+  getExpectedIngredientAmount,
 }: RecipeDetailClientProps) {
   const router = useRouter()
 
   // Track checked ingredients (local state for visual-only mode without exclusion)
   const [localCheckedIngredients, setLocalCheckedIngredients] = useState<
+    Set<number>
+  >(new Set())
+
+  // Track checked components (local state for visual-only mode)
+  const [localCheckedComponents, setLocalCheckedComponents] = useState<
     Set<number>
   >(new Set())
 
@@ -170,6 +213,32 @@ export function RecipeDetailClient({
         newSet.delete(ingredientId)
       } else {
         newSet.add(ingredientId)
+      }
+      return newSet
+    })
+  }
+
+  // Check if component is checked (visual only)
+  const isComponentChecked = (recipeId: number) => {
+    if (checkedComponents) {
+      return checkedComponents.has(recipeId)
+    }
+    return localCheckedComponents.has(recipeId)
+  }
+
+  const toggleComponent = (recipeId: number) => {
+    if (onToggleComponentChecked) {
+      onToggleComponentChecked(recipeId)
+      return
+    }
+
+    // Otherwise use local state (visual only)
+    setLocalCheckedComponents((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(recipeId)) {
+        newSet.delete(recipeId)
+      } else {
+        newSet.add(recipeId)
       }
       return newSet
     })
@@ -672,6 +741,89 @@ export function RecipeDetailClient({
             </div>
           )}
 
+          {/* Mobile: Informacja o porcjach - osobny panel */}
+          <div className='lg:hidden'>
+            <div className='mb-2 pl-1'>
+              <h3 className='text-sm font-bold text-gray-800'>Porcje</h3>
+            </div>
+            <div className='mb-4 flex flex-wrap items-center justify-between gap-2 rounded-[12px] border-2 border-white bg-white/60 px-3 py-2.5 shadow-[var(--shadow-card)]'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <div className='flex items-center gap-1.5'>
+                  <Users className='h-3.5 w-3.5 text-gray-500' />
+                  <span className='text-xs text-gray-600'>
+                    Przepis na{' '}
+                    <span className='font-semibold text-gray-800'>
+                      {recipe.base_servings}
+                    </span>{' '}
+                    {recipe.base_servings === 1
+                      ? recipe.serving_unit
+                      : recipe.serving_unit === 'porcja'
+                        ? 'porcje'
+                        : recipe.serving_unit === 'sztuka'
+                          ? 'sztuki'
+                          : recipe.serving_unit === 'kromka'
+                            ? 'kromki'
+                            : recipe.serving_unit}
+                  </span>
+                </div>
+                {recipe.is_batch_friendly && recipe.suggested_batch_size && (
+                  <>
+                    <span className='text-gray-300'>•</span>
+                    <div className='flex items-center gap-1.5'>
+                      <Sparkles className='h-3.5 w-3.5 text-amber-500' />
+                      <span className='text-xs text-gray-600'>
+                        lepiej przygotować{' '}
+                        <span className='font-semibold text-amber-600'>
+                          {recipe.suggested_batch_size}
+                        </span>
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Servings multiplier controls */}
+              {onServingsChange && (
+                <div className='flex items-center gap-2'>
+                  <span className='text-xs text-gray-500'>Przygotuj:</span>
+                  <div className='flex items-center gap-1'>
+                    <button
+                      onClick={() =>
+                        onServingsChange(
+                          Math.max(
+                            recipe.min_servings ?? 1,
+                            (servingsCount ?? recipe.base_servings) - 1
+                          )
+                        )
+                      }
+                      disabled={
+                        (servingsCount ?? recipe.base_servings) <=
+                        (recipe.min_servings ?? 1)
+                      }
+                      className='flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40'
+                      aria-label='Zmniejsz liczbę porcji'
+                    >
+                      <Minus className='h-3 w-3' />
+                    </button>
+                    <span className='min-w-[2rem] text-center text-sm font-bold text-gray-800'>
+                      {servingsCount ?? recipe.base_servings}
+                    </span>
+                    <button
+                      onClick={() =>
+                        onServingsChange(
+                          (servingsCount ?? recipe.base_servings) + 1
+                        )
+                      }
+                      className='flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50'
+                      aria-label='Zwiększ liczbę porcji'
+                    >
+                      <Plus className='h-3 w-3' />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Mobile: Składniki w panelu z możliwością zmiany gramatury */}
           <div className='lg:hidden'>
             <div className='mb-2 pl-1'>
@@ -705,6 +857,52 @@ export function RecipeDetailClient({
                   </p>
                 )}
               <div data-testid='mobile-ingredients-list'>
+                {/* Przepisy-składniki (sub-recipes) na mobile - tylko gdy nie w step mode */}
+                {!isStepMode &&
+                  recipe.components &&
+                  recipe.components.length > 0 && (
+                    <div className='mb-3 space-y-2'>
+                      {enableIngredientEditing &&
+                      getComponentAmount &&
+                      updateComponentAmount &&
+                      incrementComponentAmount &&
+                      decrementComponentAmount
+                        ? recipe.components.map((component) => (
+                            <EditableRecipeComponentRow
+                              key={component.recipe_id}
+                              component={component}
+                              currentAmount={getComponentAmount(
+                                component.recipe_id
+                              )}
+                              onAmountChange={updateComponentAmount}
+                              onIncrement={incrementComponentAmount}
+                              onDecrement={decrementComponentAmount}
+                              isChecked={isComponentChecked(
+                                component.recipe_id
+                              )}
+                              onToggleChecked={toggleComponent}
+                              onExclude={(recipeId) =>
+                                updateComponentAmount(recipeId, 0)
+                              }
+                              compact
+                            />
+                          ))
+                        : recipe.components.map((component) => (
+                            <RecipeComponentItem
+                              key={component.recipe_id}
+                              component={component}
+                              isChecked={isComponentChecked(
+                                component.recipe_id
+                              )}
+                              onToggle={() =>
+                                toggleComponent(component.recipe_id)
+                              }
+                              compact
+                            />
+                          ))}
+                    </div>
+                  )}
+
                 {enableIngredientEditing &&
                 getIngredientAmount &&
                 updateIngredientAmount &&
@@ -717,6 +915,11 @@ export function RecipeDetailClient({
                           key={ingredient.id}
                           ingredient={ingredient}
                           currentAmount={getIngredientAmount(ingredient.id)}
+                          expectedAmount={
+                            getExpectedIngredientAmount
+                              ? getExpectedIngredientAmount(ingredient.id)
+                              : undefined
+                          }
                           isAutoAdjusted={
                             isAutoAdjusted
                               ? isAutoAdjusted(ingredient.id)
@@ -832,12 +1035,96 @@ export function RecipeDetailClient({
             <h3 className='text-base font-bold text-gray-800 lg:text-lg'>
               Kroki
             </h3>
-            <InstructionsList instructions={recipe.instructions} />
+            <InstructionsList
+              instructions={recipe.instructions}
+              components={recipe.components}
+            />
           </div>
         </div>
 
         {/* PRAWA KOLUMNA - Składniki + Makro (tylko desktop) */}
         <div className='hidden space-y-6 lg:block'>
+          {/* Informacja o porcjach - osobny panel */}
+          <div className='rounded-[20px] border-2 border-white bg-white/60 p-4 shadow-[var(--shadow-card)]'>
+            <h3 className='mb-3 text-lg font-bold text-gray-800'>Porcje</h3>
+            <div className='flex flex-wrap items-center justify-between gap-3'>
+              <div className='flex flex-wrap items-center gap-3'>
+                <div className='flex items-center gap-2'>
+                  <Users className='h-4 w-4 text-gray-500' />
+                  <span className='text-sm text-gray-600'>
+                    Przepis na{' '}
+                    <span className='font-semibold text-gray-800'>
+                      {recipe.base_servings}
+                    </span>{' '}
+                    {recipe.base_servings === 1
+                      ? recipe.serving_unit
+                      : recipe.serving_unit === 'porcja'
+                        ? 'porcje'
+                        : recipe.serving_unit === 'sztuka'
+                          ? 'sztuki'
+                          : recipe.serving_unit === 'kromka'
+                            ? 'kromki'
+                            : recipe.serving_unit}
+                  </span>
+                </div>
+                {recipe.is_batch_friendly && recipe.suggested_batch_size && (
+                  <>
+                    <span className='text-gray-300'>•</span>
+                    <div className='flex items-center gap-2'>
+                      <Sparkles className='h-4 w-4 text-amber-500' />
+                      <span className='text-sm text-gray-600'>
+                        lepiej przygotować{' '}
+                        <span className='font-semibold text-amber-600'>
+                          {recipe.suggested_batch_size}
+                        </span>
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Servings multiplier controls */}
+              {onServingsChange && (
+                <div className='flex items-center gap-3'>
+                  <span className='text-sm text-gray-500'>Przygotuj:</span>
+                  <div className='flex items-center gap-1.5'>
+                    <button
+                      onClick={() =>
+                        onServingsChange(
+                          Math.max(
+                            recipe.min_servings ?? 1,
+                            (servingsCount ?? recipe.base_servings) - 1
+                          )
+                        )
+                      }
+                      disabled={
+                        (servingsCount ?? recipe.base_servings) <=
+                        (recipe.min_servings ?? 1)
+                      }
+                      className='flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40'
+                      aria-label='Zmniejsz liczbę porcji'
+                    >
+                      <Minus className='h-3.5 w-3.5' />
+                    </button>
+                    <span className='min-w-[2.5rem] text-center text-base font-bold text-gray-800'>
+                      {servingsCount ?? recipe.base_servings}
+                    </span>
+                    <button
+                      onClick={() =>
+                        onServingsChange(
+                          (servingsCount ?? recipe.base_servings) + 1
+                        )
+                      }
+                      className='flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50'
+                      aria-label='Zwiększ liczbę porcji'
+                    >
+                      <Plus className='h-3.5 w-3.5' />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Ingredients - Panel style like image card */}
           <div className='rounded-[20px] border-2 border-white bg-white/60 p-4 shadow-[var(--shadow-card)]'>
             {/* Header with title and save button */}
@@ -882,6 +1169,42 @@ export function RecipeDetailClient({
               </p>
             )}
             <div data-testid='ingredients-list'>
+              {/* Przepisy-składniki (sub-recipes) - wyświetlane przed zwykłymi składnikami */}
+              {recipe.components && recipe.components.length > 0 && (
+                <div className='mb-4 space-y-2'>
+                  {enableIngredientEditing &&
+                  getComponentAmount &&
+                  updateComponentAmount &&
+                  incrementComponentAmount &&
+                  decrementComponentAmount
+                    ? recipe.components.map((component) => (
+                        <EditableRecipeComponentRow
+                          key={component.recipe_id}
+                          component={component}
+                          currentAmount={getComponentAmount(
+                            component.recipe_id
+                          )}
+                          onAmountChange={updateComponentAmount}
+                          onIncrement={incrementComponentAmount}
+                          onDecrement={decrementComponentAmount}
+                          isChecked={isComponentChecked(component.recipe_id)}
+                          onToggleChecked={toggleComponent}
+                          onExclude={(recipeId) =>
+                            updateComponentAmount(recipeId, 0)
+                          }
+                        />
+                      ))
+                    : recipe.components.map((component) => (
+                        <RecipeComponentItem
+                          key={component.recipe_id}
+                          component={component}
+                          isChecked={isComponentChecked(component.recipe_id)}
+                          onToggle={() => toggleComponent(component.recipe_id)}
+                        />
+                      ))}
+                </div>
+              )}
+
               {enableIngredientEditing &&
               getIngredientAmount &&
               updateIngredientAmount &&
@@ -894,6 +1217,11 @@ export function RecipeDetailClient({
                       key={ingredient.id}
                       ingredient={ingredient}
                       currentAmount={getIngredientAmount(ingredient.id)}
+                      expectedAmount={
+                        getExpectedIngredientAmount
+                          ? getExpectedIngredientAmount(ingredient.id)
+                          : undefined
+                      }
                       isAutoAdjusted={
                         isAutoAdjusted ? isAutoAdjusted(ingredient.id) : false
                       }

@@ -10,6 +10,7 @@ import { usePlannedMealsQuery } from '@/hooks/usePlannedMealsQuery'
 import { useAutoGenerateMealPlan } from '@/hooks/useAutoGenerateMealPlan'
 import { useCheckedIngredientsStore } from '@/lib/zustand/stores/useCheckedIngredientsStore'
 import { transformToWeekPlan } from '@/lib/utils/meal-plan'
+import { formatDateToLocalString } from '@/lib/utils'
 import { WeekTable } from './WeekTable'
 import { DayList } from './DayList'
 import { RecipeModal } from './RecipeModal'
@@ -111,7 +112,7 @@ export const MealPlanClient = ({
   const endDate = useMemo(() => {
     const end = new Date(startDate)
     end.setDate(end.getDate() + 6)
-    return end.toISOString().split('T')[0] || ''
+    return formatDateToLocalString(end)
   }, [startDate])
 
   // Query dla re-fetching danych (z fallback na initialMeals)

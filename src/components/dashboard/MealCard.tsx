@@ -7,16 +7,8 @@
  */
 
 import { memo, useMemo, useState } from 'react'
-import Image from 'next/image'
-import {
-  Flame,
-  Wheat,
-  Beef,
-  Droplet,
-  RefreshCw,
-  UtensilsCrossed,
-  Check,
-} from 'lucide-react'
+import { Flame, Wheat, Beef, Droplet, RefreshCw, Check } from 'lucide-react'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -125,15 +117,6 @@ export const MealCard = memo(function MealCard({
     <>
       <div className='relative z-10'>
         <div className='flex gap-3 sm:gap-4'>
-          {/* Meal Time - left of checkbox */}
-          {mealTime && (
-            <div className='flex h-7 w-12 items-center justify-end sm:h-10 sm:w-14'>
-              <span className='text-sm font-bold text-gray-600 sm:text-base'>
-                {mealTime}
-              </span>
-            </div>
-          )}
-
           {/* Stepper Node */}
           {enableEatenCheckbox && (
             <div
@@ -164,8 +147,14 @@ export const MealCard = memo(function MealCard({
 
           {/* Content */}
           <div className='flex-1'>
-            {/* Stepper Label */}
-            <div className='mb-0 flex h-7 items-center gap-3 sm:h-10'>
+            {/* Stepper Label with Time */}
+            <div className='mb-0 flex h-7 items-center gap-2 sm:h-10 sm:gap-3'>
+              {/* Meal Time */}
+              {mealTime && (
+                <span className='text-xs font-bold text-gray-600 sm:text-base'>
+                  {mealTime}
+                </span>
+              )}
               <h4
                 className={cn(
                   'text-base font-bold tracking-wider text-gray-800 uppercase transition-all duration-300 sm:text-lg',
@@ -192,20 +181,15 @@ export const MealCard = memo(function MealCard({
               onKeyDown={handleCardKeyDown}
             >
               <div className='relative h-24 w-full flex-shrink-0 overflow-hidden rounded-md bg-white/60 md:h-24 md:w-24'>
-                {meal.recipe.image_url ? (
-                  <Image
-                    src={meal.recipe.image_url}
-                    alt={meal.recipe.name}
-                    fill
-                    className='object-cover grayscale-[10%]'
-                    sizes='(max-width: 768px) 100vw, 96px'
-                    priority={index === 0}
-                  />
-                ) : (
-                  <div className='flex h-full w-full items-center justify-center text-gray-400'>
-                    <UtensilsCrossed className='h-8 w-8' />
-                  </div>
-                )}
+                <RecipeImage
+                  src={meal.recipe.image_url}
+                  recipeName={meal.recipe.name}
+                  alt={meal.recipe.name}
+                  fill
+                  className='object-cover grayscale-[10%]'
+                  sizes='(max-width: 768px) 100vw, 96px'
+                  priority={index === 0}
+                />
                 {/* Swap button on image - top-right on mobile, center on desktop */}
                 {/* Ukryj przycisk swap dla zjedzonych posiłków */}
                 {showSwapButton && !meal.is_eaten && (

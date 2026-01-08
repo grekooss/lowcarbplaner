@@ -10,11 +10,12 @@ interface RecipeFiltersProps {
   onChange: (mealTypes: string[]) => void
 }
 
-const MEAL_TYPES: (Enums<'meal_type_enum'> | 'all')[] = [
+const MEAL_TYPES: (Enums<'meal_type_enum'> | 'all' | 'snack')[] = [
   'all',
   'breakfast',
   'lunch',
   'dinner',
+  'snack',
 ]
 
 export function RecipeFilters({
@@ -38,13 +39,29 @@ export function RecipeFilters({
     if (type === 'all') {
       return selectedMealTypes.length === 0
     }
+    // 'snack' jest zaznaczony gdy filtry zawierają snack_morning lub snack_afternoon
+    if (type === 'snack') {
+      return (
+        selectedMealTypes.includes('snack_morning') ||
+        selectedMealTypes.includes('snack_afternoon')
+      )
+    }
     return selectedMealTypes.includes(type)
   }
 
   const getSelectedLabel = () => {
     if (selectedMealTypes.length === 0) return 'Wszystkie'
+    // Sprawdź czy to filtr "snack" (snack_morning + snack_afternoon)
+    const isSnackFilter =
+      selectedMealTypes.length === 2 &&
+      selectedMealTypes.includes('snack_morning') &&
+      selectedMealTypes.includes('snack_afternoon')
+    if (isSnackFilter) return 'Przekąska'
+
     if (selectedMealTypes.length === 1 && selectedMealTypes[0]) {
-      return MEAL_TYPE_LABELS[selectedMealTypes[0] as Enums<'meal_type_enum'>]
+      const type = selectedMealTypes[0]
+      if (type === 'snack') return 'Przekąska'
+      return MEAL_TYPE_LABELS[type as Enums<'meal_type_enum'>]
     }
     return `${selectedMealTypes.length} wybrane`
   }
@@ -68,7 +85,11 @@ export function RecipeFilters({
                 : 'text-text-main hover:border-primary hover:text-primary border-transparent bg-white hover:bg-white'
             }`}
           >
-            {type === 'all' ? 'Wszystkie' : MEAL_TYPE_LABELS[type]}
+            {type === 'all'
+              ? 'Wszystkie'
+              : type === 'snack'
+                ? 'Przekąska'
+                : MEAL_TYPE_LABELS[type]}
           </button>
         ))}
       </div>
@@ -115,7 +136,11 @@ export function RecipeFilters({
                   aria-selected={isSelected(type)}
                 >
                   <span>
-                    {type === 'all' ? 'Wszystkie' : MEAL_TYPE_LABELS[type]}
+                    {type === 'all'
+                      ? 'Wszystkie'
+                      : type === 'snack'
+                        ? 'Przekąska'
+                        : MEAL_TYPE_LABELS[type]}
                   </span>
                 </button>
               ))}

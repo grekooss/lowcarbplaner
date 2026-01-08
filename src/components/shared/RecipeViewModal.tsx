@@ -88,6 +88,28 @@ interface IngredientEditorApi {
     net_carbs_g: number
     fats_g: number
   } | null
+  // Component (recipe-as-ingredient) functions
+  getComponentAmount?: (recipeId: number) => number
+  updateComponentAmount?: (
+    recipeId: number,
+    newAmount: number
+  ) => { success: boolean; error?: string; warning?: string }
+  incrementComponentAmount?: (recipeId: number) => {
+    success: boolean
+    error?: string
+    warning?: string
+  }
+  decrementComponentAmount?: (recipeId: number) => {
+    success: boolean
+    error?: string
+    warning?: string
+  }
+  // Servings multiplier
+  servingsCount?: number
+  setServingsCount?: (count: number) => void
+  servingsMultiplier?: number
+  // Expected amount (for detecting manual changes vs scaling)
+  getExpectedIngredientAmount?: (ingredientId: number) => number
 }
 
 interface SaveConfig {
@@ -194,6 +216,16 @@ export function RecipeViewModal({
     incrementAmount,
     decrementAmount,
     adjustedNutrition,
+    // Component functions
+    getComponentAmount,
+    updateComponentAmount,
+    incrementComponentAmount,
+    decrementComponentAmount,
+    // Servings
+    servingsCount,
+    setServingsCount,
+    // Expected amount
+    getExpectedIngredientAmount,
   } = ingredientEditor
 
   // Reset step mode when modal closes
@@ -426,6 +458,11 @@ export function RecipeViewModal({
                             key={ingredient.id}
                             ingredient={ingredient}
                             currentAmount={getIngredientAmount(ingredient.id)}
+                            expectedAmount={
+                              getExpectedIngredientAmount
+                                ? getExpectedIngredientAmount(ingredient.id)
+                                : undefined
+                            }
                             isAutoAdjusted={isAutoAdjusted(ingredient.id)}
                             onAmountChange={updateIngredientAmount}
                             onIncrement={incrementAmount}
@@ -481,6 +518,16 @@ export function RecipeViewModal({
                 selectedMealType={selectedMealType}
                 userRating={userRating ?? null}
                 isAuthenticated={isAuthenticated}
+                // Component (recipe-as-ingredient) props
+                getComponentAmount={getComponentAmount}
+                updateComponentAmount={updateComponentAmount}
+                incrementComponentAmount={incrementComponentAmount}
+                decrementComponentAmount={decrementComponentAmount}
+                // Servings multiplier props
+                servingsCount={servingsCount}
+                onServingsChange={setServingsCount}
+                // Expected amount for detecting manual changes vs scaling
+                getExpectedIngredientAmount={getExpectedIngredientAmount}
               />
             )}
           </ErrorBoundary>

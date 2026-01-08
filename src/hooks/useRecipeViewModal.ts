@@ -3,6 +3,7 @@
  *
  * Provides ingredient editor API compatible with RecipeViewModal
  * Wraps useIngredientViewer for view-only mode
+ * Supports both ingredients and recipe components (sub-recipes)
  */
 
 import { useIngredientViewer } from './useIngredientViewer'
@@ -26,6 +27,13 @@ const emptyRecipe: RecipeDTO = {
   reviews_count: 0,
   prep_time_minutes: null,
   cook_time_minutes: null,
+  // Servings
+  base_servings: 1,
+  serving_unit: 'porcja',
+  is_batch_friendly: false,
+  suggested_batch_size: null,
+  min_servings: 1,
+  // Total nutrition
   total_calories: null,
   total_protein_g: null,
   total_carbs_g: null,
@@ -34,34 +42,63 @@ const emptyRecipe: RecipeDTO = {
   total_net_carbs_g: null,
   total_fats_g: null,
   total_saturated_fat_g: null,
+  // Per serving nutrition
+  calories_per_serving: null,
+  protein_per_serving: null,
+  carbs_per_serving: null,
+  net_carbs_per_serving: null,
+  fats_per_serving: null,
   ingredients: [],
   equipment: [],
+  components: [],
 }
 
 /**
  * Hook that provides ingredient editor API for RecipeViewModal
  * Use this for view-only recipe modals (no save functionality)
+ * Supports both ingredients and recipe components
  */
 export function useRecipeViewModal({ recipe }: UseRecipeViewModalOptions) {
   const {
     adjustedNutrition,
     getIngredientAmount,
+    getExpectedIngredientAmount,
     isAutoAdjusted,
     updateIngredientAmount,
     incrementAmount,
     decrementAmount,
+    // Component functions
+    getComponentAmount,
+    updateComponentAmount,
+    incrementComponentAmount,
+    decrementComponentAmount,
+    // Servings
+    servingsCount,
+    setServingsCount,
+    servingsMultiplier,
   } = useIngredientViewer({
     recipe: recipe ?? emptyRecipe,
   })
 
   return {
     ingredientEditor: {
+      // Ingredients
       getIngredientAmount,
+      getExpectedIngredientAmount,
       isAutoAdjusted,
       updateIngredientAmount,
       incrementAmount,
       decrementAmount,
       adjustedNutrition,
+      // Components (recipe-as-ingredient)
+      getComponentAmount,
+      updateComponentAmount,
+      incrementComponentAmount,
+      decrementComponentAmount,
+      // Servings
+      servingsCount,
+      setServingsCount,
+      servingsMultiplier,
     },
   }
 }

@@ -8,9 +8,8 @@
 'use client'
 
 import { memo } from 'react'
-import Image from 'next/image'
 import { Flame, Wheat, Beef, Droplet } from 'lucide-react'
-import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 import { RatingDisplay } from '@/components/recipes/RatingDisplay'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
 import type { RecipeDTO } from '@/types/dto.types'
@@ -100,18 +99,15 @@ export const RecipeCard = memo(function RecipeCard({
     >
       {/* Image */}
       <div className='relative mb-4 h-40 w-full overflow-hidden rounded-md bg-white/60'>
-        {recipe.image_url ? (
-          <Image
-            src={recipe.image_url}
-            alt={recipe.name}
-            fill
-            className='object-cover grayscale-[10%]'
-            sizes='(max-width: 768px) 100vw, 350px'
-            priority={index !== undefined && index < 3}
-          />
-        ) : (
-          <RecipeImagePlaceholder recipeName={recipe.name} />
-        )}
+        <RecipeImage
+          src={recipe.image_url}
+          recipeName={recipe.name}
+          alt={recipe.name}
+          fill
+          className='object-cover grayscale-[10%]'
+          sizes='(max-width: 768px) 100vw, 350px'
+          priority={index !== undefined && index < 3}
+        />
       </div>
 
       {/* Badges Row */}

@@ -10,6 +10,7 @@ import type {
   IngredientDTO,
   EquipmentDTO,
   RecipeInstructions,
+  RecipeComponentDTO,
 } from '@/types/dto.types'
 import { getRecipeImageUrl } from './supabase-storage'
 
@@ -64,6 +65,32 @@ export interface RawRecipeEquipment {
 }
 
 /**
+ * Raw recipe instruction from Supabase join (recipe_instructions table)
+ */
+export interface RawRecipeInstruction {
+  step_number: number
+  description: string
+}
+
+/**
+ * Raw recipe component from Supabase join (recipe_components table)
+ * Represents a recipe used as an ingredient in another recipe
+ */
+export interface RawRecipeComponent {
+  required_amount: number
+  unit: string
+  component_recipe: {
+    id: number
+    slug: string
+    name: string
+    total_calories: number | null
+    total_protein_g: number | null
+    total_carbs_g: number | null
+    total_fats_g: number | null
+  }
+}
+
+/**
  * Raw recipe type from Supabase query
  */
 export interface RawRecipe {
@@ -71,7 +98,8 @@ export interface RawRecipe {
   /** SEO-friendly URL slug */
   slug: string
   name: string
-  instructions: unknown
+  /** Instructions from recipe_instructions table (Meal Prep v2.0) */
+  recipe_instructions?: RawRecipeInstruction[]
   meal_types: unknown
   tags: string[] | null
   image_url: string | null
@@ -80,6 +108,24 @@ export interface RawRecipe {
   reviews_count?: number
   prep_time_min?: number | null
   cook_time_min?: number | null
+
+  // ==========================================================================
+  // Servings / Porcje
+  // ==========================================================================
+  /** Liczba porcji z przepisu bazowego (np. chleb = 10 kromek) */
+  base_servings: number
+  /** Jednostka porcji w języku polskim */
+  serving_unit: string | null
+  /** Czy przepis nadaje się do batch cooking */
+  is_batch_friendly: boolean
+  /** Sugerowana ilość porcji do przygotowania na raz */
+  suggested_batch_size?: number | null
+  /** Minimalna liczba porcji do przygotowania */
+  min_servings: number
+
+  // ==========================================================================
+  // Wartości odżywcze (dla CAŁEGO przepisu)
+  // ==========================================================================
   total_calories: number | null
   total_protein_g: number | null
   total_carbs_g: number | null
@@ -94,106 +140,38 @@ export interface RawRecipe {
   total_saturated_fat_g?: number | null
   recipe_ingredients?: RawRecipeIngredient[]
   recipe_equipment?: RawRecipeEquipment[]
+  /** Recipe components (sub-recipes used as ingredients) */
+  recipe_components?: RawRecipeComponent[]
 }
 
 /**
- * Normalizes raw instructions data to RecipeInstructions array
+ * Normalizes recipe_instructions array from database to RecipeInstructions format
  *
- * Handles various input formats:
- * - Array of strings: ["Step 1", "Step 2"]
- * - Array of objects: [{ step: 1, description: "..." }]
- * - Object with steps array: { steps: [...] }
- * - JSON string containing any of the above
+ * Handles the recipe_instructions table format (Meal Prep v2.0):
+ * - Array of objects: [{ step_number: 1, description: "..." }]
  *
- * @param raw - Raw instructions data from database
- * @returns Normalized array of instruction steps
+ * Returns instructions sorted by step_number.
+ *
+ * @param instructions - Raw instructions array from recipe_instructions table
+ * @returns Normalized array of instruction steps sorted by step number
  */
-export function normalizeInstructions(raw: unknown): RecipeInstructions {
-  const parseSteps = (input: unknown): RecipeInstructions => {
-    if (!Array.isArray(input)) {
-      return []
-    }
-
-    return input
-      .map((item, index) => {
-        if (typeof item === 'string') {
-          const description = item.trim()
-          if (!description) return null
-          return { step: index + 1, description }
-        }
-
-        if (item && typeof item === 'object') {
-          const stepObj = item as Record<string, unknown>
-          const rawDescription =
-            typeof stepObj.description === 'string'
-              ? stepObj.description
-              : typeof stepObj.text === 'string'
-                ? stepObj.text
-                : ''
-          const description = rawDescription.trim()
-          if (!description) return null
-
-          const stepNumber =
-            typeof stepObj.step === 'number' && Number.isFinite(stepObj.step)
-              ? stepObj.step
-              : index + 1
-
-          return {
-            step: stepNumber,
-            description,
-          }
-        }
-
-        return null
-      })
-      .filter(
-        (value): value is { step: number; description: string } =>
-          value !== null
-      )
-  }
-
-  const handleObject = (value: Record<string, unknown>): RecipeInstructions => {
-    const preferredSteps = Array.isArray(value.steps)
-      ? value.steps
-      : Array.isArray(value.step_list)
-        ? value.step_list
-        : []
-
-    let steps = parseSteps(preferredSteps)
-
-    if (steps.length === 0) {
-      const numericKeys = Object.keys(value)
-        .filter((key) => Number.isInteger(Number(key)))
-        .map((key) => value[key])
-
-      steps = parseSteps(numericKeys)
-    }
-
-    return steps
-  }
-
-  if (raw === null || raw === undefined) {
+export function normalizeInstructions(
+  instructions: RawRecipeInstruction[] | undefined | null
+): RecipeInstructions {
+  if (!instructions || !Array.isArray(instructions)) {
     return []
   }
 
-  if (typeof raw === 'string') {
-    try {
-      const parsed = JSON.parse(raw)
-      return normalizeInstructions(parsed)
-    } catch {
-      return []
-    }
-  }
-
-  if (Array.isArray(raw)) {
-    return parseSteps(raw)
-  }
-
-  if (typeof raw === 'object') {
-    return handleObject(raw as Record<string, unknown>)
-  }
-
-  return []
+  return instructions
+    .filter(
+      (item) =>
+        item && typeof item.description === 'string' && item.description.trim()
+    )
+    .map((item) => ({
+      step: item.step_number,
+      description: item.description.trim(),
+    }))
+    .sort((a, b) => a.step - b.step)
 }
 
 /**
@@ -365,6 +343,29 @@ export function transformRecipeToDTO(
     })
   )
 
+  // Transform recipe components (sub-recipes used as ingredients)
+  const components: RecipeComponentDTO[] = (recipe.recipe_components || []).map(
+    (rc) => {
+      // Oblicz makroskładniki proporcjonalnie do wymaganej ilości
+      // Przepisy mają wartości per porcja bazowa, więc skalujemy
+      // Zakładamy że required_amount jest w gramach i przepis ma wartości per 100g lub per porcja
+      const comp = rc.component_recipe
+      return {
+        recipe_id: comp.id,
+        recipe_slug: comp.slug,
+        recipe_name: comp.name,
+        required_amount: rc.required_amount,
+        unit: rc.unit,
+        // Wartości makro są dla całego przepisu, nie skalujemy tutaj
+        // bo to zależy od kontekstu użycia (ilość porcji)
+        calories: comp.total_calories,
+        protein_g: comp.total_protein_g,
+        carbs_g: comp.total_carbs_g,
+        fats_g: comp.total_fats_g,
+      }
+    }
+  )
+
   // Process image URL if requested (for recipes.ts)
   const imageUrl = processImageUrl
     ? getRecipeImageUrl(recipe.image_url)
@@ -379,11 +380,38 @@ export function transformRecipeToDTO(
     recipe.total_net_carbs_g ??
     Math.max(0, totalCarbsG - totalFiberG - totalPolyolsG)
 
+  // Servings - użyj wartości domyślnych jeśli brak w bazie
+  const baseServings = recipe.base_servings ?? 1
+  const servingUnit = recipe.serving_unit ?? 'porcja'
+  const minServings = recipe.min_servings ?? 1
+
+  // Oblicz wartości na porcję
+  const caloriesPerServing =
+    recipe.total_calories !== null
+      ? Math.round(recipe.total_calories / baseServings)
+      : null
+  const proteinPerServing =
+    recipe.total_protein_g !== null
+      ? Math.round((recipe.total_protein_g / baseServings) * 10) / 10
+      : null
+  const carbsPerServing =
+    recipe.total_carbs_g !== null
+      ? Math.round((recipe.total_carbs_g / baseServings) * 10) / 10
+      : null
+  const netCarbsPerServing =
+    totalNetCarbsG !== null
+      ? Math.round((totalNetCarbsG / baseServings) * 10) / 10
+      : null
+  const fatsPerServing =
+    recipe.total_fats_g !== null
+      ? Math.round((recipe.total_fats_g / baseServings) * 10) / 10
+      : null
+
   return {
     id: recipe.id,
     slug: recipe.slug,
     name: recipe.name,
-    instructions: normalizeInstructions(recipe.instructions),
+    instructions: normalizeInstructions(recipe.recipe_instructions),
     meal_types: recipe.meal_types as RecipeDTO['meal_types'],
     tags: recipe.tags,
     image_url: imageUrl,
@@ -392,6 +420,15 @@ export function transformRecipeToDTO(
     reviews_count: recipe.reviews_count ?? 0,
     prep_time_minutes: recipe.prep_time_min ?? null,
     cook_time_minutes: recipe.cook_time_min ?? null,
+
+    // Servings / Porcje
+    base_servings: baseServings,
+    serving_unit: servingUnit,
+    is_batch_friendly: recipe.is_batch_friendly ?? false,
+    suggested_batch_size: recipe.suggested_batch_size ?? null,
+    min_servings: minServings,
+
+    // Wartości odżywcze (dla całego przepisu)
     total_calories: recipe.total_calories,
     total_protein_g: recipe.total_protein_g,
     total_carbs_g: recipe.total_carbs_g,
@@ -400,26 +437,40 @@ export function transformRecipeToDTO(
     total_net_carbs_g: totalNetCarbsG,
     total_fats_g: recipe.total_fats_g,
     total_saturated_fat_g: recipe.total_saturated_fat_g ?? null,
+
+    // Wartości odżywcze na porcję
+    calories_per_serving: caloriesPerServing,
+    protein_per_serving: proteinPerServing,
+    carbs_per_serving: carbsPerServing,
+    net_carbs_per_serving: netCarbsPerServing,
+    fats_per_serving: fatsPerServing,
+
     ingredients,
     equipment,
+    components,
   }
 }
 
 /**
  * Supabase SELECT string for full recipe with ingredients.
  * Use this constant to ensure consistency across queries.
+ * NOTE: Uses recipe_instructions table (Meal Prep v2.0) instead of deprecated instructions JSONB column.
  */
 export const RECIPE_SELECT_FULL = `
   id,
   slug,
   name,
-  instructions,
   meal_types,
   tags,
   image_url,
   difficulty_level,
   prep_time_min,
   cook_time_min,
+  base_servings,
+  serving_unit,
+  is_batch_friendly,
+  suggested_batch_size,
+  min_servings,
   total_calories,
   total_protein_g,
   total_carbs_g,
@@ -428,6 +479,10 @@ export const RECIPE_SELECT_FULL = `
   total_net_carbs_g,
   total_fats_g,
   total_saturated_fat_g,
+  recipe_instructions (
+    step_number,
+    description
+  ),
   recipe_ingredients (
     base_amount,
     unit,
@@ -460,6 +515,19 @@ export const RECIPE_SELECT_FULL = `
       name_plural,
       category,
       icon_name
+    )
+  ),
+  recipe_components!recipe_components_parent_recipe_id_fkey (
+    required_amount,
+    unit,
+    component_recipe:recipes!recipe_components_component_recipe_id_fkey (
+      id,
+      slug,
+      name,
+      total_calories,
+      total_protein_g,
+      total_carbs_g,
+      total_fats_g
     )
   )
 `

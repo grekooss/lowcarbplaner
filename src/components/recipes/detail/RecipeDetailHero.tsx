@@ -4,19 +4,18 @@
  * Layout: 3 kolumny
  * - Kolumny 1-2: Wspólne brązowe tło z zaokrąglonymi rogami
  *   - Kolumna 1: Zdjęcie przepisu
- *   - Kolumna 2: Tytuł, meal type badge, 4 ikony z metadanymi (difficulty, prep time, cook time, steps), przycisk
- * - Kolumna 3: 4 kolorowe karty makro (pionowo)
+ *   - Kolumna 2: Tytuł, meal type badge, 4 ikony z metadanymi (difficulty, prep time, cook time, servings), przycisk
+ * - Kolumna 3: 4 kolorowe karty makro (pionowo) - wartości NA PORCJĘ
  */
 
 'use client'
 
-import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MacroCard } from './MacroCard'
-import { RecipeImagePlaceholder } from '@/components/recipes/RecipeImagePlaceholder'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 import { MEAL_TYPE_LABELS } from '@/types/recipes-view.types'
-import { Star, BarChart3, Clock, Timer, ListOrdered } from 'lucide-react'
+import { Star, BarChart3, Clock, Timer, UtensilsCrossed } from 'lucide-react'
 import type { RecipeDTO } from '@/types/dto.types'
 import { getMealTypeBadgeClasses } from '@/lib/styles/mealTypeBadge'
 
@@ -43,14 +42,39 @@ export function RecipeDetailHero({
   onAddToMealPlan,
   isAuthenticated,
 }: RecipeDetailHeroProps) {
-  // Oblicz total steps z instrukcji
-  const totalSteps = Array.isArray(recipe.instructions)
-    ? recipe.instructions.length
-    : 0
+  // Czasy przygotowania i gotowania z RecipeDTO
+  const prepTime = recipe.prep_time_minutes ?? 0
+  const cookTime = recipe.cook_time_minutes ?? 0
 
-  // Czasy przygotowania i gotowania są obecnie niedostępne w nowym formacie
-  const prepTime = 0
-  const cookTime = 0
+  // Formatowanie porcji z odmianą polską
+  const formatServings = (count: number, unit: string): string => {
+    if (count === 1) {
+      return `1 ${unit}`
+    }
+
+    // Odmiana polska dla różnych jednostek
+    const pluralForms: Record<string, [string, string]> = {
+      porcja: ['porcje', 'porcji'],
+      kromka: ['kromki', 'kromek'],
+      sztuka: ['sztuki', 'sztuk'],
+      udko: ['udka', 'udek'],
+      szklanka: ['szklanki', 'szklanek'],
+    }
+
+    const forms = pluralForms[unit]
+    if (forms) {
+      // 2-4: forma 1 (porcje, kromki), 5+: forma 2 (porcji, kromek)
+      const form = count >= 2 && count <= 4 ? forms[0] : forms[1]
+      return `${count} ${form}`
+    }
+
+    return `${count} ${unit}`
+  }
+
+  const servingsDisplay = formatServings(
+    recipe.base_servings,
+    recipe.serving_unit
+  )
 
   return (
     <div className='grid gap-6 rounded-3xl bg-[var(--bg-card)] p-6 lg:grid-cols-5'>
@@ -59,18 +83,15 @@ export function RecipeDetailHero({
         {/* Kolumna 1: Zdjęcie */}
         <div className='flex h-full items-center justify-start'>
           <div className='relative aspect-square w-full max-w-[380px] overflow-hidden rounded-3xl'>
-            {recipe.image_url ? (
-              <Image
-                src={recipe.image_url}
-                alt={recipe.name}
-                fill
-                className='object-cover'
-                sizes='(max-width: 1024px) 100vw, 380px'
-                priority
-              />
-            ) : (
-              <RecipeImagePlaceholder recipeName={recipe.name} />
-            )}
+            <RecipeImage
+              src={recipe.image_url}
+              recipeName={recipe.name}
+              alt={recipe.name}
+              fill
+              className='object-cover'
+              sizes='(max-width: 1024px) 100vw, 380px'
+              priority
+            />
           </div>
         </div>
 
@@ -165,15 +186,15 @@ export function RecipeDetailHero({
               </div>
             </div>
 
-            {/* Total Steps */}
+            {/* Servings / Porcje */}
             <div className='flex items-center gap-3'>
               <div className='rounded-lg bg-white p-3'>
-                <ListOrdered className='h-5 w-5 text-black' />
+                <UtensilsCrossed className='h-5 w-5 text-black' />
               </div>
               <div className='space-y-0.5'>
-                <p className='text-xs text-black'>Liczba kroków</p>
+                <p className='text-xs text-black'>Porcje</p>
                 <p className='text-sm font-semibold text-gray-900'>
-                  {totalSteps > 0 ? `${totalSteps}` : '—'}
+                  {servingsDisplay}
                 </p>
               </div>
             </div>
@@ -192,32 +213,32 @@ export function RecipeDetailHero({
         </div>
       </div>
 
-      {/* Kolumna 5: Karty makro (pionowo) */}
+      {/* Kolumna 5: Karty makro (pionowo) - wartości NA PORCJĘ */}
       <div className='flex flex-col gap-3 lg:col-span-1 lg:h-[380px] lg:justify-between'>
         <MacroCard
-          label='Kalorie'
-          value={recipe.total_calories}
+          label='Kalorie / porcja'
+          value={recipe.calories_per_serving}
           unit='kcal'
           variant='calories'
           size='compact'
         />
         <MacroCard
-          label='Tłuszcze'
-          value={recipe.total_fats_g}
+          label='Tłuszcze / porcja'
+          value={recipe.fats_per_serving}
           unit='g'
           variant='fat'
           size='compact'
         />
         <MacroCard
-          label='Węgl. netto'
-          value={recipe.total_net_carbs_g}
+          label='Węgl. netto / porcja'
+          value={recipe.net_carbs_per_serving}
           unit='g'
           variant='carbs'
           size='compact'
         />
         <MacroCard
-          label='Białko'
-          value={recipe.total_protein_g}
+          label='Białko / porcja'
+          value={recipe.protein_per_serving}
           unit='g'
           variant='protein'
           size='compact'

@@ -17,7 +17,10 @@ import {
   recipeQueryParamsSchema,
   type RecipeQueryParamsInput,
 } from '@/lib/validation/recipes'
-import { transformRecipeToDTO } from '@/lib/utils/recipe-transformer'
+import {
+  transformRecipeToDTO,
+  RECIPE_SELECT_FULL,
+} from '@/lib/utils/recipe-transformer'
 
 /**
  * Typ odpowiedzi dla listy przepisów (zgodny z planem API)
@@ -82,63 +85,15 @@ export async function getRecipes(
     const supabase = createAdminClient()
 
     // 3. Budowanie zapytania z paginacją
+    // Dodaj average_rating i reviews_count do standardowego SELECT
+    const selectWithRating = `
+      ${RECIPE_SELECT_FULL.trim()},
+      average_rating,
+      reviews_count
+    `
     let query = supabase
       .from('recipes')
-      .select(
-        `
-        id,
-        slug,
-        name,
-        instructions,
-        meal_types,
-        tags,
-        image_url,
-        difficulty_level,
-        average_rating,
-        reviews_count,
-        prep_time_min,
-        cook_time_min,
-        total_calories,
-        total_protein_g,
-        total_carbs_g,
-        total_fiber_g,
-        total_net_carbs_g,
-        total_fats_g,
-        recipe_ingredients (
-          base_amount,
-          unit,
-          is_scalable,
-          calories,
-          protein_g,
-          carbs_g,
-          fiber_g,
-          fats_g,
-          step_number,
-          ingredient:ingredients (
-            id,
-            name,
-            category,
-            unit,
-            ingredient_unit_conversions (
-              unit_name,
-              grams_equivalent
-            )
-          )
-        ),
-        recipe_equipment (
-          quantity,
-          notes,
-          equipment (
-            id,
-            name,
-            name_plural,
-            category,
-            icon_name
-          )
-        )
-      `,
-        { count: 'exact' }
-      )
+      .select(selectWithRating, { count: 'exact' })
       .range(offset, offset + limit - 1)
       .order('created_at', { ascending: false })
 
@@ -167,7 +122,8 @@ export async function getRecipes(
     }
 
     // 7. Transformacja do DTO (z przetwarzaniem URL obrazów)
-    const results = (data || []).map((recipe) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results = (data || []).map((recipe: any) =>
       transformRecipeToDTO(recipe, { processImageUrl: true })
     )
 
@@ -232,62 +188,14 @@ export async function getRecipeById(
     const supabase = createAdminClient()
 
     // 3. Zapytanie z pełnymi szczegółami
+    const selectWithRating = `
+      ${RECIPE_SELECT_FULL.trim()},
+      average_rating,
+      reviews_count
+    `
     const { data, error } = await supabase
       .from('recipes')
-      .select(
-        `
-        id,
-        slug,
-        name,
-        instructions,
-        meal_types,
-        tags,
-        image_url,
-        difficulty_level,
-        average_rating,
-        reviews_count,
-        prep_time_min,
-        cook_time_min,
-        total_calories,
-        total_protein_g,
-        total_carbs_g,
-        total_fiber_g,
-        total_net_carbs_g,
-        total_fats_g,
-        recipe_ingredients (
-          base_amount,
-          unit,
-          is_scalable,
-          calories,
-          protein_g,
-          carbs_g,
-          fiber_g,
-          fats_g,
-          step_number,
-          ingredient:ingredients (
-            id,
-            name,
-            category,
-            unit,
-            ingredient_unit_conversions (
-              unit_name,
-              grams_equivalent
-            )
-          )
-        ),
-        recipe_equipment (
-          quantity,
-          notes,
-          equipment (
-            id,
-            name,
-            name_plural,
-            category,
-            icon_name
-          )
-        )
-      `
-      )
+      .select(selectWithRating)
       .eq('id', recipeId)
       .single()
 
@@ -306,7 +214,8 @@ export async function getRecipeById(
     }
 
     // 4. Transformacja do DTO (z przetwarzaniem URL obrazów)
-    const recipe = transformRecipeToDTO(data, { processImageUrl: true })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recipe = transformRecipeToDTO(data as any, { processImageUrl: true })
 
     return { data: recipe }
   } catch (err) {
@@ -316,7 +225,7 @@ export async function getRecipeById(
 }
 
 /**
- * GET /przepisy/{slug} - Pobiera przepis po SEO-friendly slug
+ * GET /recipes/{slug} - Pobiera przepis po SEO-friendly slug
  *
  * @param slug - SEO-friendly slug przepisu (np. "salatka-grecka-z-feta")
  * @returns RecipeDTO z pełnymi szczegółami (składniki, instrukcje)
@@ -350,62 +259,14 @@ export async function getRecipeBySlug(
     const supabase = createAdminClient()
 
     // 3. Zapytanie z pełnymi szczegółami po slug
+    const selectWithRating = `
+      ${RECIPE_SELECT_FULL.trim()},
+      average_rating,
+      reviews_count
+    `
     const { data, error } = await supabase
       .from('recipes')
-      .select(
-        `
-        id,
-        slug,
-        name,
-        instructions,
-        meal_types,
-        tags,
-        image_url,
-        difficulty_level,
-        average_rating,
-        reviews_count,
-        prep_time_min,
-        cook_time_min,
-        total_calories,
-        total_protein_g,
-        total_carbs_g,
-        total_fiber_g,
-        total_net_carbs_g,
-        total_fats_g,
-        recipe_ingredients (
-          base_amount,
-          unit,
-          is_scalable,
-          calories,
-          protein_g,
-          carbs_g,
-          fiber_g,
-          fats_g,
-          step_number,
-          ingredient:ingredients (
-            id,
-            name,
-            category,
-            unit,
-            ingredient_unit_conversions (
-              unit_name,
-              grams_equivalent
-            )
-          )
-        ),
-        recipe_equipment (
-          quantity,
-          notes,
-          equipment (
-            id,
-            name,
-            name_plural,
-            category,
-            icon_name
-          )
-        )
-      `
-      )
+      .select(selectWithRating)
       .eq('slug', sanitizedSlug)
       .single()
 
@@ -424,7 +285,8 @@ export async function getRecipeBySlug(
     }
 
     // 4. Transformacja do DTO (z przetwarzaniem URL obrazów)
-    const recipe = transformRecipeToDTO(data, { processImageUrl: true })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recipe = transformRecipeToDTO(data as any, { processImageUrl: true })
 
     return { data: recipe }
   } catch (err) {

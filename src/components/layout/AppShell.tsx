@@ -18,17 +18,26 @@ import {
   Hexagon,
   ChevronDown,
   MonitorPlay,
+  Refrigerator,
+  Flame,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/hooks/useUser'
 import { createClientComponentClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
+type NavChild = {
+  label: string
+  href: string
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+}
+
 type NavItem = {
   label: string
   href: string
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   requiresAuth?: boolean
+  children?: NavChild[]
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -49,6 +58,18 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Lista zakupów',
     href: '/shopping-list',
     icon: ShoppingCart,
+    requiresAuth: true,
+  },
+  {
+    label: 'Spiżarnia',
+    href: '/pantry',
+    icon: Refrigerator,
+    requiresAuth: true,
+  },
+  {
+    label: 'Gotowanie',
+    href: '/cooking',
+    icon: Flame,
     requiresAuth: true,
   },
 ]
@@ -82,6 +103,15 @@ const getViewInfo = (pathname: string) => {
   if (pathname.startsWith('/onboarding')) {
     return { title: 'Konfiguracja', subtitle: 'Skonfiguruj swój profil' }
   }
+  if (pathname.startsWith('/pantry')) {
+    return {
+      title: 'Spiżarnia',
+      subtitle: 'Zarządzaj dostępnymi składnikami',
+    }
+  }
+  if (pathname.startsWith('/cooking')) {
+    return { title: 'Gotowanie', subtitle: 'Sesje przygotowania posiłków' }
+  }
   return { title: 'LowCarbPlaner', subtitle: 'Zaplanuj swoje posiłki' }
 }
 
@@ -91,8 +121,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user } = useUser()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([])
   const headerMenuRef = useRef<HTMLDivElement>(null)
   const supabase = createClientComponentClient()
+
+  // Landing page (/) - hide sidebar and login button
+  const isLandingPage = pathname === '/'
+
+  // Auto-expand menu if current path matches a child
+  useEffect(() => {
+    NAV_ITEMS.forEach((item) => {
+      if (item.children?.some((child) => pathname.startsWith(child.href))) {
+        setExpandedMenus((prev) =>
+          prev.includes(item.href) ? prev : [...prev, item.href]
+        )
+      }
+    })
+  }, [pathname])
+
+  const toggleMenu = (href: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href]
+    )
+  }
 
   const getUserDisplayName = () => {
     if (!user) return null
@@ -148,8 +199,121 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       const isActive =
         pathname === item.href ||
         (item.href !== '/' && pathname.startsWith(item.href))
+      const isExpanded = expandedMenus.includes(item.href)
+      const hasChildren = item.children && item.children.length > 0
       const Icon = item.icon
 
+      // Item with children (submenu)
+      if (hasChildren) {
+        return (
+          <div key={item.href}>
+            <button
+              onClick={() => {
+                if (item.requiresAuth && !user) {
+                  router.push(`/auth?redirect=${item.href}`)
+                } else {
+                  toggleMenu(item.href)
+                }
+              }}
+              className={cn(
+                'flex w-full items-center justify-between rounded-md border-2 px-4 py-3 text-sm font-medium transition-all',
+                isMobile
+                  ? isActive
+                    ? 'text-text-main border-white bg-white/60 font-bold shadow-lg backdrop-blur-xl'
+                    : 'text-text-secondary hover:text-text-main border-transparent hover:bg-white/10'
+                  : isActive
+                    ? 'text-text-main border-white bg-white/60 font-bold shadow-lg backdrop-blur-xl'
+                    : 'border-transparent text-white hover:bg-white/10 hover:text-white'
+              )}
+            >
+              <div className='flex items-center gap-3'>
+                <Icon
+                  className={cn(
+                    'h-5 w-5',
+                    isMobile
+                      ? isActive
+                        ? 'text-text-muted'
+                        : 'text-text-secondary'
+                      : isActive
+                        ? 'text-text-muted'
+                        : 'icon-shadow-nav text-white'
+                  )}
+                />
+                <span
+                  className={!isMobile && !isActive ? 'text-shadow-nav' : ''}
+                >
+                  {item.label}
+                </span>
+              </div>
+              <ChevronDown
+                className={cn(
+                  'h-4 w-4 transition-transform duration-200',
+                  isExpanded && 'rotate-180',
+                  isMobile
+                    ? 'text-text-secondary'
+                    : isActive
+                      ? 'text-text-muted'
+                      : 'icon-shadow-nav text-white'
+                )}
+              />
+            </button>
+            {/* Submenu */}
+            <div
+              className={cn(
+                'overflow-hidden transition-all duration-200',
+                isExpanded ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+              )}
+            >
+              <div className='mt-1 space-y-1 pl-4'>
+                {item.children!.map((child) => {
+                  const isChildActive = pathname === child.href
+                  const ChildIcon = child.icon
+                  return (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      onClick={() => onNavigate?.()}
+                      className={cn(
+                        'flex items-center gap-3 rounded-md border-2 px-4 py-2.5 text-sm transition-all',
+                        isMobile
+                          ? isChildActive
+                            ? 'text-text-main border-white bg-white/60 font-bold shadow-lg backdrop-blur-xl'
+                            : 'text-text-secondary hover:text-text-main border-transparent hover:bg-white/10'
+                          : isChildActive
+                            ? 'text-text-main border-white bg-white/60 font-bold shadow-lg backdrop-blur-xl'
+                            : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
+                      )}
+                      aria-current={isChildActive ? 'page' : undefined}
+                    >
+                      <ChildIcon
+                        className={cn(
+                          'h-4 w-4',
+                          isMobile
+                            ? isChildActive
+                              ? 'text-text-muted'
+                              : 'text-text-secondary'
+                            : isChildActive
+                              ? 'text-text-muted'
+                              : 'icon-shadow-nav text-white/80'
+                        )}
+                      />
+                      <span
+                        className={
+                          !isMobile && !isChildActive ? 'text-shadow-nav' : ''
+                        }
+                      >
+                        {child.label}
+                      </span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      // Regular item without children
       if (isMobile) {
         return (
           <Link
@@ -212,8 +376,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             data-main-panel
             className='relative flex h-full w-full flex-1 overflow-hidden rounded-lg border-2 border-white bg-white/20 shadow-2xl ring-1 ring-black/5 backdrop-blur-md sm:rounded-2xl lg:rounded-3xl'
           >
-            {/* Sidebar - Desktop only (xl+) */}
-            <aside className='hidden h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white xl:flex'>
+            {/* Sidebar - Desktop only (xl+), hidden on landing page */}
+            <aside
+              className={cn(
+                'h-full w-64 flex-col border-r border-white/30 bg-white/30 px-6 pt-8 pb-4 text-white',
+                isLandingPage ? 'hidden' : 'hidden xl:flex'
+              )}
+            >
               {/* Logo */}
               <div className='mb-10 flex items-center gap-3 px-2'>
                 <div className='bg-primary shadow-primary/30 rounded-lg p-1.5 shadow-lg'>
@@ -294,24 +463,45 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Main Content Wrapper - flex column for mobile header + scrollable content */}
             <div className='flex h-full flex-1 flex-col'>
               {/* Mobile Header (< sm) - fixed at top, full width */}
-              <div className='relative flex flex-shrink-0 items-center justify-center border-b-2 border-white bg-[var(--bg-card)] p-3 sm:hidden'>
-                {/* Hamburger - left */}
-                <button
-                  className='absolute left-3 rounded-sm bg-white p-1.5 transition-colors hover:bg-white/70'
-                  onClick={() => setMobileNavOpen(true)}
-                >
-                  <Menu className='text-text-secondary h-5 w-5' />
-                </button>
-
-                {/* Centered Title */}
-                {!pathname.includes('/auth') && getViewInfo(pathname).title && (
-                  <h1 className='text-text-main text-base font-bold'>
-                    {getViewInfo(pathname).title}
-                  </h1>
+              <div
+                className={cn(
+                  'relative flex flex-shrink-0 items-center border-b-2 border-white bg-[var(--bg-card)] p-3 sm:hidden',
+                  isLandingPage ? 'justify-center' : 'justify-center'
+                )}
+              >
+                {/* Hamburger - left (hidden on landing page) */}
+                {!isLandingPage && (
+                  <button
+                    className='absolute left-3 rounded-sm bg-white p-1.5 transition-colors hover:bg-white/70'
+                    onClick={() => setMobileNavOpen(true)}
+                  >
+                    <Menu className='text-text-secondary h-5 w-5' />
+                  </button>
                 )}
 
-                {/* User Icon - right */}
-                {(user || !pathname.includes('/auth')) && (
+                {/* Logo + Title for Landing Page */}
+                {isLandingPage && (
+                  <Link href='/' className='flex items-center gap-2'>
+                    <div className='bg-primary rounded-md p-1'>
+                      <Hexagon className='h-4 w-4 fill-current text-white' />
+                    </div>
+                    <span className='text-text-main text-base font-bold'>
+                      LowCarbPlaner
+                    </span>
+                  </Link>
+                )}
+
+                {/* Centered Title for other pages */}
+                {!isLandingPage &&
+                  !pathname.includes('/auth') &&
+                  getViewInfo(pathname).title && (
+                    <h1 className='text-text-main text-base font-bold'>
+                      {getViewInfo(pathname).title}
+                    </h1>
+                  )}
+
+                {/* User Icon - right (hidden on landing page for non-logged users) */}
+                {(user || (!pathname.includes('/auth') && !isLandingPage)) && (
                   <div className='absolute right-3' ref={headerMenuRef}>
                     <button
                       onClick={() => {
@@ -368,12 +558,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   {/* Tablet/Desktop Header (>= sm) - original layout */}
                   <div className='hidden items-center justify-between sm:flex'>
                     <div className='flex items-center gap-4'>
-                      <button
-                        className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 xl:hidden'
-                        onClick={() => setMobileNavOpen(true)}
-                      >
-                        <Menu className='text-text-secondary h-6 w-6' />
-                      </button>
+                      {/* Hamburger - hidden on landing page */}
+                      {!isLandingPage && (
+                        <button
+                          className='rounded-sm bg-white p-2 transition-colors hover:bg-white/70 xl:hidden'
+                          onClick={() => setMobileNavOpen(true)}
+                        >
+                          <Menu className='text-text-secondary h-6 w-6' />
+                        </button>
+                      )}
 
                       {/* View Title with Red Bar - hide when auth modal is open or on root path */}
                       {!pathname.includes('/auth') &&
@@ -392,8 +585,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         )}
                     </div>
 
-                    {/* User Menu - hide login button when auth modal is open */}
-                    {(user || !pathname.includes('/auth')) && (
+                    {/* User Menu - hide login button when auth modal is open or on landing page */}
+                    {(user ||
+                      (!pathname.includes('/auth') && !isLandingPage)) && (
                       <div className='relative' ref={headerMenuRef}>
                         <button
                           onClick={() => {

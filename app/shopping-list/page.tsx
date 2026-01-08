@@ -2,6 +2,7 @@ import { getShoppingList } from '@/lib/actions/shopping-list'
 import { ShoppingListClient } from '@/components/shopping-list/ShoppingListClient'
 import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { formatDateToLocalString } from '@/lib/utils'
 
 // Force dynamic rendering because of Supabase auth (cookies)
 export const dynamic = 'force-dynamic'
@@ -34,8 +35,8 @@ export default async function ShoppingListPage() {
   const endDate = new Date(tomorrow)
   endDate.setDate(tomorrow.getDate() + 5)
 
-  const startDateStr = tomorrow.toISOString().split('T')[0] as string
-  const endDateStr = endDate.toISOString().split('T')[0] as string
+  const startDateStr = formatDateToLocalString(tomorrow)
+  const endDateStr = formatDateToLocalString(endDate)
 
   // Pobierz listę zakupów
   const shoppingListResult = await getShoppingList({

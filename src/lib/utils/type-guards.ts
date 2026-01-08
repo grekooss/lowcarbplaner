@@ -27,6 +27,13 @@ export interface PlannedMealRow {
     tags: string[] | null
     image_url: string | null
     difficulty_level: unknown
+    // Servings
+    base_servings: number
+    serving_unit: string | null
+    is_batch_friendly: boolean
+    suggested_batch_size?: number | null
+    min_servings: number
+    // Nutrition
     total_calories: number | null
     total_protein_g: number | null
     total_carbs_g: number | null

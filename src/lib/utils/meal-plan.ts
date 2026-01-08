@@ -8,6 +8,7 @@ import type {
   DayPlanViewModel,
 } from '@/types/meal-plan-view.types'
 import { DAY_NAMES, MONTH_NAMES } from '@/types/meal-plan-view.types'
+import { formatDateToLocalString } from '@/lib/utils'
 
 /**
  * Transformuje listę posiłków na model tygodniowego planu
@@ -29,7 +30,7 @@ export function transformToWeekPlan(
     const currentDate = new Date(start)
     currentDate.setDate(start.getDate() + i)
 
-    const dateStr = currentDate.toISOString().split('T')[0] || ''
+    const dateStr = formatDateToLocalString(currentDate)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     currentDate.setHours(0, 0, 0, 0)
@@ -59,6 +60,6 @@ export function transformToWeekPlan(
   return {
     days,
     startDate,
-    endDate: endDate.toISOString().split('T')[0] || '',
+    endDate: formatDateToLocalString(endDate),
   }
 }

@@ -9,7 +9,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Image from 'next/image'
 import {
   Loader2,
   UtensilsCrossed,
@@ -21,6 +20,7 @@ import {
   AlertTriangle,
   RefreshCw,
 } from 'lucide-react'
+import { RecipeImage } from '@/components/recipes/RecipeImage'
 
 import {
   Dialog,
@@ -189,19 +189,14 @@ export function SwapRecipeDialog({
                     </div>
 
                     <div className='relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-white/60 sm:h-20 sm:w-20'>
-                      {meal.recipe.image_url ? (
-                        <Image
-                          src={meal.recipe.image_url}
-                          alt={meal.recipe.name}
-                          fill
-                          className='object-cover grayscale-[10%]'
-                          sizes='(max-width: 640px) 64px, 80px'
-                        />
-                      ) : (
-                        <div className='text-text-muted flex h-full w-full items-center justify-center'>
-                          <UtensilsCrossed className='h-8 w-8 sm:h-10 sm:w-10' />
-                        </div>
-                      )}
+                      <RecipeImage
+                        src={meal.recipe.image_url}
+                        recipeName={meal.recipe.name}
+                        alt={meal.recipe.name}
+                        fill
+                        className='object-cover grayscale-[10%]'
+                        sizes='(max-width: 640px) 64px, 80px'
+                      />
                     </div>
 
                     <div className='flex flex-1 flex-col justify-center'>
@@ -297,19 +292,14 @@ export function SwapRecipeDialog({
                         </span>
 
                         <div className='relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-white/60 sm:h-20 sm:w-20'>
-                          {replacement.image_url ? (
-                            <Image
-                              src={replacement.image_url}
-                              alt={replacement.name}
-                              fill
-                              className='object-cover grayscale-[10%]'
-                              sizes='(max-width: 640px) 64px, 80px'
-                            />
-                          ) : (
-                            <div className='text-text-muted flex h-full w-full items-center justify-center'>
-                              <UtensilsCrossed className='h-8 w-8 sm:h-10 sm:w-10' />
-                            </div>
-                          )}
+                          <RecipeImage
+                            src={replacement.image_url}
+                            recipeName={replacement.name}
+                            alt={replacement.name}
+                            fill
+                            className='object-cover grayscale-[10%]'
+                            sizes='(max-width: 640px) 64px, 80px'
+                          />
                         </div>
 
                         <div className='flex flex-1 flex-col justify-center'>
